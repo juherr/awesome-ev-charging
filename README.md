@@ -62,4 +62,17 @@ Here are some awesome tools for dealing with EV:
 
 ## OCPI
 
+* [EVRoaming Fundation](https://evroaming.org/)
+* [Specifications](https://github.com/ocpi/ocpi)
+  * [2.1.1](https://github.com/ocpi/ocpi/tree/release-2.1.1-bugfixes)
+  * [2.2.1 (pdf)](ocpi/OCPI-2.2.1.pdf)
+
 ### OCPI Libraries
+
+* [Endpoints in Scala](https://github.com/ShellRechargeSolutionsEU/ocpi-endpoints)
+* [Client in PHP](https://github.com/ChargeMap/ocpi-protocol)
+* [Server in Python](https://github.com/TECHS-Technological-Solutions/ocpi)
+* [Endpoints and client in Kotlin](https://github.com/IZIVIA/ocpi-toolkit)
+* [OCPI Types in TypeScript](https://github.com/gaia-green-tech/ocpi-types)
+* [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
+
