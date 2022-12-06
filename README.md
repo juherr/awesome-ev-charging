@@ -12,10 +12,19 @@
   - [Libraries](#ocpi-libraries)
 
 
+[![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
+
 Here are some awesome tools for dealing with EV:
 
 ## OCPP
 
+* [Wikipedia](https://en.wikipedia.org/wiki/Open_Charge_Point_Protocol)
+* [Open Charge Aliance](https://www.openchargealliance.org/)
+* Specifications
+  * [1.2](ocpp/OCPP-1.2)
+  * [1.5](ocpp/OCPP-1.5)
+  * [1.6](ocpp/OCPP-1.6-Documentation_2019_12)
+  * [2.0.1](ocpp/OCPP-2.0.1-Specification)
 
 ### OCPP Servers
 
