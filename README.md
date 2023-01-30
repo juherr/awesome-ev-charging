@@ -24,6 +24,7 @@ Here are some awesome tools for dealing with EV:
   * [1.2](ocpp/OCPP-1.2)
   * [1.5](ocpp/OCPP-1.5)
   * [1.6](ocpp/OCPP-1.6-Documentation_2019_12)
+  * [1.6 - Security Whitepaper Ed2](ocpp/OCPP-1.6-security-whitepaper-edition-2)
   * [2.0.1](ocpp/OCPP-2.0.1-Specification)
 
 ### OCPP Servers
@@ -64,8 +65,7 @@ Here are some awesome tools for dealing with EV:
 
 * [EVRoaming Fundation](https://evroaming.org/)
 * [Specifications](https://github.com/ocpi/ocpi)
-  * [2.1.1](https://github.com/ocpi/ocpi/tree/release-2.1.1-bugfixes)
-  * [2.2.1 (pdf)](ocpi/OCPI-2.2.1.pdf)
+  * [2.1.1](https://github.com/ocpi/ocpi/tree/release-2.1.1-bugfixes) - [(pdf)](ocpi/OCPI-2.2.1.pdf)
 
 ### OCPI Libraries
 
