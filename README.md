@@ -11,7 +11,6 @@
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
 
-
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
 Here are some awesome tools for dealing with EV:
@@ -65,7 +64,8 @@ Here are some awesome tools for dealing with EV:
 
 * [EVRoaming Fundation](https://evroaming.org/)
 * [Specifications](https://github.com/ocpi/ocpi)
-  * [2.1.1](https://github.com/ocpi/ocpi/tree/release-2.1.1-bugfixes) - [(pdf)](ocpi/OCPI-2.2.1.pdf)
+  * [2.2.1](https://github.com/ocpi/ocpi/tree/release-2.2.1-bugfixes) - [pdf](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf) 
+  * [2.1.1](https://github.com/ocpi/ocpi/tree/release-2.1.1-bugfixes) - [pdf](https://github.com/ocpi/ocpi/releases/download/2.1.1-d2/OCPI_2.1.1-d2.pdf)
 
 ### OCPI Libraries
 
@@ -75,4 +75,4 @@ Here are some awesome tools for dealing with EV:
 * [Endpoints and client in Kotlin](https://github.com/IZIVIA/ocpi-toolkit)
 * [OCPI Types in TypeScript](https://github.com/gaia-green-tech/ocpi-types)
 * [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
-
+* [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema)
