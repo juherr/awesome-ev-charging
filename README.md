@@ -8,6 +8,7 @@
   - [Server](#ocpp-servers)
   - [Simulator](#ocpp-simulators)
   - [Libraries](#ocpp-libraries)
+  - [Misc](#ocpp-misc)
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
 
@@ -59,6 +60,11 @@ Here are some awesome tools for dealing with EV:
 * [Rust library for ocpp 1.6 and 2.0.1](https://github.com/codelabsab/rust-ocpp)
 * [Java mappings for OCPP](https://github.com/steve-community/ocpp-jaxb)
 * [Kotlin library to perform OCPP operations](https://github.com/izivia/ocpp-toolkit)
+
+### OCPP Misc
+
+* [OCPP Spec](https://ocpp-spec.org/)
+* [OCPP AI](https://ocpp.vercel.app/)
 
 ## OCPI
 
