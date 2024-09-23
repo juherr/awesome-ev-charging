@@ -11,7 +11,7 @@
   - [Misc](#ocpp-misc)
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
-- [eMI3](#eMI3)
+- [eMI³](#eMI³)
 
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
@@ -84,7 +84,7 @@ Here are some awesome tools for dealing with EV:
 * [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
 * [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema)
 
-## eMI3
+## eMI³
 
 * [Website](http://emi3group.com/) ([Archive.org](https://web.archive.org/web/20230925033629/http://emi3group.com/))
 * Specifications
