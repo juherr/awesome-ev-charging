@@ -96,6 +96,8 @@ Here are some awesome tools for dealing with EV:
     * [Part 1 v1.1](emi3/emi3-1.1/eMI3-standard-v1.1-Part-1.pdf)
     * [Terms and definitions v1.4](emi3/emi3-1.1/eMI3-standard-TermsAndDefinitions-v1.4.pdf)
 
-** Not curated list**
+---
+
+**Not curated list**
 
 [GitHub list](https://github.com/stars/juherr/lists/ev)
