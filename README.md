@@ -82,3 +82,15 @@ Here are some awesome tools for dealing with EV:
 * [OCPI Types in TypeScript](https://github.com/gaia-green-tech/ocpi-types)
 * [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
 * [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema)
+
+## eMI3
+
+* [Website](http://emi3group.com/) ([Archive.org](https://web.archive.org/web/20230925033629/http://emi3group.com/))
+* Specifications
+  * eMi³ standard version V1.0 electric vehicle ICT interface specifications
+    * [Part 1 v1.0](emi3/emi3-1.0/eMI3-standard-v1.0-Part-1.pdf)
+    * [Part 2 v1.0](emi3/emi3-1.0/eMI3-standard-v1.0-Part-2.pdf)
+    * [Terms and definitions v1.0](emi3/emi3-1.0/eMI3-standard-TermsAndDefinitions-v1.0.pdf)
+  * eMi³ standard update, version V1.1 electric vehicle ICT interface specifications
+    * [Part 1 v1.1](emi3/emi3-1.1/eMI3-standard-v1.1-Part-1.pdf)
+    * [Terms and definitions v1.4](emi3/emi3-1.1/eMI3-standard-TermsAndDefinitions-v1.4.pdf)
