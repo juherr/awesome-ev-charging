@@ -11,7 +11,7 @@
   - [Misc](#ocpp-misc)
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
-- [eMI³](#eMI³)
+- [eMI³](#emi)
 
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
