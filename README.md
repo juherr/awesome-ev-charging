@@ -11,6 +11,7 @@
   - [Misc](#ocpp-misc)
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
+- [eMI3](#eMI3)
 
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
@@ -94,3 +95,7 @@ Here are some awesome tools for dealing with EV:
   * eMi³ standard update, version V1.1 electric vehicle ICT interface specifications
     * [Part 1 v1.1](emi3/emi3-1.1/eMI3-standard-v1.1-Part-1.pdf)
     * [Terms and definitions v1.4](emi3/emi3-1.1/eMI3-standard-TermsAndDefinitions-v1.4.pdf)
+
+** Not curated list**
+
+[GitHub list](https://github.com/stars/juherr/lists/ev)
