@@ -22,12 +22,13 @@ Here are some awesome tools for dealing with EV:
 * [Wikipedia](https://en.wikipedia.org/wiki/Open_Charge_Point_Protocol)
 * [Open Charge Aliance](https://www.openchargealliance.org/)
 * Specifications
-  * [1.2](ocpp/OCPP-1.2)
-  * [1.5](ocpp/OCPP-1.5)
+  * [1.2 (deprecated)](ocpp/OCPP-1.2)
+  * [1.5 (deprecated)](ocpp/OCPP-1.5)
   * [1.6](ocpp/OCPP-1.6-Documentation_2019_12)
   * [1.6 - Security Whitepaper Ed2](ocpp/OCPP-1.6-security-whitepaper-edition-2)
+  * [2.0 (deprecated)](ocpp/OCPP-2.0)
   * [2.0.1](ocpp/OCPP-2.0.1-Specification)
-  * [2.0.1](ocpp/OCPP-2.1)
+  * [2.1](ocpp/OCPP-2.1)
 
 ### OCPP Servers
 
