@@ -27,6 +27,7 @@ Here are some awesome tools for dealing with EV:
   * [1.6](ocpp/OCPP-1.6-Documentation_2019_12)
   * [1.6 - Security Whitepaper Ed2](ocpp/OCPP-1.6-security-whitepaper-edition-2)
   * [2.0.1](ocpp/OCPP-2.0.1-Specification)
+  * [2.0.1](ocpp/OCPP-2.1)
 
 ### OCPP Servers
 
