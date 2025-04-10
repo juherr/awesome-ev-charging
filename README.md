@@ -9,6 +9,9 @@
   - [Simulator](#ocpp-simulators)
   - [Libraries](#ocpp-libraries)
   - [Misc](#ocpp-misc)
+- [iso15118](#iso15118)
+  * [Misc](#iso15118-plug--charge)
+  * [Misc](#iso15118-misc)
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
 - [eMI³](#emi)
@@ -68,6 +71,19 @@ Here are some awesome tools for dealing with EV:
 
 * [OCPP Spec](https://ocpp-spec.org/)
 * [OCPP AI](https://ocpp.vercel.app/)
+
+## iso15118
+
+* [Wikipedia](https://en.wikipedia.org/wiki/ISO_15118)
+* [iso](https://www.iso.org/search.html?PROD_isoorg_en%5Bquery%5D=15118&PROD_isoorg_en%5Bmenu%5D%5Bfacet%5D=standard)
+### iso15118 Plug & Charge
+
+* [OPNC](https://github.com/charinev/opnc)
+* [OPCP](https://github.com/hubject/opcp)
+
+### iso15118 Misc
+
+* [sniffer-iso15118vse](https://github.com/endland/sniffer-iso15118vse)
 
 ## OCPI
 
