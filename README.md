@@ -102,4 +102,5 @@ Here are some awesome tools for dealing with EV:
 
 **Not curated list**
 
-[GitHub list](https://github.com/stars/juherr/lists/ev)
+- [GitHub list juherr](https://github.com/stars/juherr/lists/ev)
+- [GitHub list mateogreil](https://github.com/stars/mateogreil/lists/ev-mobility)
