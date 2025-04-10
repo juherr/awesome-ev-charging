@@ -44,6 +44,10 @@ Here are some awesome tools for dealing with EV:
 * [Connectivity between WWCP and OCPP v1.6/v2.0](https://github.com/openchargingcloud/wwcp_ocpp)
 * [Open Charge Point Protocol Node-Red Nodes](https://github.com/argonne-national-laboratory/node-red-contrib-ocpp)
 * [Open e-Mobility Charging Station management backend server](https://github.com/charge-angels/ca-ev-server)
+* [OCPP Scala implementation](https://github.com/ShellRechargeSolutionsEU/ocpp)
+* [OCPP .NET-Core implementation](https://github.com/dallmann-consulting/OCPP.Core)
+* [OCPP C++ implementation](https://github.com/c-jimenez/open-ocpp)
+* [OCPP Rust implementation](https://github.com/codelabsab/rust-ocpp)
 
 ### OCPP Simulators
 
