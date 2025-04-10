@@ -53,7 +53,7 @@ Here are some awesome tools for dealing with EV:
 * [Simple ocpp charger simulator](https://github.com/shellrechargesolutionseu/ocpp-charger)
 * [Scriptable OCPP charge point simulator and test tool](https://github.com/shellrechargesolutionseu/docile-charge-point)
 * [OCPP charger (charging station) simulator](https://github.com/vasyas/charger-simulator)
-* [e-Mobility OCPP-J Charging Stations simulator](https://github.com/sap-labs-france/ev-simulator)
+* [e-Mobility OCPP-J Charging Stations simulator](https://github.com/sap/e-mobility-charging-stations-simulator)
 
 ### OCPP Libraries
 
