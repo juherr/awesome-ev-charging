@@ -14,6 +14,7 @@
   * [Misc](#iso15118-misc)
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
+- [OICP](#oicp)
 - [eMI³](#emi)
 - [CSMS](#csms)
 - [Eichrecht](#eichrecht)
@@ -108,6 +109,13 @@ Here are some awesome tools for dealing with EV:
 * [OCPI Types in TypeScript](https://github.com/gaia-green-tech/ocpi-types)
 * [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
 * [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema)
+
+## OICP
+
+* [Specifications](https://github.com/hubject/oicp)
+  * 2.1 - [pdf](https://cdn.prod.website-files.com/602cf2b08109ccbc93d7f9ed/60534f7deb559e2ab76f08c6_OICP-2.1_Release-14.1_EMP_final.pdf)
+  * [2.2](https://github.com/hubject/oicp/tree/master/OICP-2.2)
+  * [2.3](https://github.com/hubject/oicp/tree/master/OICP-2.3)
 
 ## eMI³
 
