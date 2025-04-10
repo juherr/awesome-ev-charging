@@ -16,6 +16,8 @@
   - [Libraries](#ocpi-libraries)
 - [eMI³](#emi)
 - [CSMS](#csms)
+- [Eichrecht](#eichrecht)
+  - [Misc](#eichrecht-misc)
 
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
@@ -119,6 +121,17 @@ Here are some awesome tools for dealing with EV:
 
 * [maeve-csms](https://github.com/thoughtworks/maeve-csms)
 * [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos))
+
+## Eichrecht
+
+* [Whitepaper](https://openchargealliance.org/wp-content/uploads/2024/03/Presentation_Eichrecht_Plugfest.pdf)
+* [Signed Meter Values in OCPP](https://openchargealliance.org/wp-content/uploads/2025/02/signed_meter_values-v10.pdf)
+* [OCMF](https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format/)
+
+
+### Eichrecht Misc
+
+* [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 
 ---
 
