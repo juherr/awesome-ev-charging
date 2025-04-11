@@ -9,9 +9,16 @@
   - [Simulator](#ocpp-simulators)
   - [Libraries](#ocpp-libraries)
   - [Misc](#ocpp-misc)
+- [iso15118](#iso15118)
+  * [Misc](#iso15118-plug--charge)
+  * [Misc](#iso15118-misc)
 - [OCPI](#ocpi)
   - [Libraries](#ocpi-libraries)
+- [OICP](#oicp)
 - [eMI³](#emi)
+- [CSMS](#csms)
+- [Eichrecht](#eichrecht)
+  - [Misc](#eichrecht-misc)
 
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
@@ -38,6 +45,10 @@ Here are some awesome tools for dealing with EV:
 * [Connectivity between WWCP and OCPP v1.6/v2.0](https://github.com/openchargingcloud/wwcp_ocpp)
 * [Open Charge Point Protocol Node-Red Nodes](https://github.com/argonne-national-laboratory/node-red-contrib-ocpp)
 * [Open e-Mobility Charging Station management backend server](https://github.com/charge-angels/ca-ev-server)
+* [OCPP Scala implementation](https://github.com/ShellRechargeSolutionsEU/ocpp)
+* [OCPP .NET-Core implementation](https://github.com/dallmann-consulting/OCPP.Core)
+* [OCPP C++ implementation](https://github.com/c-jimenez/open-ocpp)
+* [OCPP Rust implementation](https://github.com/codelabsab/rust-ocpp)
 
 ### OCPP Simulators
 
@@ -47,7 +58,7 @@ Here are some awesome tools for dealing with EV:
 * [Simple ocpp charger simulator](https://github.com/shellrechargesolutionseu/ocpp-charger)
 * [Scriptable OCPP charge point simulator and test tool](https://github.com/shellrechargesolutionseu/docile-charge-point)
 * [OCPP charger (charging station) simulator](https://github.com/vasyas/charger-simulator)
-* [e-Mobility OCPP-J Charging Stations simulator](https://github.com/sap-labs-france/ev-simulator)
+* [e-Mobility OCPP-J Charging Stations simulator](https://github.com/sap/e-mobility-charging-stations-simulator)
 
 ### OCPP Libraries
 
@@ -67,7 +78,20 @@ Here are some awesome tools for dealing with EV:
 ### OCPP Misc
 
 * [OCPP Spec](https://ocpp-spec.org/)
-* [OCPP AI](https://ocpp.vercel.app/)
+* [OCPP AI](https://openchargealliance.org/oca-i-chatbot/)
+
+## iso15118
+
+* [Wikipedia](https://en.wikipedia.org/wiki/ISO_15118)
+* [iso](https://www.iso.org/search.html?PROD_isoorg_en%5Bquery%5D=15118&PROD_isoorg_en%5Bmenu%5D%5Bfacet%5D=standard)
+### iso15118 Plug & Charge
+
+* [OPNC](https://github.com/charinev/opnc)
+* [OPCP](https://github.com/hubject/opcp)
+
+### iso15118 Misc
+
+* [sniffer-iso15118vse](https://github.com/endland/sniffer-iso15118vse)
 
 ## OCPI
 
@@ -86,6 +110,13 @@ Here are some awesome tools for dealing with EV:
 * [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
 * [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema)
 
+## OICP
+
+* [Specifications](https://github.com/hubject/oicp)
+  * 2.1 - [pdf](https://cdn.prod.website-files.com/602cf2b08109ccbc93d7f9ed/60534f7deb559e2ab76f08c6_OICP-2.1_Release-14.1_EMP_final.pdf)
+  * [2.2](https://github.com/hubject/oicp/tree/master/OICP-2.2)
+  * [2.3](https://github.com/hubject/oicp/tree/master/OICP-2.3)
+
 ## eMI³
 
 * [Website](http://emi3group.com/) ([Archive.org](https://web.archive.org/web/20230925033629/http://emi3group.com/))
@@ -98,8 +129,25 @@ Here are some awesome tools for dealing with EV:
     * [Part 1 v1.1](emi3/emi3-1.1/eMI3-standard-v1.1-Part-1.pdf)
     * [Terms and definitions v1.4](emi3/emi3-1.1/eMI3-standard-TermsAndDefinitions-v1.4.pdf)
 
+## CSMS
+
+* [maeve-csms](https://github.com/thoughtworks/maeve-csms)
+* [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos))
+
+## Eichrecht
+
+* [Whitepaper](https://openchargealliance.org/wp-content/uploads/2024/03/Presentation_Eichrecht_Plugfest.pdf)
+* [Signed Meter Values in OCPP](https://openchargealliance.org/wp-content/uploads/2025/02/signed_meter_values-v10.pdf)
+* [OCMF](https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format/)
+
+
+### Eichrecht Misc
+
+* [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
+
 ---
 
 **Not curated list**
 
-[GitHub list](https://github.com/stars/juherr/lists/ev)
+- [GitHub list juherr](https://github.com/stars/juherr/lists/ev)
+- [GitHub list mateogreil](https://github.com/stars/mateogreil/lists/ev-mobility)
