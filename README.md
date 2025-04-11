@@ -78,7 +78,7 @@ Here are some awesome tools for dealing with EV:
 ### OCPP Misc
 
 * [OCPP Spec](https://ocpp-spec.org/)
-* [OCPP AI](https://ocpp.vercel.app/)
+* [OCPP AI](https://openchargealliance.org/oca-i-chatbot/)
 
 ## iso15118
 
