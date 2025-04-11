@@ -16,6 +16,7 @@
   - [Libraries](#ocpi-libraries)
 - [OICP](#oicp)
 - [eMI³](#emi)
+- [OIOI](#oioi-discontinued)
 - [CSMS](#csms)
 - [Eichrecht](#eichrecht)
   - [Misc](#eichrecht-misc)
@@ -116,6 +117,10 @@ Here are some awesome tools for dealing with EV:
   * 2.1 - [pdf](https://cdn.prod.website-files.com/602cf2b08109ccbc93d7f9ed/60534f7deb559e2ab76f08c6_OICP-2.1_Release-14.1_EMP_final.pdf)
   * [2.2](https://github.com/hubject/oicp/tree/master/OICP-2.2)
   * [2.3](https://github.com/hubject/oicp/tree/master/OICP-2.3)
+
+## OIOI (discontinued)
+
+* [Latest specifications](https://juherr.dev/oioi-documentation/)
 
 ## eMI³
 
