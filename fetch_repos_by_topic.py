@@ -4,20 +4,17 @@ from time import sleep
 from collections import defaultdict
 
 BASE_URL = "https://api.github.com"
-TOPICS = ["ocpp", "ocpi", "emobility"]
-MAX_PAGES = 2
-STARRED_USERS = ["juherr"]
+MAX_PAGES = 10
+TOPICS = {"ocpp", "ocpi", "emobility"}
+STARRED_USERS = {"juherr"}
+EXCLUDED_REPOS = {"juherr/awesome-ev-charging"}
 
 def get_repo_data(full_name, headers):
-    """Retrieve full repository metadata (including parent if it's a fork)."""
     url = f"{BASE_URL}/repos/{full_name}"
     response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    return None
+    return response.json() if response.status_code == 200 else None
 
 def get_starred_repos_for_user(user, headers):
-    """Get list of full_name strings for repos starred by a specific user."""
     starred = set()
     page = 1
     while True:
@@ -27,24 +24,19 @@ def get_starred_repos_for_user(user, headers):
         if response.status_code != 200:
             print(f"⚠️  Could not fetch starred repos for {user}: {response.status_code}")
             break
-
         items = response.json()
         if not items:
             break
-
         for item in items:
             starred.add(item["full_name"])
-
         if len(items) < 100:
             break
         page += 1
         if not headers:
             sleep(1)
-
     return starred
 
 def get_repos_by_topic(topic, headers):
-    """Fetch repositories for a topic, include forks and their parent info."""
     repos = {}
     for page in range(1, MAX_PAGES + 1):
         print(f"🔍 Fetching topic '{topic}', page {page}...")
@@ -61,13 +53,14 @@ def get_repos_by_topic(topic, headers):
             break
 
         for item in response.json().get("items", []):
+            if item["full_name"] in EXCLUDED_REPOS:
+                continue
+
             repo_info = get_repo_data(item["full_name"], headers)
             if not repo_info:
                 continue
 
-            parent_full_name = None
-            if repo_info.get("fork") and "parent" in repo_info:
-                parent_full_name = repo_info["parent"]["full_name"]
+            parent_full_name = repo_info["parent"]["full_name"] if repo_info.get("fork") and "parent" in repo_info else None
 
             key = item["full_name"]
             if key not in repos:
@@ -83,7 +76,7 @@ def get_repos_by_topic(topic, headers):
                     "parent_full_name": parent_full_name,
                     "starred_by_users": set()
                 }
-            elif topic not in repos[key]["topics"]:
+            else:
                 repos[key]["topics"].append(topic)
 
         if not headers:
@@ -91,24 +84,23 @@ def get_repos_by_topic(topic, headers):
     return repos
 
 def merge_all_sources(topics, headers):
-    """Merge repos from topics and annotate with user-star info."""
     all_repos = {}
-    # Collect starred repos per user
     user_starred = defaultdict(set)
+
     for user in STARRED_USERS:
         print(f"⭐ Fetching starred repos for {user}...")
         user_starred[user] = get_starred_repos_for_user(user, headers)
 
-    # Gather all topic-based repos
     for topic in topics:
         topic_repos = get_repos_by_topic(topic, headers)
         for name, data in topic_repos.items():
+            if name in EXCLUDED_REPOS:
+                continue
             if name not in all_repos:
                 all_repos[name] = data
             else:
                 all_repos[name]["topics"] = list(set(all_repos[name]["topics"] + data["topics"]))
 
-    # Add starred-by information
     for name, repo in all_repos.items():
         for user, starred_set in user_starred.items():
             if name in starred_set:
@@ -117,10 +109,14 @@ def merge_all_sources(topics, headers):
     return all_repos
 
 def print_summary(repos):
-    print(f"\n✅ Found {len(repos)} repositories (with forks and user stars):\n")
+    print(f"\n✅ Found {len(repos)} repositories (filtered, sorted):\n")
 
     def sort_key(repo):
-        return (-len(repo["starred_by_users"]), -repo["stars"])
+        return (
+            -len(repo["starred_by_users"]),       # Most user stars first
+            -len(set(repo["topics"])),            # Most topic coverage
+            -repo["stars"]                        # Then GitHub stars
+        )
 
     for repo in sorted(repos.values(), key=sort_key):
         line = f"- [{repo['full_name']}]({repo['html_url']})"
