@@ -8,6 +8,7 @@ MAX_PAGES = 10
 TOPICS = {"ocpp", "ocpi", "emobility"}
 STARRED_USERS = {"juherr"}
 EXCLUDED_REPOS = {"juherr/awesome-ev-charging"}
+ADDITIONAL_REPOS = {}
 
 def get_repo_data(full_name, headers):
     url = f"{BASE_URL}/repos/{full_name}"
@@ -87,10 +88,12 @@ def merge_all_sources(topics, headers):
     all_repos = {}
     user_starred = defaultdict(set)
 
+    # Get starred repos per user
     for user in STARRED_USERS:
         print(f"⭐ Fetching starred repos for {user}...")
         user_starred[user] = get_starred_repos_for_user(user, headers)
 
+    # From topics
     for topic in topics:
         topic_repos = get_repos_by_topic(topic, headers)
         for name, data in topic_repos.items():
@@ -101,6 +104,30 @@ def merge_all_sources(topics, headers):
             else:
                 all_repos[name]["topics"] = list(set(all_repos[name]["topics"] + data["topics"]))
 
+    # From additional manual list
+    for repo_name in ADDITIONAL_REPOS:
+        if repo_name in EXCLUDED_REPOS:
+            continue
+        if repo_name not in all_repos:
+            print(f"➕ Adding manual repo: {repo_name}")
+            data = get_repo_data(repo_name, headers)
+            if not data:
+                continue
+            parent_full_name = data["parent"]["full_name"] if data.get("fork") and "parent" in data else None
+            all_repos[repo_name] = {
+                "full_name": data["full_name"],
+                "html_url": data["html_url"],
+                "description": data["description"],
+                "language": data["language"],
+                "license": data["license"]["name"] if data["license"] else "N/A",
+                "stars": data["stargazers_count"],
+                "topics": [],  # empty for now
+                "is_fork": data["fork"],
+                "parent_full_name": parent_full_name,
+                "starred_by_users": set()
+            }
+
+    # Annotate starred_by_users
     for name, repo in all_repos.items():
         for user, starred_set in user_starred.items():
             if name in starred_set:
