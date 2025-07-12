@@ -81,6 +81,7 @@ Here are some awesome tools for dealing with EV:
 
 * [OCPP Spec](https://ocpp-spec.org/)
 * [OCPP AI](https://openchargealliance.org/oca-i-chatbot/)
+* [ChargeFlow CLI for debugging and validating OCPP messages](https://github.com/ChargePi/chargeflow)
 
 ## iso15118
 
