@@ -75,6 +75,7 @@ Here are some awesome tools for dealing with EV:
 * [Rust library for ocpp 1.6 and 2.0.1](https://github.com/codelabsab/rust-ocpp)
 * [Java mappings for OCPP](https://github.com/steve-community/ocpp-jaxb)
 * [Kotlin library to perform OCPP operations](https://github.com/izivia/ocpp-toolkit)
+* [OCPP variable manager SDK for Go](https://github.com/ChargePi/ocpp-manager)
 
 ### OCPP Misc
 
@@ -85,6 +86,7 @@ Here are some awesome tools for dealing with EV:
 
 * [Wikipedia](https://en.wikipedia.org/wiki/ISO_15118)
 * [iso](https://www.iso.org/search.html?PROD_isoorg_en%5Bquery%5D=15118&PROD_isoorg_en%5Bmenu%5D%5Bfacet%5D=standard)
+
 ### iso15118 Plug & Charge
 
 * [OPNC](https://github.com/charinev/opnc)
@@ -110,6 +112,7 @@ Here are some awesome tools for dealing with EV:
 * [OCPI Types in TypeScript](https://github.com/gaia-green-tech/ocpi-types)
 * [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
 * [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema)
+* [OCPI SDK in Go](https://github.com/ChargePi/ocpi-sdk-go)
 
 ## OICP
 
@@ -117,6 +120,10 @@ Here are some awesome tools for dealing with EV:
   * 2.1 - [pdf](https://cdn.prod.website-files.com/602cf2b08109ccbc93d7f9ed/60534f7deb559e2ab76f08c6_OICP-2.1_Release-14.1_EMP_final.pdf)
   * [2.2](https://github.com/hubject/oicp/tree/master/OICP-2.2)
   * [2.3](https://github.com/hubject/oicp/tree/master/OICP-2.3)
+
+### OICP Libraries
+
+- [OICP SDK in Go](https://github.com/ChargePi/oicp-sdk-go)
 
 ## OIOI (discontinued)
 
@@ -138,6 +145,7 @@ Here are some awesome tools for dealing with EV:
 
 * [maeve-csms](https://github.com/thoughtworks/maeve-csms)
 * [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos))
+* [EVerest](https://github.com/EVerest/everest-core)
 
 ## Eichrecht
 
@@ -145,10 +153,10 @@ Here are some awesome tools for dealing with EV:
 * [Signed Meter Values in OCPP](https://openchargealliance.org/wp-content/uploads/2025/02/signed_meter_values-v10.pdf)
 * [OCMF](https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format/)
 
-
 ### Eichrecht Misc
 
 * [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
+* [OCMF Go SDK](https://github.com/ChargePi/ocmf-go)
 
 ---
 
