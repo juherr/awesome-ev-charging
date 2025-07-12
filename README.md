@@ -148,6 +148,11 @@ Here are some awesome tools for dealing with EV:
 * [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos))
 * [EVerest](https://github.com/EVerest/everest-core)
 
+## Charging station projects 
+
+* [OpenEVSE](https://github.com/OpenEVSE/open_evse)
+* [ChargePi](https://github.com/ChargePi/ChargePi-go)
+
 ## Eichrecht
 
 * [Whitepaper](https://openchargealliance.org/wp-content/uploads/2024/03/Presentation_Eichrecht_Plugfest.pdf)
