@@ -17,7 +17,7 @@ The **Open Charge Point Protocol (OCPP)** is a communication protocol between el
 * Specifications
   * [1.2 (deprecated)](ocpp/OCPP-1.2)
   * [1.5 (deprecated)](ocpp/OCPP-1.5)
-  * [1.6](ocpp/OCPP-1.6)
+  * [1.6](ocpp/OCPP-1.6-Documentation_2019_12)
   * [1.6 - Security Whitepaper Ed3](ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-3-2)
   * [2.0 (deprecated)](ocpp/OCPP-2.0)
   * [2.0.1](ocpp/OCPP-2.0.1)
@@ -38,11 +38,11 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
 * [Specifications on GitHub](https://github.com/ocpi/ocpi)
   * [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf)
   * [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf)
-  * [2.2-d2](https://github.com/ocpi/ocpi/releases/download/2.2-d2/OCPI-2.2-d2.pdf)
-  * [2.2](https://github.com/ocpi/ocpi/releases/download/2.2/OCPI-2.2.pdf)
+  * [2.2.0-d2](https://github.com/ocpi/ocpi/releases/download/2.2-d2/OCPI-2.2-d2.pdf)
+  * [2.2.0](https://github.com/ocpi/ocpi/releases/download/2.2/OCPI-2.2.pdf)
   * [2.1.1-d2](https://github.com/ocpi/ocpi/releases/download/2.1.1-d2/OCPI_2.1.1-d2.pdf)
   * [2.1.1](https://github.com/ocpi/ocpi/releases/download/2.1.1/OCPI_2.1.1.pdf)
-  * 2.1 - Deprecated, contains some bugs, please use 2.1.1
+  * 2.1.0 - Deprecated, contains some bugs, use 2.1.1 instead
   * [2.0](https://github.com/ocpi/ocpi/files/135934/OCPI_2.0-d2.pdf)
 
 ### OICP (Open InterCharge Protocol)
@@ -50,9 +50,9 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
 The **Open InterCharge Protocol (OICP)** is another protocol for roaming, developed by Hubject.
 
 * [Specifications on GitHub](https://github.com/hubject/oicp)
+  * [2.3](https://github.com/hubject/oicp/tree/master/OICP-2.3)
   * [2.2 CPO](https://github.com/hubject/oicp/releases/download/v2.2/OICP-CPO-2.2.pdf), [2.2 EMP](https://github.com/hubject/oicp/releases/download/v2.2/OICP-EMP-2.2.pdf)
   * [2.1 CPO](https://github.com/hubject/oicp/releases/download/v2.1/OICP-CPO-2.1.pdf), [2.1 EMP](https://github.com/hubject/oicp/releases/download/v2.1/OICP-EMP-2.1.pdf) (retired on 13. April 2023)
-  * [2.3 on GitHub](https://github.com/hubject/oicp/tree/master/OICP-2.3)
 
 ### eMI³ (eMobility ICT Interoperability)
 
@@ -79,13 +79,19 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 
 ### OCPP
 
+### Charging Station Management Systems (CSMS)
+
+* [maeve-csms](https://github.com/thoughtworks/maeve-csms)
+* [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos))
+* [EVerest](https://github.com/EVerest/everest-core)
+* [OCPP CPMS implementation in Java](https://github.com/steve-community/steve)
+* [Open e-Mobility Charging Station management backend server](https://github.com/charge-angels/ca-ev-server)
+
 #### Servers
-* [OCPP server implementation in Java](https://github.com/steve-community/steve)
 * [Home Assistant integration for OCPP EV chargers](https://github.com/lbbrhzn/ocpp)
 * [OCPP server and management UI written in .NET-Core](https://github.com/dallmann-consulting/ocpp.core)
 * [Connectivity between WWCP and OCPP v1.6/v2.0](https://github.com/openchargingcloud/wwcp_ocpp)
 * [Open Charge Point Protocol Node-Red Nodes](https://github.com/argonne-national-laboratory/node-red-contrib-ocpp)
-* [Open e-Mobility Charging Station management backend server](https://github.com/charge-angels/ca-ev-server)
 * [OCPP Scala implementation](https://github.com/ShellRechargeSolutionsEU/ocpp)
 * [OCPP .NET-Core implementation](https://github.com/dallmann-consulting/OCPP.Core)
 * [OCPP C++ implementation](https://github.com/c-jimenez/open-ocpp)
@@ -151,12 +157,6 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [OCMF](https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format/)
 * [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 * [OCMF Go SDK](https://github.com/ChargePi/ocmf-go)
-
-### Charging Station Management Systems (CSMS)
-
-* [maeve-csms](https://github.com/thoughtworks/maeve-csms)
-* [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos))
-* [EVerest](https://github.com/EVerest/everest-core)
 
 ### Charging Station Projects
 
