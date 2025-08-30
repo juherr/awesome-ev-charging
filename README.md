@@ -36,16 +36,22 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
 
 * [EVRoaming Fundation](https://evroaming.org/)
 * [Specifications on GitHub](https://github.com/ocpi/ocpi)
-  * [2.2.1](ocpi/OCPI-2.2.1.pdf)
-  * [2.1.1 (d2)](https://github.com/ocpi/ocpi/releases/download/2.1.1-d2/OCPI_2.1.1-d2.pdf)
+  * [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf)
+  * [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf)
+  * [2.2-d2](https://github.com/ocpi/ocpi/releases/download/2.2-d2/OCPI-2.2-d2.pdf)
+  * [2.2](https://github.com/ocpi/ocpi/releases/download/2.2/OCPI-2.2.pdf)
+  * [2.1.1-d2](https://github.com/ocpi/ocpi/releases/download/2.1.1-d2/OCPI_2.1.1-d2.pdf)
+  * [2.1.1](https://github.com/ocpi/ocpi/releases/download/2.1.1/OCPI_2.1.1.pdf)
+  * 2.1 - Deprecated, contains some bugs, please use 2.1.1
+  * [2.0](https://github.com/ocpi/ocpi/files/135934/OCPI_2.0-d2.pdf)
 
 ### OICP (Open InterCharge Protocol)
 
 The **Open InterCharge Protocol (OICP)** is another protocol for roaming, developed by Hubject.
 
 * [Specifications on GitHub](https://github.com/hubject/oicp)
-  * 2.1 - [CPO](oicp/OICP-CPO-2.1.pdf), [EMP](oicp/OICP-EMP-2.1.pdf)
-  * 2.2 - [CPO](oicp/OICP-CPO-2.2.pdf), [EMP](oicp/OICP-EMP-2.2.pdf)
+  * [2.2 CPO](https://github.com/hubject/oicp/releases/download/v2.2/OICP-CPO-2.2.pdf), [2.2 EMP](https://github.com/hubject/oicp/releases/download/v2.2/OICP-EMP-2.2.pdf)
+  * [2.1 CPO](https://github.com/hubject/oicp/releases/download/v2.1/OICP-CPO-2.1.pdf), [2.1 EMP](https://github.com/hubject/oicp/releases/download/v2.1/OICP-EMP-2.1.pdf) (retired on 13. April 2023)
   * [2.3 on GitHub](https://github.com/hubject/oicp/tree/master/OICP-2.3)
 
 ### eMI³ (eMobility ICT Interoperability)
