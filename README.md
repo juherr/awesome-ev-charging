@@ -34,7 +34,7 @@ The **Open Charge Point Protocol (OCPP)** is a communication protocol between el
 
 The **Open Charge Point Interface (OCPI)** is a protocol for roaming between charging station networks.
 
-* [EVRoaming Fundation](https://evroaming.org/)
+* [EVRoaming Foundation](https://evroaming.org/)
 * [Specifications on GitHub](https://github.com/ocpi/ocpi)
   * [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf)
   * [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf)
