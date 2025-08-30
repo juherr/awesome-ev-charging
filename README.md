@@ -4,6 +4,27 @@
 
 This repository contains a collection of specifications, tools, and resources related to electric vehicle (EV) charging protocols. It aims to be a central point of information for developers and enthusiasts working in the e-mobility space.
 
+## Contents
+
+- [Specifications](#specifications)
+  - [OCPP (Open Charge Point Protocol)](#ocpp-open-charge-point-protocol)
+  - [ISO 15118](#iso-15118)
+  - [OCPI (Open Charge Point Interface)](#ocpi-open-charge-point-interface)
+  - [OICP (Open InterCharge Protocol)](#oicp-open-intercharge-protocol)
+  - [eMI³ (eMobility ICT Interoperability)](#emi-emobility-ict-interoperability)
+  - [Eichrecht](#eichrecht)
+  - [OIOI (discontinued)](#oioi-discontinued)
+- [Tools and Resources](#tools-and-resources)
+  - [OCPP](#ocpp-1)
+  - [ISO 15118](#iso-15118-1)
+  - [OCPI](#ocpi-1)
+  - [OICP](#oicp-1)
+  - [Eichrecht](#eichrecht-1)
+  - [Charging Station Management Systems (CSMS)](#charging-station-management-systems-csms)
+  - [Charging Station Projects](#charging-station-projects)
+- [Contributing](#contributing)
+- [Other Resources](#other-resources)
+
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
 ## Specifications
@@ -17,7 +38,7 @@ The **Open Charge Point Protocol (OCPP)** is a communication protocol between el
 * Specifications
   * [1.2 (deprecated)](ocpp/OCPP-1.2)
   * [1.5 (deprecated)](ocpp/OCPP-1.5)
-  * [1.6](ocpp/OCPP-1.6-Documentation_2019_12)
+  * [1.6](ocpp/OCPP-1.6)
   * [1.6 - Security Whitepaper Ed3](ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-3-2)
   * [2.0 (deprecated)](ocpp/OCPP-2.0)
   * [2.0.1](ocpp/OCPP-2.0.1)
@@ -34,7 +55,7 @@ The **Open Charge Point Protocol (OCPP)** is a communication protocol between el
 
 The **Open Charge Point Interface (OCPI)** is a protocol for roaming between charging station networks.
 
-* [EVRoaming Foundation](https://evroaming.org/)
+* [EVRoaming Fundation](https://evroaming.org/)
 * [Specifications on GitHub](https://github.com/ocpi/ocpi)
   * [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf)
   * [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf)
@@ -75,51 +96,64 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [Whitepaper](https://openchargealliance.org/wp-content/uploads/2024/03/Presentation_Eichrecht_Plugfest.pdf)
 * [Signed Meter Values in OCPP](https://openchargealliance.org/wp-content/uploads/2025/02/signed_meter_values-v10.pdf)
 
+### OIOI (discontinued)
+
+* [Latest specifications](https://juherr.dev/oioi-documentation/)
+
 ## Tools and Resources
 
 ### OCPP
 
-### Charging Station Management Systems (CSMS)
-
-* [maeve-csms](https://github.com/thoughtworks/maeve-csms)
-* [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos))
-* [EVerest](https://github.com/EVerest/everest-core)
-* [OCPP CPMS implementation in Java](https://github.com/steve-community/steve)
-* [Open e-Mobility Charging Station management backend server](https://github.com/charge-angels/ca-ev-server)
-
 #### Servers
-* [Home Assistant integration for OCPP EV chargers](https://github.com/lbbrhzn/ocpp)
-* [OCPP server and management UI written in .NET-Core](https://github.com/dallmann-consulting/ocpp.core)
-* [Connectivity between WWCP and OCPP v1.6/v2.0](https://github.com/openchargingcloud/wwcp_ocpp)
-* [Open Charge Point Protocol Node-Red Nodes](https://github.com/argonne-national-laboratory/node-red-contrib-ocpp)
-* [OCPP Scala implementation](https://github.com/ShellRechargeSolutionsEU/ocpp)
-* [OCPP .NET-Core implementation](https://github.com/dallmann-consulting/OCPP.Core)
-* [OCPP C++ implementation](https://github.com/c-jimenez/open-ocpp)
-* [OCPP Rust implementation](https://github.com/codelabsab/rust-ocpp)
+* [OCPP server implementation in Java](https://github.com/steve-community/steve) (Java, 1.2S, 1.2J, 1.5S, 1.5J, 1.6S, 1.6J)
+* [Home Assistant integration for OCPP EV chargers](https://github.com/lbbrhzn/ocpp) (Python/Home Assistant, 1.6J, 2.0.1, 2.1 experimental)
+* [OCPP server and management UI written in .NET-Core](https://github.com/dallmann-consulting/ocpp.core) (.NET Core, 1.6J, 2.0)
+* [Connectivity between WWCP and OCPP v1.6/v2.0](https://github.com/openchargingcloud/wwcp_ocpp) (C#, 1.5, 1.6, 2.0.1, 2.1)
+* [Open Charge Point Protocol Node-Red Nodes](https://github.com/argonne-national-laboratory/node-red-contrib-ocpp) (Node-RED/Node.js, 1.5S, 1.6S, 1.6J)
+* [OCPP Scala implementation](https://github.com/ShellRechargeSolutionsEU/ocpp) (Scala, 1.5, 1.6, 2.0 partial)
+* [OCPP C++ implementation](https://github.com/c-jimenez/open-ocpp) (C++, 1.6, 2.0.1)
+* [OCPP Rust implementation](https://github.com/codelabsab/rust-ocpp) (Rust, 1.6, 2.0.1, 2.1)
 
 #### Simulators
-* [OCPP-J-CP-Simulator - A really simple OCPP 1.6 cp simulator](https://github.com/kubarskii/OCPP-J-CP-Simulator)
-* [OCPP 1.6 Charge Point Simulator](https://github.com/javaisjavascript/ocpp-1.6-cp-simulator)
-* [OCPP 2.0 Charge Point Simulator - A really simple OCPP 2.0 cp simulator](https://github.com/JavaIsJavaScript/OCPP-2.0-CP-Simulator)
-* [Simple ocpp charger simulator](https://github.com/shellrechargesolutionseu/ocpp-charger)
-* [Scriptable OCPP charge point simulator and test tool](https://github.com/shellrechargesolutionseu/docile-charge-point)
-* [OCPP charger (charging station) simulator](https://github.com/vasyas/charger-simulator)
-* [e-Mobility OCPP-J Charging Stations simulator](https://github.com/sap/e-mobility-charging-stations-simulator)
+* [OCPP-J-CP-Simulator - A really simple OCPP 1.6 cp simulator](https://github.com/kubarskii/OCPP-J-CP-Simulator) (JavaScript, 1.6)
+* [OCPP 1.6 Charge Point Simulator](https://github.com/javaisjavascript/ocpp-1.6-cp-simulator) (Node.js, 1.6)
+* [OCPP 2.0 Charge Point Simulator - A really simple OCPP 2.0 cp simulator](https://github.com/JavaIsJavaScript/OCPP-2.0-CP-Simulator) (JavaScript, 2.0)
+* [Simple ocpp charger simulator](https://github.com/shellrechargesolutionseu/ocpp-charger) (Scala, 1.5/1.6 SOAP & JSON)
+* [Scriptable OCPP charge point simulator and test tool](https://github.com/shellrechargesolutionseu/docile-charge-point) (Scala, 1.5, 1.6, 2.0)
+* [OCPP charger (charging station) simulator](https://github.com/vasyas/charger-simulator) (TypeScript, 1.5 SOAP, 1.6 JSON)
+* [e-Mobility OCPP-J Charging Stations simulator](https://github.com/sap/e-mobility-charging-stations-simulator) (TypeScript/Node.js, 1.6, 2.x)
 
 #### Libraries
-* [Python implementation of the Open Charge Point Protocol](https://github.com/mobilityhouse/ocpp)
-* [Open Charge Point Protocol for Scala](https://github.com/ihomer/scala-ocpp)
-* [Java-OCA-OCPP - A Java client and server library of Open Charge-Point Protocol](https://github.com/chargetimeeu/java-oca-ocpp)
-* [OCPP 1.6 client for ESP32 / ESP8266](https://github.com/matth-x/ArduinoOcpp)
-* [OCPP implementation in Go](https://github.com/lorenzodonini/ocpp-go)
-* [v1.5 and v1.6 OCPP implementation in Golang](https://github.com/voltbras/go-ocpp)
-* [OCPP implemented in Typescript](https://github.com/voltbras/ts-ocpp)
-* [C++ implementation of the OCPP 1.6 protocol](https://github.com/c-jimenez/open-ocpp)
-* [A Node.js client & server implementation of OCPP-J protcol](https://github.com/mikuso/ocpp-rpc)
-* [Rust library for ocpp 1.6 and 2.0.1](https://github.com/codelabsab/rust-ocpp)
-* [Java mappings for OCPP](https://github.com/steve-community/ocpp-jaxb)
-* [Kotlin library to perform OCPP operations](https://github.com/izivia/ocpp-toolkit)
-* [OCPP variable manager SDK for Go](https://github.com/ChargePi/ocpp-manager)
+**C++**
+* [C++ implementation of the OCPP 1.6 protocol](https://github.com/c-jimenez/open-ocpp) (1.6, 2.0.1)
+* [OCPP 1.6 client for ESP32 / ESP8266](https://github.com/matth-x/ArduinoOcpp) (1.6, 2.0.1)
+
+**Go**
+* [OCPP implementation in Go](https://github.com/lorenzodonini/ocpp-go) (1.6, 2.0.1)
+* [v1.5 and v1.6 OCPP implementation in Golang](https://github.com/voltbras/go-ocpp) (1.5 SOAP, 1.6 JSON)
+* [OCPP variable manager SDK for Go](https://github.com/ChargePi/ocpp-manager) (1.6, 2.0.1 planned)
+
+**Java**
+* [Java-OCA-OCPP - A Java client and server library of Open Charge-Point Protocol](https://github.com/chargetimeeu/java-oca-ocpp) (1.6 SOAP & JSON, 2.0.1)
+* [Java mappings for OCPP](https://github.com/steve-community/ocpp-jaxb) (1.2, 1.5, 1.6 SOAP & JSON, 2.0.1 JSON)
+
+**Kotlin**
+* [Kotlin library to perform OCPP operations](https://github.com/izivia/ocpp-toolkit) (1.5, 1.6, 2.0.1)
+
+**Node.js**
+* [A Node.js client & server implementation of OCPP-J protcol](https://github.com/mikuso/ocpp-rpc) (1.6, 2.0.1, 2.1)
+
+**Python**
+* [Python implementation of the Open Charge Point Protocol](https://github.com/mobilityhouse/ocpp) (1.6, 2.0.1)
+
+**Rust**
+* [Rust library for ocpp 1.6 and 2.0.1](https://github.com/codelabsab/rust-ocpp) (1.6, 2.0.1, 2.1)
+
+**Scala**
+* [Open Charge Point Protocol for Scala](https://github.com/ihomer/scala-ocpp) (1.5, 1.6, 2.0 partial)
+
+**TypeScript**
+* [OCPP implemented in Typescript](https://github.com/voltbras/ts-ocpp) (1.5 SOAP, 1.6 JSON)
 
 #### Misc
 * [OCPP Spec](https://ocpp-spec.org/)
@@ -138,14 +172,25 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 ### OCPI
 
 #### Libraries
-* [Endpoints in Scala](https://github.com/ShellRechargeSolutionsEU/ocpi-endpoints)
-* [Client in PHP](https://github.com/ChargeMap/ocpi-protocol)
-* [Server in Python](https://github.com/TECHS-Technological-Solutions/ocpi)
-* [Endpoints and client in Kotlin](https://github.com/IZIVIA/ocpi-toolkit)
-* [OCPI Types in TypeScript](https://github.com/gaia-green-tech/ocpi-types)
-* [Endpoints in Python](https://github.com/NOWUM/pyOCPI)
-* [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema)
-* [OCPI SDK in Go](https://github.com/ChargePi/ocpi-sdk-go)
+**Go**
+* [OCPI SDK in Go](https://github.com/ChargePi/ocpi-sdk-go) (2.2.1)
+
+**Kotlin**
+* [Endpoints and client in Kotlin](https://github.com/IZIVIA/ocpi-toolkit) (2.2.1)
+
+**PHP**
+* [Client in PHP](https://github.com/ChargeMap/ocpi-protocol) (2.1.1, archived)
+
+**Python**
+* [Server in Python](https://github.com/TECHS-Technological-Solutions/ocpi) (2.2.1)
+* [Endpoints in Python](https://github.com/NOWUM/pyOCPI) (2.2)
+
+**Scala**
+* [Endpoints in Scala](https://github.com/ShellRechargeSolutionsEU/ocpi-endpoints) (2.1.1, archived)
+
+**TypeScript**
+* [OCPI Types in TypeScript](https://github.com/gaia-green-tech/ocpi-types) (2.1.1, 2.2)
+* [OCPI Schema](https://github.com/solidstudiosh/ocpi-schema) (2.1.1, 2.2, 2.2.1)
 
 ### OICP
 
@@ -158,14 +203,16 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 * [OCMF Go SDK](https://github.com/ChargePi/ocmf-go)
 
+### Charging Station Management Systems (CSMS)
+
+* [maeve-csms](https://github.com/thoughtworks/maeve-csms) (Go, OCPP 1.6j, 2.0.1, ISO 15118)
+* [citrineos](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos)) (TypeScript/Node.js, OCPP 2.0.1)
+* [EVerest](https://github.com/EVerest/everest-core) (C++/Python/Rust, OCPP 1.6, 2.0.1, ISO 15118)
+
 ### Charging Station Projects
 
-* [OpenEVSE](https://github.com/OpenEVSE/open_evse)
-* [ChargePi](https://github.com/ChargePi/ChargePi-go)
-
-### Other
-
-* [OIOI (discontinued)](https://juherr.dev/oioi-documentation/)
+* [OpenEVSE](https://github.com/OpenEVSE/open_evse) (C++, 1.6)
+* [ChargePi](https://github.com/ChargePi/ChargePi-go) (Go, 1.6, 2.0.1 planned)
 
 ---
 
