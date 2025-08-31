@@ -122,6 +122,8 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [EVerest/libocpp](https://github.com/EVerest/libocpp) (C++; OCPP 1.6, OCPP 2.0.1, OCPP 2.1; C++ implementation of the Open Charge Point Protocol)
 * [markrpo/ocppws](https://github.com/markrpo/ocppws) (C++; ocpp over websockets for C++)
 * [matth-x/MicroOcpp](https://github.com/matth-x/MicroOcpp) (C++; OCPP 1.6, OCPP 2.0.1; OCPP 1.6 / 2.0.1 client for microcontrollers)
+* [matth-x/ArduinoOcpp](https://github.com/matth-x/ArduinoOcpp) (C++; 1.6, 2.0.1)
+
 
 **CSS**
 * [agruenb/micro-ocpp-dashboard](https://github.com/agruenb/micro-ocpp-dashboard) (CSS; A web-based dashboard for the MicroOcpp library)
@@ -133,14 +135,25 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [CoderSergiy/ocpp16-go](https://github.com/CoderSergiy/ocpp16-go) (Go; OCPP 1.6; Open Charge Point Protocol version 1.6 implementation in Go)
 * [aliml92/ocpp](https://github.com/aliml92/ocpp) (Go; OCPP 1.6, OCPP 2.0.1; Golang implementation of the Open Charge Point Protocol (OCPP).)
 * [gregszalay/ocpp-messages-go](https://github.com/gregszalay/ocpp-messages-go) (Go; OCPP 2.0.1; Go data types for OCPP 2.0.1 Messages)
+* [lorenzodonini/ocpp-go](https://github.com/lorenzodonini/ocpp-go) (Go; 1.6, 2.0.1)
+* [voltbras/go-ocpp](https://github.com/voltbras/go-ocpp) (Go; 1.5 SOAP, 1.6 JSON)
+* [ChargePi/ocpp-manager](https://github.com/ChargePi/ocpp-manager) (1.6, 2.0.1 planned)
+
+**Python**
+* [mobilityhouse/ocpp](https://github.com/mobilityhouse/ocpp) (1.6, 2.0.1)
+
 
 **Java**
 * [ChargeTimeEU/Java-OCA-OCPP](https://github.com/ChargeTimeEU/Java-OCA-OCPP) (Java; Open source client and server library of Open Charge-Point Protocol (OCPP) defined by openchargealliance.org (OCA))
 * [Llocer/llocer_ocpp](https://github.com/Llocer/llocer_ocpp) (Java; OCPP 2.0.1; openEV OCPP 2.0.1 implementation)
+* [steve-community/ocpp-jaxb](https://github.com/steve-community/ocpp-jaxb) (Java; 1.2, 1.5, 1.6 SOAP & JSON, 2.0.1 JSON)
+
 
 **JavaScript**
 * [ZeMorfe/nodejs_ocpp16_client](https://github.com/ZeMorfe/nodejs_ocpp16_client) (JavaScript; OCPP 1.1.1, OCPP 1.6; NodeJS client for OCPP 1.6 JSON)
 * [aymen-mouelhi/ocpp-js](https://github.com/aymen-mouelhi/ocpp-js) (JavaScript; Open Charge Point Protocol Implementation in JS)
+* [mikuso/ocpp-rpc](https://github.com/mikuso/ocpp-rpc) (1.6, 2.0.1, 2.1)
+
 
 **Kotlin**
 * [IZIVIA/ocpp-toolkit](https://github.com/IZIVIA/ocpp-toolkit) (Kotlin; OCPP 1.5, OCPP 1.6, OCPP 2.0; a Kotlin library to perform OCPP operations)
@@ -154,11 +167,15 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [flowionab/ocpp-client](https://github.com/flowionab/ocpp-client) (Rust; OCPP 1.6; ocpp-client is a Rust library that provides an OCPP (Open Charge Point Protocol) client implementation.)
 * [tommymalmqvist/rust-ocpp](https://github.com/tommymalmqvist/rust-ocpp) (Rust; OCPP 1.6, OCPP 2.0.1, OCPP 2.1; Libraries for ocpp 1.6, 2.0.1 and 2.1)
 * [tux-evse/ocpp-binding-rs](https://github.com/tux-evse/ocpp-binding-rs) (Rust; OCPP Rust afb binding)
+* [codelabsab/rust-ocpp](https://github.com/codelabsab/rust-ocpp) (1.6, 2.0.1, 2.1)
+
 
 **Scala**
 * [IHomer/scala-ocpp](https://github.com/IHomer/scala-ocpp) (Scala; OCPP 1.5, OCPP 1.6, OCPP 2.0; The open-source Scala OCPP implementation originally developed by NewMotion)
-
+* [ShellRechargeSolutionsEU/ocpp](https://github.com/ShellRechargeSolutionsEU/ocpp) (Scala, 1.5, 1.6, 2.0 partial)
+  
 **TypeScript**
+* [voltbras/ts-ocpp](https://github.com/voltbras/ts-ocpp) (1.5 SOAP, 1.6 JSON)
 * [ChilG/zod-ocpp](https://github.com/ChilG/zod-ocpp) (TypeScript; OCPP 1.6)
 * [connected-hil/ocpp-tools](https://github.com/connected-hil/ocpp-tools) (TypeScript; OCPP 1.6, OCPP 2.0.1; Open charge point protocol tools. Schema validation, Typescript types, and other helpful utilities.)
 * [extrawest/ocpp-node-ts](https://github.com/extrawest/ocpp-node-ts) (TypeScript; OCPP 1.6, OCPP 2.0.1; Typescript package implementing the JSON version of the Open Charge Point Protocol (OCPP). Currently OCPP 2.0.1 is supported.)
@@ -167,7 +184,11 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [node-ocpp/core](https://github.com/node-ocpp/core) (TypeScript; OCPP 1.2, OCPP 2.0.1)
 * [rohittiwari-dev/ocpp-ts-rpc](https://github.com/rohittiwari-dev/ocpp-ts-rpc) (TypeScript; Revolutionize OCPP-J RPC-over-websocket in Node.js with TypeScript! Inspired by @mikuso/ocpp-rpc, this project offers a seamless, efficient solution for implementing compliant systems, ensuring rob…)
 * [sepych/ocpp-ts](https://github.com/sepych/ocpp-ts) (TypeScript; OCPP 1.6; Typescript package implementing the JSON version of the Open Charge Point Protocol (OCPP).)
+  
 #### Misc
+* [OCPP Spec](https://ocpp-spec.org/)
+* [OCPP AI](https://openchargealliance.org/oca-i-chatbot/)
+* [ChargeFlow CLI for debugging and validating OCPP messages](https://github.com/ChargePi/chargeflow)
 * [AviranAbady/tzi-OCTT](https://github.com/AviranAbady/tzi-OCTT) (Python; Open OCTT implementation)
 * [OpenChargingCloud/WWCP_OCPP](https://github.com/OpenChargingCloud/WWCP_OCPP) (C#; OCPP 1.5, OCPP 1.6, OCPP 2.0.1, OCPP 2.1; Connectivity between the World Wide Charging Protocol (WWCP) and the Open Charge Point Protocol (OCPP v1.6/v2.0.1/v2.1).)
 * [OrangeTux/rauts](https://github.com/OrangeTux/rauts) (Rust; A Rust project exploring a routing mechanis for OCPP (Open Charge Point Protocol).)
@@ -224,6 +245,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 **TypeScript**
 * [gregszalay/ocpp-csms-frontend](https://github.com/gregszalay/ocpp-csms-frontend) (TypeScript)
 * [siddharth1729/ocpp](https://github.com/siddharth1729/ocpp) (TypeScript; OCPP 2.6; OCPP server in Typescript)
+
 #### Simulators
 **C++**
 * [c-jimenez/open-ocpp-simu](https://github.com/c-jimenez/open-ocpp-simu) (C++; Charge Point simulator based on Open OCPP library)
@@ -243,8 +265,10 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 
 **JavaScript**
 * [JavaIsJavaScript/OCPP-1.6-CP-Simulator](https://github.com/JavaIsJavaScript/OCPP-1.6-CP-Simulator) (JavaScript; OCPP 1.6; Hacky but it works for testing purposes)
+* [JavaIsJavaScript/OCPP-2.0-CP-Simulator](https://github.com/JavaIsJavaScript/OCPP-2.0-CP-Simulator) (JavaScript, 2.0)
 * [Lamerat/OCPP-Charge-Point-Simulator](https://github.com/Lamerat/OCPP-Charge-Point-Simulator) (JavaScript; Charge Point Simulator OCPP JSON-1.6)
 * [wirelane/ocpp-client-simulator](https://github.com/wirelane/ocpp-client-simulator) (JavaScript; OCPP 1.6; A simple Node.JS script simulating a OCPP 1.6 compatible Charging Station)
+* [kubarskii/OCPP-J-CP-Simulator](https://github.com/kubarskii/OCPP-J-CP-Simulator) (JavaScript, 1.6)
 
 **Kotlin**
 * [monta-app/ocpp-emulator](https://github.com/monta-app/ocpp-emulator) (Kotlin; OCPP 1.6, OCPP 2.0.1; An open source OCPP Charge Point Emulator built using Kotlin Multiplatform and Jetbrains Compose)
@@ -273,8 +297,15 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [oglimmer/scriptable-ocpp-chargepoint-simulator](https://github.com/oglimmer/scriptable-ocpp-chargepoint-simulator) (TypeScript; OCPP 1.6; A Scriptable OCPP Chargepoint Simulator for OCPP 1.6J. Client and Server.)
 * [shiv3/ocpp-cp-simulator](https://github.com/shiv3/ocpp-cp-simulator) (TypeScript; OCPP 1.6; simple standalone ocpp charging port simulator written in reactjs, its based on OCPP 1.6J protocol)
 * [solidstudiosh/ocpp-virtual-charge-point](https://github.com/solidstudiosh/ocpp-virtual-charge-point) (TypeScript; OCPP 1.6, OCPP 2.0.1; Simple, configurable, terminal-based OCPP Charging Station simulator written in Node.js with Schema validation)
+* [vasyas/charger-simulator](https://github.com/vasyas/charger-simulator) (TypeScript, 1.5 SOAP, 1.6 JSON)
+
 ### ISO 15118
+#### Plug & Charge
+* [OPNC](https://github.com/charinev/opnc)
+* [OPCP](https://github.com/hubject/opcp)
+  
 #### Misc
+* [sniffer-iso15118vse](https://github.com/endland/sniffer-iso15118vse)
 * [EVerest/libiso15118](https://github.com/EVerest/libiso15118) (C++; ISO 15118 library suite)
 * [EcoG-io/iso15118](https://github.com/EcoG-io/iso15118) (Python; Implementation of the ISO 15118 Communication Protocol (-2, -20, -8))
 * [FlUxIuS/V2GInjector](https://github.com/FlUxIuS/V2GInjector) (Python; V2GInjector - Tool to intrude a V2G PowerLine network, but also to capture and inject V2G packets)
@@ -298,6 +329,25 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 
 **Python**
 * [extrawest/extrawest_ocpi](https://github.com/extrawest/extrawest_ocpi) (Python; Python implementation of Open Charge Point Interface (OCPI) protocol based on fastapi.)
+* [TECHS-Technological-Solutions/ocpi](https://github.com/TECHS-Technological-Solutions/ocpi) (2.2.1)
+* [NOWUM/pyOCPI](https://github.com/NOWUM/pyOCPI) (2.2)
+  
+**Go**
+* [ChargePi/ocpi-sdk-go](https://github.com/ChargePi/ocpi-sdk-go) (2.2.1)
+
+**Kotlin**
+* [izivia/ocpi-toolkit](https://github.com/IZIVIA/ocpi-toolkit) (2.2.1)
+
+**Scala**
+* [ShellRechargeSolutionsEU/ocpi-endpoints](https://github.com/ShellRechargeSolutionsEU/ocpi-endpoints) (2.1.1, archived)
+
+**PHP**
+* [ChargeMap/ocpi-protocol](https://github.com/ChargeMap/ocpi-protocol) (2.1.1, archived)
+
+**TypeScript**
+* [gaia-green-tech/ocpi-types](https://github.com/gaia-green-tech/ocpi-types) (2.1.1, 2.2)
+* [solidstudiosh/ocpi-schema](https://github.com/solidstudiosh/ocpi-schema) (2.1.1, 2.2, 2.2.1)
+
 #### Misc
 * [CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1](https://github.com/CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1) (OCPI 2.1.1; IOP – OCPI 2.1.1 Interface - GIREVE Implementation Guide)
 * [CNX-GIREVE/GIREVE_Tech_OCPI_V2.2.1](https://github.com/CNX-GIREVE/GIREVE_Tech_OCPI_V2.2.1) (OCPI 2.2.1; IOP – OCPI 2.2.1 Interface - GIREVE Implementation Guide)
@@ -314,10 +364,22 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [tandemdrive/ocpi-tariffs](https://github.com/tandemdrive/ocpi-tariffs) (OCPI tariff calculations)
 
 ### OICP
+#### Libraries
+
+**Go**
+* [ChargePi/oicp-sdk-go](https://github.com/ChargePi/oicp-sdk-go) (Go, 2.2, 2.3)
 
 ### Eichrecht
+* [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 
 ### Charging Station Management Systems (CSMS)
+* [steve-community/steve](https://github.com/steve-community/steve) (Java, 1.2S, 1.2J, 1.5S, 1.5J, 1.6S, 1.6J)
+* [juherr/evolve](https://github.com/juherr/evolve) (Java, 1.2S, 1.2J, 1.5S, 1.5J, 1.6S, 1.6J)
+* [thoughtworks/maeve-csms](https://github.com/thoughtworks/maeve-csms) (Go, OCPP 1.6j, 2.0.1, ISO 15118)
+* [citrineos/citrineos-core](https://github.com/citrineos/citrineos-core) ([doc](https://github.com/citrineos/citrineos)) (TypeScript/Node.js, OCPP 2.0.1)
+* [EVerest/everest-core](https://github.com/EVerest/everest-core) (C++/Python/Rust, OCPP 1.6, 2.0.1, ISO 15118)
+* [lbbrhzn/ocpp](https://github.com/lbbrhzn/ocpp) (Python/Home Assistant, 1.6J, 2.0.1, 2.1 experimental)
+* [argonne-national-laboratory/node-red-contrib-ocpp](https://github.com/argonne-national-laboratory/node-red-contrib-ocpp) (Node-RED/Node.js, 1.5S, 1.6S, 1.6J)
 * [Anmirazik/Open-Source-Ev-charger-End-to-End-Solution](https://github.com/Anmirazik/Open-Source-Ev-charger-End-to-End-Solution) (Step by step on how to integrate Everest based EV Charger with CSMS such as Steve , Open E-Mobility , CitrineOS and many more Open Source CSMS. Please change to different branches for different CSMS)
 
 ### Charging Station Projects
@@ -338,11 +400,13 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [thepaulcooper/victron-openEVSE](https://github.com/thepaulcooper/victron-openEVSE) (openEVSE controller for Victron PV / battery system)
 
 ### OCMF
-* [Namoshek/OpenChargeMeteringFormat](https://github.com/Namoshek/OpenChargeMeteringFormat) (C#; A .NET implementation of the Open Charge Metering Format (OCMF).)
 * [SAFE-eV/OCMF-Open-Charge-Metering-Format](https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format)
+* [SAFE-eV/transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
+* [ChargePi/ocmf-go](https://github.com/ChargePi/ocmf-go) (Go; OCMF Go SDK)
+* [Namoshek/OpenChargeMeteringFormat](https://github.com/Namoshek/OpenChargeMeteringFormat) (C#; A .NET implementation of the Open Charge Metering Format (OCMF).)
 * [road-labs/ocmf-js](https://github.com/road-labs/ocmf-js) (TypeScript; TypeScript/JavaScript implementation of the Open Charge Metering Format (OCMF) specification)
 
-### OCN
+### OCN (Open Charging Network)
 * [energywebfoundation/ocn-bridge](https://github.com/energywebfoundation/ocn-bridge) (TypeScript; Open Charging Network Bridge (mirror of https://bitbucket.org/shareandcharge/ocn-bridge).)
 * [energywebfoundation/ocn-node](https://github.com/energywebfoundation/ocn-node) (Kotlin; OCPI 2.2)
 * [energywebfoundation/ocn-registry](https://github.com/energywebfoundation/ocn-registry) (Java; OCPI 2.2)
