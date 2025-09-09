@@ -163,6 +163,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [DeltaVetal26/SteVe-OCPP-HTTP-Client](https://github.com/DeltaVetal26/SteVe-OCPP-HTTP-Client) (PHP; Basic HTTP client for sending commands remotely to the Steve OCPP control panel)
 
 **Rust**
+* [hlsxx/ocpp-charge-point-simulator](https://github.com/hlsxx/ocpp-charge-point-simulator) (Rust; OCPP 1.6, OCPP 2.0, OCPP 2.1; Rust OCPP Charge Point Simulator)
 * [choudhary463/rocpp](https://github.com/choudhary463/rocpp) (Rust; OCPP 1.6, OCPP 2.0; Rust OCPP Implementation)
 * [flowionab/ocpp-client](https://github.com/flowionab/ocpp-client) (Rust; OCPP 1.6; ocpp-client is a Rust library that provides an OCPP (Open Charge Point Protocol) client implementation.)
 * [tommymalmqvist/rust-ocpp](https://github.com/tommymalmqvist/rust-ocpp) (Rust; OCPP 1.6, OCPP 2.0.1, OCPP 2.1; Libraries for ocpp 1.6, 2.0.1 and 2.1)
