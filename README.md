@@ -130,6 +130,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 
 **Erlang**
 * [wfvining/ocpp](https://github.com/wfvining/ocpp) (Erlang; Open Charge Point Protocol)
+* [vampirebyte/rabbitmq-web-ocpp](https://github.com/vampirebyte/rabbitmq-web-ocpp) (Erlang; Open source native RabbitMQ OCPP plugin / gateway)
 
 **Go**
 * [CoderSergiy/ocpp16-go](https://github.com/CoderSergiy/ocpp16-go) (Go; OCPP 1.6; Open Charge Point Protocol version 1.6 implementation in Go)
