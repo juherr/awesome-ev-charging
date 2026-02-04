@@ -349,6 +349,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 **TypeScript**
 * [gaia-green-tech/ocpi-types](https://github.com/gaia-green-tech/ocpi-types) (2.1.1, 2.2)
 * [solidstudiosh/ocpi-schema](https://github.com/solidstudiosh/ocpi-schema) (2.1.1, 2.2, 2.2.1)
+* [andreibesleaga/ocpi-sdk](https://github.com/andreibesleaga/ocpi-sdk) (TypeScript; OCPI SDK & MCP Server)
 
 #### Misc
 * [CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1](https://github.com/CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1) (OCPI 2.1.1; IOP – OCPI 2.1.1 Interface - GIREVE Implementation Guide)
@@ -375,10 +376,9 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 
 ### Misc Roaming Protocols
-#### Libraries / MCP
-* [andreibesleaga/ocpi-sdk](https://github.com/andreibesleaga/ocpi-sdk) (TypeScript/JavaScript; OCPI SDK & MCP Server)
-* [andreibesleaga/oscp-sdk](https://github.com/andreibesleaga/oscp-sdk) (TypeScript/JavaScript; OSCP SDK & MCP Server)
-* [andreibesleaga/ohcp-mcp](https://github.com/andreibesleaga/ohcp-mcp) (TypeScript/JavaScript; OHCP MCP Server)
+#### Libraries, MCP
+* [andreibesleaga/oscp-sdk](https://github.com/andreibesleaga/oscp-sdk) (TypeScript; OSCP SDK & MCP Server)
+* [andreibesleaga/ohcp-mcp](https://github.com/andreibesleaga/ohcp-mcp) (TypeScript; OHCP MCP Server)
 
 ### Charging Station Management Systems (CSMS)
 * [steve-community/steve](https://github.com/steve-community/steve) (Java, 1.2S, 1.2J, 1.5S, 1.5J, 1.6S, 1.6J)
@@ -415,9 +415,9 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [road-labs/ocmf-js](https://github.com/road-labs/ocmf-js) (TypeScript; TypeScript/JavaScript implementation of the Open Charge Metering Format (OCMF) specification)
 
 ### OCM - Open Charge Map
-* [openchargemap](http://github.com/openchargemap) Official OCM GitHub
+* [openchargemap](https://github.com/openchargemap) Official OCM GitHub
 * [openchargemap/ocm-data](https://github.com/openchargemap/ocm-data) (Shell; Snapshots of current Open Charge Map data [deprecated])
-* [andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk) (JavaScript/TypeScript; OCM SDK & MCP Server)
+* [andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk) (TypeScript; OCM SDK & MCP Server)
 * [andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php) (PHP; OCM SDK)
 
 ### OCN (Open Charging Network)
