@@ -28,8 +28,13 @@ This repository contains a collection of specifications, tools, and resources re
   - [OICP](#oicp-1)
     - [Libraries](#libraries-2)
   - [Eichrecht](#eichrecht-1)
+  - [Misc Protocols Libraries](#misc-protocols-libraries)
   - [Charging Station Management Systems (CSMS)](#charging-station-management-systems-csms)
   - [Charging Station Projects](#charging-station-projects)
+  - [OCMF](#ocmf)
+  - [OCM - Open Charge Map](#ocm---open-charge-map)
+  - [OCN (Open Charging Network)](#ocn-open-charging-network)
+  - [Battery](#battery)
 - [Contributing](#contributing)
 - [Other Resources](#other-resources)
 
@@ -349,7 +354,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 **TypeScript**
 * [gaia-green-tech/ocpi-types](https://github.com/gaia-green-tech/ocpi-types) (2.1.1, 2.2)
 * [solidstudiosh/ocpi-schema](https://github.com/solidstudiosh/ocpi-schema) (2.1.1, 2.2, 2.2.1)
-* [andreibesleaga/ocpi-sdk](https://github.com/andreibesleaga/ocpi-sdk) (OCPI SDK & MCP Server)
+* [andreibesleaga/ocpi-sdk](https://github.com/andreibesleaga/ocpi-sdk) (2.2.1; OCPI SDK & MCP Server)
 
 #### Misc
 * [CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1](https://github.com/CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1) (OCPI 2.1.1; IOP – OCPI 2.1.1 Interface - GIREVE Implementation Guide)
@@ -375,7 +380,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 ### Eichrecht
 * [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 
-### Misc Roaming Protocols Libraries
+### Misc Protocols Libraries
 * [andreibesleaga/oscp-sdk](https://github.com/andreibesleaga/oscp-sdk) (TypeScript; OSCP SDK & MCP Server)
 * [andreibesleaga/ohcp-mcp](https://github.com/andreibesleaga/ohcp-mcp) (TypeScript; OHCP MCP Server)
 
