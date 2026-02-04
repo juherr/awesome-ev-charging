@@ -349,7 +349,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 **TypeScript**
 * [gaia-green-tech/ocpi-types](https://github.com/gaia-green-tech/ocpi-types) (2.1.1, 2.2)
 * [solidstudiosh/ocpi-schema](https://github.com/solidstudiosh/ocpi-schema) (2.1.1, 2.2, 2.2.1)
-* [andreibesleaga/ocpi-sdk](https://github.com/andreibesleaga/ocpi-sdk) (TypeScript; OCPI SDK & MCP Server)
+* [andreibesleaga/ocpi-sdk](https://github.com/andreibesleaga/ocpi-sdk) (OCPI SDK & MCP Server)
 
 #### Misc
 * [CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1](https://github.com/CNX-GIREVE/GIREVE_Tech_OCPI_V2.1.1) (OCPI 2.1.1; IOP – OCPI 2.1.1 Interface - GIREVE Implementation Guide)
