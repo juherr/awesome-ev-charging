@@ -415,7 +415,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [road-labs/ocmf-js](https://github.com/road-labs/ocmf-js) (TypeScript; TypeScript/JavaScript implementation of the Open Charge Metering Format (OCMF) specification)
 
 ### OCM - Open Charge Map
-* [openchargemap](https://github.com/openchargemap) Official OCM GitHub
+* [openchargemap](https://github.com/openchargemap) (Official OCM GitHub)
 * [openchargemap/ocm-data](https://github.com/openchargemap/ocm-data) (Shell; Snapshots of current Open Charge Map data [deprecated])
 * [andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk) (TypeScript; OCM SDK & MCP Server)
 * [andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php) (PHP; OCM SDK)
