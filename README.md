@@ -374,6 +374,12 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 ### Eichrecht
 * [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 
+### Misc Roaming Protocols
+#### Libraries / MCP
+* [andreibesleaga/ocpi-sdk](https://github.com/andreibesleaga/ocpi-sdk) (TypeScript/JavaScript; OCPI SDK & MCP Server)
+* [andreibesleaga/oscp-sdk](https://github.com/andreibesleaga/oscp-sdk) (TypeScript/JavaScript; OSCP SDK & MCP Server)
+* [andreibesleaga/ohcp-mcp](https://github.com/andreibesleaga/ohcp-mcp) (TypeScript/JavaScript; OHCP MCP Server)
+
 ### Charging Station Management Systems (CSMS)
 * [steve-community/steve](https://github.com/steve-community/steve) (Java, 1.2S, 1.2J, 1.5S, 1.5J, 1.6S, 1.6J)
 * [juherr/evolve](https://github.com/juherr/evolve) (Java, 1.2S, 1.2J, 1.5S, 1.5J, 1.6S, 1.6J)
@@ -408,6 +414,12 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [Namoshek/OpenChargeMeteringFormat](https://github.com/Namoshek/OpenChargeMeteringFormat) (C#; A .NET implementation of the Open Charge Metering Format (OCMF).)
 * [road-labs/ocmf-js](https://github.com/road-labs/ocmf-js) (TypeScript; TypeScript/JavaScript implementation of the Open Charge Metering Format (OCMF) specification)
 
+### OCM - Open Charge Map
+* [openchargemap](http://github.com/openchargemap) Official OCM GitHub
+* [openchargemap/ocm-data](https://github.com/openchargemap/ocm-data) (Shell; Snapshots of current Open Charge Map data [deprecated])
+* [andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk) (JavaScript/TypeScript; OCM SDK & MCP Server)
+* [andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php) (PHP; OCM SDK)
+
 ### OCN (Open Charging Network)
 * [energywebfoundation/ocn-bridge](https://github.com/energywebfoundation/ocn-bridge) (TypeScript; Open Charging Network Bridge (mirror of https://bitbucket.org/shareandcharge/ocn-bridge).)
 * [energywebfoundation/ocn-node](https://github.com/energywebfoundation/ocn-node) (Kotlin; OCPI 2.2)
@@ -415,7 +427,6 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [energywebfoundation/ocn-tools](https://github.com/energywebfoundation/ocn-tools) (TypeScript; Contains common tools for aiding development of applications built on top of the OCN. It is possible to run a mock E-Mobility Service Provider (MSP) or Charge Point Operator (CPO) with these tools.)
 * [olisystems/ocn-node-v2](https://github.com/olisystems/ocn-node-v2) (Kotlin; OCPI 2.2; Second version of Ocn Node orginally forked from https://github.com/energywebfoundation/ocn-node)
 * [olisystems/ocn-registry-v2.0](https://github.com/olisystems/ocn-registry-v2.0) (TypeScript; The second version of OCN smart contracts and CLI based on https://github.com/energywebfoundation/ocn-registry)
-* [openchargemap/ocm-data](https://github.com/openchargemap/ocm-data) (Shell; Snapshots of current Open Charge Map data [deprecated])
 
 ### Battery
 * [dalathegreat/Battery-Emulator](https://github.com/dalathegreat/Battery-Emulator) (C++; This revolutionary software enables EV battery packs to be easily reused for stationary storage in combination with solar inverters)
