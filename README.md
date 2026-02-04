@@ -375,8 +375,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 ### Eichrecht
 * [transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)
 
-### Misc Roaming Protocols
-#### Libraries, MCP
+### Misc Roaming Protocols Libraries
 * [andreibesleaga/oscp-sdk](https://github.com/andreibesleaga/oscp-sdk) (TypeScript; OSCP SDK & MCP Server)
 * [andreibesleaga/ohcp-mcp](https://github.com/andreibesleaga/ohcp-mcp) (TypeScript; OHCP MCP Server)
 
