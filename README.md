@@ -42,6 +42,8 @@ This repository contains a collection of specifications, tools, and resources re
 
 ## Specifications
 
+- [OCPP Multiple Connectors per EVSE](https://www.openchargealliance.org/uploads/files/ocpp_1_x_multiple_connectors_per_evse.pdf) - Official OCA document on handling multiple connectors per EVSE in OCPP 1.x
+
 ### OCPP (Open Charge Point Protocol)
 
 The **Open Charge Point Protocol (OCPP)** is a communication protocol between electric vehicle charging stations and a central management system.
