@@ -54,7 +54,7 @@ The **Open Charge Point Protocol (OCPP)** is a communication protocol between el
   * [2.0 (deprecated)](ocpp/OCPP-2.0) (2018)
   * [1.6](ocpp/OCPP-1.6-Documentation_2019_12) (2015)
   * [1.6 - Security Whitepaper Ed3](ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-3-2)
-  * [1.x - Multiple Connectors per EVSE](https://openchargealliance.org/wp-content/uploads/2024/03/ocpp_1_x_multiple_connectors_per_evse-1.pdf)
+  * [1.x - Multiple Connectors per EVSE](ocpp/Whitepapers/ocpp_1_x_multiple_connectors_per_evse.pdf)
   * [1.5 (deprecated)](ocpp/OCPP-1.5) (2012)
   * [1.2 (deprecated)](ocpp/OCPP-1.2) (2010)
 
