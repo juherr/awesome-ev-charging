@@ -424,6 +424,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [openchargemap/ocm-data](https://github.com/openchargemap/ocm-data) (Shell; Snapshots of current Open Charge Map data [deprecated])
 * [andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk) (TypeScript; OCM SDK & MCP Server)
 * [andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php) (PHP; OCM SDK)
+* [GeiserX/pumperly](https://github.com/GeiserX/pumperly) (TypeScript; Open-source, self-hostable EV charging station finder integrating Open Charge Map data across 36 countries, with fuel price comparison and route planning)
 
 ### OCN (Open Charging Network)
 * [energywebfoundation/ocn-bridge](https://github.com/energywebfoundation/ocn-bridge) (TypeScript; Open Charging Network Bridge (mirror of https://bitbucket.org/shareandcharge/ocn-bridge).)
