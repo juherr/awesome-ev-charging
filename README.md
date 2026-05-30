@@ -437,7 +437,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 ### Battery
 * [dalathegreat/Battery-Emulator](https://github.com/dalathegreat/Battery-Emulator) (C++; This revolutionary software enables EV battery packs to be easily reused for stationary storage in combination with solar inverters)
 * [mnh-jansson/open-battery-information](https://github.com/mnh-jansson/open-battery-information) (C++)
-* [EV-QA-Framework](https://github.com/remontsuri/EV-QA-Framework) - ML-powered QA framework for EV battery systems with anomaly detection (Isolation Forest), SOH prediction (LSTM), CAN bus emulation, and real-time dashboard.
+* [remontsuri/EV-QA-Framework](https://github.com/remontsuri/EV-QA-Framework) - ML-powered QA framework for EV battery systems with anomaly detection (Isolation Forest), SOH prediction (LSTM), CAN bus emulation, and real-time dashboard.
 
 ## Contributing
 
