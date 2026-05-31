@@ -265,6 +265,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 **HTML**
 * [JavaIsJavaScript/OCPP-J-CP-Simulator](https://github.com/JavaIsJavaScript/OCPP-J-CP-Simulator) (HTML; OCPP 1.6; A really simple cp simulator, that works with OCPP 1.6)
 * [victormunoz/OCPP-1.6-Chargebox-Simulator](https://github.com/victormunoz/OCPP-1.6-Chargebox-Simulator) (HTML; OCPP 1.6; A simple chargepoint simulator, working with OCPP 1.6)
+* [Virtual Charger](https://virtualcharger.app) (HTML; OCPP 1.6J, OCPP 2.0.1, OCPP 2.1; Browser-only virtual EVSE for testing CSMS/CPMS integrations — no install or backend. SmartCharging, multi-EVSE power sharing, dual-head DC topology, offline session & OCPP log replay.)
 
 **Java**
 * [evbox/station-simulator](https://github.com/evbox/station-simulator) (Java)
