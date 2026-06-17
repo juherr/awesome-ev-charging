@@ -343,6 +343,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
   
 **Go**
 * [ChargePi/ocpi-sdk-go](https://github.com/ChargePi/ocpi-sdk-go) (2.2.1)
+* [shiv3/gocpi](https://github.com/shiv3/gocpi) (2.2.1,2.3.0)
 
 **Kotlin**
 * [izivia/ocpi-toolkit](https://github.com/IZIVIA/ocpi-toolkit) (2.2.1)
