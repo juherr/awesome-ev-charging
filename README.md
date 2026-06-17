@@ -145,6 +145,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 * [lorenzodonini/ocpp-go](https://github.com/lorenzodonini/ocpp-go) (Go; 1.6, 2.0.1)
 * [voltbras/go-ocpp](https://github.com/voltbras/go-ocpp) (Go; 1.5 SOAP, 1.6 JSON)
 * [ChargePi/ocpp-manager](https://github.com/ChargePi/ocpp-manager) (1.6, 2.0.1 planned)
+* [shiv3/gocpp](https://github.com/shiv3/gocpp) (1.6, 2.0.1, 2.1)
 
 **Python**
 * [mobilityhouse/ocpp](https://github.com/mobilityhouse/ocpp) (1.6, 2.0.1)
@@ -343,6 +344,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
   
 **Go**
 * [ChargePi/ocpi-sdk-go](https://github.com/ChargePi/ocpi-sdk-go) (2.2.1)
+* [shiv3/gocpi](https://github.com/shiv3/gocpi) (2.2.1,2.3.0)
 
 **Kotlin**
 * [izivia/ocpi-toolkit](https://github.com/IZIVIA/ocpi-toolkit) (2.2.1)
