@@ -499,11 +499,16 @@
 
 - **[energywebfoundation/ocn-registry](https://github.com/energywebfoundation/ocn-registry)** — ⭐ 4 — 💤 2022-06-13 — Ethereum smart contracts for registering Open Charging Network nodes, OCPI parties, and service permissions. _(Java)_
 
+#### Charging station map
+
+- **[andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk)** — ⭐ 4 — 🚫 deprecated — A deprecated TypeScript/JavaScript SDK and MCP server for accessing the Open Charge Map REST API for EV charging location data. _(TypeScript)_
+- **[andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php)** — ⭐ 0 — 🚫 deprecated — A deprecated unofficial PHP SDK for accessing the Open Charge Map REST API from PHP applications. _(PHP)_
+
 #### Dashboard frontend
 
 - **[sap-labs-france/ev-dashboard](https://github.com/sap-labs-france/ev-dashboard)** — ⭐ 78 — 💤 2024-08-02 — Angular dashboard frontend for Open e-Mobility that connects to ev-server to monitor, manage, remotely control, bill, and analyze EV charging stations and related assets. _(TypeScript)_
 
-#### Energy Management
+#### Energy management
 
 - **[thepaulcooper/victron-openEVSE](https://github.com/thepaulcooper/victron-openEVSE)** — ⭐ 6 — 💤 2021-10-23 — Node-RED controller that adjusts an openEVSE charger via MQTT to use available Victron PV and battery power for EV charging.
 
@@ -519,15 +524,7 @@
 
 - **[andreibesleaga/oscp-sdk](https://github.com/andreibesleaga/oscp-sdk)** — ⭐ 2 — 🚫 deprecated — Deprecated TypeScript/JavaScript SDK for the OSCP REST API with an MCP server for AI-assisted API exploration and integration. _(TypeScript)_
 
-#### Open Charge Map SDK
-
-- **[andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk)** — ⭐ 4 — 🚫 deprecated — A deprecated TypeScript/JavaScript SDK and MCP server for accessing the Open Charge Map REST API for EV charging location data. _(TypeScript)_
-
-#### Open Charge Map library
-
-- **[andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php)** — ⭐ 0 — 🚫 deprecated — A deprecated unofficial PHP SDK for accessing the Open Charge Map REST API from PHP applications. _(PHP)_
-
-#### Security testing
+#### Security
 
 - **[FlUxIuS/V2GInjector](https://github.com/FlUxIuS/V2GInjector)** — ⭐ 141 — 💤 2024-12-19 — V2GInjector is a tool for capturing, decoding, and injecting V2G packets on HomePlug Green PHY powerline networks used between electric vehicles and charging stations. _(Python)_
 
@@ -865,12 +862,9 @@
 
 - **[geraldkombo/albedo](https://github.com/geraldkombo/albedo)** — ⭐ 1 — ALBEDO is a Laravel carbon accounting platform that calculates, aggregates, and prepares registration documents for emission reductions from Kenyan e-mobility fleets. _(PHP)_
 
-#### Charging management platform
-
-- **[yuncitys/YunCharging](https://github.com/yuncitys/YunCharging)** — ⭐ 69 — 💤 2024-10-17 — YunCharge is an open-source EV and e-bike charging operation and billing platform with user apps, payments, charger management, and support for YunKuaiChong and OCPP protocols. _(Java)_
-
 #### Charging management system
 
+- **[yuncitys/YunCharging](https://github.com/yuncitys/YunCharging)** — ⭐ 69 — 💤 2024-10-17 — YunCharge is an open-source EV and e-bike charging operation and billing platform with user apps, payments, charger management, and support for YunKuaiChong and OCPP protocols. _(Java)_
 - **[chethanbhatbs/CMS](https://github.com/chethanbhatbs/CMS)** — ⭐ 0 — 💤 2026-06-15 — EV Charging CMS is a React and Python charge point operator management system with an OCPP 1.6 WebSocket server, live session monitoring, remote charging operations, CRM, RBAC administration, and a virtual charger for testing. _(JavaScript)_
 
 #### Charging station placement optimization
@@ -889,7 +883,7 @@
 
 - **[SAP-samples/e-mobility-driver-app](https://github.com/SAP-samples/e-mobility-driver-app)** — ⭐ 1 — A SAP CAP and Vue.js PWA for EV drivers to manage charging access badges, start and stop charging sessions, find stations, and view charging history, costs, and consumption. _(TypeScript)_
 
-#### EEBUS Library
+#### EEBUS Libraries
 
 - **[arasgungore/EEBUS-in-Java](https://github.com/arasgungore/EEBUS-in-Java)** — ⭐ 10 — 💤 2024-01-30 — Java library implementing the EEBUS protocol suite, including SHIP and SPINE, for communication and discovery between smart home and energy management devices. _(Java)_
 
@@ -917,7 +911,7 @@
 
 - **[rescoot/sunshine](https://github.com/rescoot/sunshine)** — ⭐ 4 — 💤 2025-06-03 — Sunshine is a Rails web application and API for monitoring telemetry, tracking trips, managing users, and remotely controlling unu/librescoot electric scooters via MQTT. _(HTML)_
 
-#### Energy management system
+#### Energy management
 
 - **[Michito49/evcc](https://github.com/Michito49/evcc)** — ⭐ 0 — evcc is a local charge controller and home energy management system for managing EV charging with integrations for chargers, vehicles, solar, batteries, inverters, and energy tariffs. _(HTML)_
 
@@ -929,22 +923,12 @@
 
 - **[bodems/controller-firmware](https://github.com/bodems/controller-firmware)** — ⭐ 0 — 💤 2018-06-24 — OpenWRT-based firmware build files for Raspberry Pi EV charging controllers following IEC 61851. _(JavaScript)_
 
-#### Home Assistant Integration
-
-- **[BashTheDog/elecq-ocpp-ha](https://github.com/BashTheDog/elecq-ocpp-ha)** — ⭐ 3 — Home Assistant custom integration that runs a local OCPP 2.0.1 WebSocket server to monitor and control Elecq AU101/AE106 EV chargers. _(Python)_
-
-#### Home Assistant automation
-
-- **[flashg1/evSolarCharger](https://github.com/flashg1/evSolarCharger)** — ⭐ 17 — Home Assistant blueprint that controls EV charging via OCPP and EV-specific APIs to use surplus solar energy, schedules, and weather forecasts.
-
 #### Home Assistant integration
 
+- **[flashg1/evSolarCharger](https://github.com/flashg1/evSolarCharger)** — ⭐ 17 — Home Assistant blueprint that controls EV charging via OCPP and EV-specific APIs to use surplus solar energy, schedules, and weather forecasts.
 - **[weemaba999/homeassistant-tap-community](https://github.com/weemaba999/homeassistant-tap-community)** — ⭐ 5 — Unofficial Home Assistant integration for monitoring and controlling Tap Electric-managed EV chargers via Tap APIs, with optional live session metadata and remote start/stop support. _(Python)_
+- **[BashTheDog/elecq-ocpp-ha](https://github.com/BashTheDog/elecq-ocpp-ha)** — ⭐ 3 — Home Assistant custom integration that runs a local OCPP 2.0.1 WebSocket server to monitor and control Elecq AU101/AE106 EV chargers. _(Python)_
 - **[JustChr/HAgoe_steve](https://github.com/JustChr/HAgoe_steve)** — ⭐ 0 — A Home Assistant HACS integration that controls a go-e wallbox via its local API for PV-, price-, and battery-aware smart charging while using SteVe as the OCPP backend for authorization and metering. _(Python)_
-
-#### Home automation adapter
-
-- **[iobroker-community-adapters/ioBroker.kecontact](https://github.com/iobroker-community-adapters/ioBroker.kecontact)** — ⭐ 10 — ioBroker.kecontact is an ioBroker adapter that monitors and controls KEBA KeContact P20/P30 and BMW i wallboxes over their UDP protocol, including PV-surplus charging automation. _(JavaScript)_
 
 #### Home energy management
 
@@ -954,12 +938,9 @@
 
 - **[arcnode-io/ems-industrial-gateway](https://github.com/arcnode-io/ems-industrial-gateway)** — ⭐ 0 — Rust gateway that reads industrial grid/device protocols, derives measurements, and publishes unit-scoped samples and dispatch acknowledgements over MQTT. _(Rust)_
 
-#### Mobile App
-
-- **[sap-labs-france/ev-mobile](https://github.com/sap-labs-france/ev-mobile)** — ⭐ 66 — 💤 2023-10-16 — A React Native Android and iOS mobile app for managing electric vehicle charging stations through the Open e-Mobility backend. _(TypeScript)_
-
 #### Mobile app
 
+- **[sap-labs-france/ev-mobile](https://github.com/sap-labs-france/ev-mobile)** — ⭐ 66 — 💤 2023-10-16 — A React Native Android and iOS mobile app for managing electric vehicle charging stations through the Open e-Mobility backend. _(TypeScript)_
 - **[powerly-ev/open-ev-charge-ios-app](https://github.com/powerly-ev/open-ev-charge-ios-app)** — ⭐ 2 — Powerly Open EV Charge is an open-source white-label iOS app for locating EV charging stations, signing in users, and viewing station availability, connector type, and pricing. _(Swift)_
 
 #### Modbus Simulator
@@ -983,30 +964,25 @@
 
 - **[fneum/ev_chargingcoordination2017](https://github.com/fneum/ev_chargingcoordination2017)** — ⭐ 123 — 💤 2018-06-09 — A research codebase for robust cost-minimizing day-ahead scheduling of residential electric vehicle charging in low-voltage distribution networks under uncertainty. _(Python)_
 
-#### PKI/Security
-
-- **[OpenChargingCloud/PKI](https://github.com/OpenChargingCloud/PKI)** — ⭐ 3 — 💤 2023-08-02 — Open Charging Cloud PKI defines a graph-based, multi-signature quorum public key infrastructure for trust and secure communications in e-mobility.
-- **[OpenChargingCommunity/PKI](https://github.com/OpenChargingCommunity/PKI)** — ⭐ 0 — 💤 2023-08-02 — Open Charging Community PKI defines a graph-based, quorum-controlled public key infrastructure for securing trust relationships in e-mobility.
-
 #### Protocol suite core library
 
 - **[OpenChargingCloud/WWCP_Core](https://github.com/OpenChargingCloud/WWCP_Core)** — ⭐ 7 — WWCP Core defines core concepts, entities, data structures, and virtual EV charging network components for the World Wide Charging Protocol Suite. _(C#)_
 
-#### Security / Intrusion Detection
+#### Security
 
+- **[OpenChargingCloud/PKI](https://github.com/OpenChargingCloud/PKI)** — ⭐ 3 — 💤 2023-08-02 — Open Charging Cloud PKI defines a graph-based, multi-signature quorum public key infrastructure for trust and secure communications in e-mobility.
+- **[OpenChargingCommunity/PKI](https://github.com/OpenChargingCommunity/PKI)** — ⭐ 0 — 💤 2023-08-02 — Open Charging Community PKI defines a graph-based, quorum-controlled public key infrastructure for securing trust relationships in e-mobility.
 - **[crakashp2905-hub/CyberDeception-EVSE](https://github.com/crakashp2905-hub/CyberDeception-EVSE)** — ⭐ 0 — Research project providing an OCPP-based EVSE honeypot and machine-learning notebooks for detecting attacks on EV charging infrastructure. _(Jupyter Notebook)_
-
-#### Smart Home Integration
-
-- **[JFK344/ioBroker.evsewifi](https://github.com/JFK344/ioBroker.evsewifi)** — ⭐ 1 — 💤 2023-11-18 — ioBroker.evsewifi is an ioBroker adapter that reads and controls data for EVSE-WiFi/SimpleEVSE wallboxes in smart home setups. _(JavaScript)_
 
 #### Smart energy and DER management
 
 - **[api-evangelist/enel-x](https://github.com/api-evangelist/enel-x)** — ⭐ 0 — Profile of Enel X smart energy and DER management services, including Enel X Way EV charging products and VPP Connect API integration for aggregating DERs into virtual power plants.
 
-#### Smart home adapter
+#### Smart home integration
 
+- **[iobroker-community-adapters/ioBroker.kecontact](https://github.com/iobroker-community-adapters/ioBroker.kecontact)** — ⭐ 10 — ioBroker.kecontact is an ioBroker adapter that monitors and controls KEBA KeContact P20/P30 and BMW i wallboxes over their UDP protocol, including PV-surplus charging automation. _(JavaScript)_
 - **[pottio/ioBroker.warp](https://github.com/pottio/ioBroker.warp)** — ⭐ 2 — 💤 2023-04-01 — ioBroker.warp is an ioBroker adapter that monitors and controls Tinkerforge WARP wallbox chargers over WebSockets. _(TypeScript)_
+- **[JFK344/ioBroker.evsewifi](https://github.com/JFK344/ioBroker.evsewifi)** — ⭐ 1 — 💤 2023-11-18 — ioBroker.evsewifi is an ioBroker adapter that reads and controls data for EVSE-WiFi/SimpleEVSE wallboxes in smart home setups. _(JavaScript)_
 
 #### Smart-energy simulation
 

@@ -73,11 +73,37 @@ CATEGORY_TREE = {
 # near-synonyms into 1-repo buckets. This map folds variants into a canonical
 # label at render time (matched case-insensitively, so pure case dups also merge).
 SUBCATEGORY_ALIASES = {
+  # Charging station map / finder / Open Charge Map client libraries
   "charging station finder": "Charging station map",
   "charging station map": "Charging station map",
+  "open charge map library": "Charging station map",
+  "open charge map sdk": "Charging station map",
+  # EVSE firmware
   "evse controller": "EVSE firmware",
   "evse firmware": "EVSE firmware",
   "evse gateway firmware": "EVSE firmware",
+  # Home Assistant
+  "home assistant integration": "Home Assistant integration",
+  "home assistant automation": "Home Assistant integration",
+  # EEBUS libraries
+  "eebus libraries": "EEBUS Libraries",
+  "eebus library": "EEBUS Libraries",
+  # Mobile app (also folds the "Mobile App" case variant)
+  "mobile app": "Mobile app",
+  # Charging management
+  "charging management platform": "Charging management system",
+  "charging management system": "Charging management system",
+  # Energy management (generic only; home/DER kept separate)
+  "energy management": "Energy management",
+  "energy management system": "Energy management",
+  # Security
+  "security / intrusion detection": "Security",
+  "security testing": "Security",
+  "pki/security": "Security",
+  # Smart home
+  "smart home integration": "Smart home integration",
+  "smart home adapter": "Smart home integration",
+  "home automation adapter": "Smart home integration",
 }
 
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
