@@ -44,9 +44,12 @@ EXCLUDED_REPOS = {
   "hubject/oicp",  # the OICP spec itself — already linked in the Specifications section
 }
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
-# `render --readme` replaces the text between these HTML comment markers in README.
+# `render --readme` replaces the text between these HTML comment markers in README:
+# one pair wraps the project listing, one pair wraps its entries in the Contents.
 README_MARKER_BEGIN = "<!-- BEGIN GENERATED PROJECTS -->"
 README_MARKER_END = "<!-- END GENERATED PROJECTS -->"
+README_TOC_BEGIN = "<!-- BEGIN GENERATED TOC -->"
+README_TOC_END = "<!-- END GENERATED TOC -->"
 # Durable, committed LLM cache: full_name -> pushed_at, categories, description.
 # Keeps expensive classifications across clones so only new/updated repos re-hit
 # the model. The bulky repos*.csv stay git-ignored.
@@ -766,21 +769,68 @@ def _render_grouped(rows, lines):
         lines.append("")
 
 
-def _inject_between_markers(path, body):
-  """Replace the text between README_MARKER_BEGIN/END in `path` with `body`."""
+def _inject_between_markers(path, body, begin_marker, end_marker):
+  """Replace the text between `begin_marker` and `end_marker` in `path` with `body`."""
   with open(path, "r", encoding="utf-8") as f:
     content = f.read()
-  begin = content.find(README_MARKER_BEGIN)
-  end = content.find(README_MARKER_END)
+  begin = content.find(begin_marker)
+  end = content.find(end_marker)
   if begin == -1 or end == -1 or end < begin:
     raise SystemExit(
       f"Injection markers not found (or out of order) in {path}: "
-      f"expected {README_MARKER_BEGIN!r} … {README_MARKER_END!r}")
-  updated = (content[:begin + len(README_MARKER_BEGIN)]
-             + "\n\n" + body + "\n"
+      f"expected {begin_marker!r} … {end_marker!r}")
+  updated = (content[:begin + len(begin_marker)]
+             + "\n" + body + "\n"
              + content[end:])
   with open(path, "w", encoding="utf-8") as f:
     f.write(updated)
+
+
+_SLUG_STRIP = re.compile(r"[^\w\s-]")
+
+
+def _slugify(text, seen):
+  """GitHub-style heading anchor, deduplicated in document order via `seen`."""
+  slug = _SLUG_STRIP.sub("", text.strip().lower()).replace(" ", "-")
+  n = seen.get(slug, 0)
+  seen[slug] = n + 1
+  return slug if n == 0 else f"{slug}-{n}"
+
+
+def _headings_before(path, marker):
+  """ATX heading texts appearing before `marker` in `path`, in document order.
+
+  Used to seed the slugger so anchors into the generated block account for the
+  hand-authored headings (Contents, Specifications) that precede it.
+  """
+  try:
+    with open(path, "r", encoding="utf-8") as f:
+      content = f.read()
+  except FileNotFoundError:
+    return []
+  head = content.split(marker, 1)[0]
+  return re.findall(r"^#{1,6}\s+(.*?)\s*$", head, re.M)
+
+
+def _build_toc(selection_lines, readme_path):
+  """Generate the Contents sub-tree (level-1 protocols, level-2 subcategories)
+  for the Selection block, with anchors matching GitHub's slugger."""
+  seen = {}
+  for heading in _headings_before(readme_path, README_MARKER_BEGIN):
+    _slugify(heading, seen)  # seed with the headings that precede the block
+  # `## Tools and Resources` is among the seeded headings, so link it directly
+  # rather than re-slugging it (which would return a deduped `-1` anchor).
+  toc = ["- [Tools and Resources](#tools-and-resources)"]
+  for line in selection_lines:
+    if line.startswith("### "):
+      title = line[4:].strip()
+      toc.append(f"  - [{title}](#{_slugify(title, seen)})")
+    elif line.startswith("#### "):
+      title = line[5:].strip()
+      toc.append(f"    - [{title}](#{_slugify(title, seen)})")
+    elif line.startswith("##### "):
+      _slugify(line[6:].strip(), seen)  # consume to keep dedup aligned (not linked)
+  return "\n".join(toc)
 
 
 def render(args):
@@ -799,15 +849,18 @@ def render(args):
 
   # No H1/`## Selection` wrapper: the body slots straight under an existing
   # heading (e.g. README's `## Tools and Resources`), so the top level is the
-  # per-protocol `### main` emitted by _render_grouped.
-  lines = []
+  # per-protocol `### main` emitted by _render_grouped. The Selection block is
+  # built on its own first so its headings can seed the generated Contents TOC.
+  sel_lines = []
+  _render_grouped(selection, sel_lines)
+
+  lines = list(sel_lines)
 
   def collapsed(title, group):
     lines.extend(["<details>", f"<summary>{title}</summary>", ""])
     _render_grouped(group, lines)
     lines.extend(["</details>", ""])
 
-  _render_grouped(selection, lines)
   collapsed(f"Dormant ({len(dormant)})", dormant)
   collapsed(f"To refine ({len(refine)} projects)", refine)
 
@@ -816,7 +869,9 @@ def render(args):
   with open(args.out, "w", encoding="utf-8") as f:
     f.write(body)
   if getattr(args, "readme", None):
-    _inject_between_markers(args.readme, body)
+    _inject_between_markers(args.readme, body, README_MARKER_BEGIN, README_MARKER_END)
+    _inject_between_markers(args.readme, _build_toc(sel_lines, args.readme),
+                            README_TOC_BEGIN, README_TOC_END)
 
   promoted = sum(1 for r in selection if _promotion(r) == 2)
   print(f"✅ Wrote {args.out}" + (f" + injected into {args.readme}" if getattr(args, "readme", None) else ""))

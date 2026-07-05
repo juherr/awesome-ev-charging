@@ -15,9 +15,41 @@ This repository contains a collection of specifications, tools, and resources re
   - [eMI³ (eMobility ICT Interoperability)](#emi-emobility-ict-interoperability)
   - [Eichrecht](#eichrecht)
   - [OIOI (discontinued)](#oioi-discontinued)
-- [Tools and Resources](#tools-and-resources) — _generated; grouped by protocol, with collapsible Dormant / To refine blocks_
+<!-- BEGIN GENERATED TOC -->
+- [Tools and Resources](#tools-and-resources)
+  - [OCPP](#ocpp)
+    - [Server](#server)
+    - [Simulator](#simulator)
+    - [Libraries](#libraries)
+    - [Misc](#misc)
+    - [Charge Point](#charge-point)
+    - [Proxy](#proxy)
+    - [Test Suite](#test-suite)
+  - [OCPI](#ocpi)
+    - [Server](#server-1)
+    - [Simulator](#simulator-1)
+    - [Libraries](#libraries-1)
+    - [Misc](#misc-1)
+  - [iso15118](#iso15118)
+    - [Plug&Charge](#plugcharge)
+    - [Misc](#misc-2)
+  - [Eichrecht](#eichrecht-1)
+    - [Misc](#misc-3)
+    - [OCMF Libraries](#ocmf-libraries)
+  - [Other](#other)
+    - [API Documentation](#api-documentation)
+    - [Battery](#battery)
+    - [CCS charge controller](#ccs-charge-controller)
+    - [Data Analytics](#data-analytics)
+    - [EEBUS Libraries](#eebus-libraries)
+    - [EVSE firmware](#evse-firmware)
+    - [Ensto simulator](#ensto-simulator)
+    - [Identifier directory](#identifier-directory)
+    - [Maps & route planning](#maps--route-planning)
+    - [OpenADR simulator](#openadr-simulator)
+  - [Uncategorized](#uncategorized)
+<!-- END GENERATED TOC -->
 - [Contributing](#contributing)
-- [Other Resources](#other-resources)
 
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
 
@@ -121,7 +153,6 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 ## Tools and Resources
 
 <!-- BEGIN GENERATED PROJECTS -->
-
 ### OCPP
 
 #### Server
@@ -1143,12 +1174,3 @@ Contributions are welcome! If you know of a tool or resource that is not on the 
 The easiest way to contribute is to [open an issue](https://github.com/juherr/awesome-ev/issues/new/choose) using the "Add a link" template.
 
 You can also submit a pull request. Please try to follow the existing format.
-
----
-
-## Other Resources
-
-Here are some other lists of EV-related projects:
-
-- [GitHub list juherr](https://github.com/stars/juherr/lists/ev)
-- [GitHub list mateogreil](https://github.com/stars/mateogreil/lists/ev-mobility)
