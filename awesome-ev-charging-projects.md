@@ -1,9 +1,3 @@
-# 🚗 Awesome EV Charging
-
-_Generated from `repos.enriched.csv`._
-
-## Selection (106)
-
 ### OCPP
 
 #### Server
@@ -283,7 +277,8 @@ _Generated from `repos.enriched.csv`._
 
 - **[juherr/evolve](https://github.com/juherr/evolve)** — ⭐ 4 — EVolve - OCPP server implementation in Java _(Java)_
 
-## Dormant (107)
+<details>
+<summary>Dormant (107)</summary>
 
 ### OCPP
 
@@ -549,6 +544,8 @@ _Generated from `repos.enriched.csv`._
 
 - **[gregszalay/ocpp-charging-station](https://github.com/gregszalay/ocpp-charging-station)** — ⭐ 22 — 💤 2022-10-14 — Charging Station firmware for electric vehicles - OCPP 2.0.1. compliant _(C++)_
 - **[ChargeMap/autocharge-vehicles-database](https://github.com/ChargeMap/autocharge-vehicles-database)** — ⭐ 1 — 💤 2025-02-18
+
+</details>
 
 <details>
 <summary>To refine (175 projects)</summary>

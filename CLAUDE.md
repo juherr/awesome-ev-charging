@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A curated "awesome list" of EV charging protocol tools (OCPP, OCPI, ISO 15118, OICP, eMI³, OIOI, Eichrecht). Two distinct deliverables live here:
 
-1. **`README.md`** — the hand-curated, published awesome list. This is the human-authored source of truth and is edited manually.
-2. **`pipeline.py`** — a discovery pipeline that scrapes GitHub for candidate repositories, scores them with quality signals, and AI-classifies them. Its CSV/Markdown outputs are a *research aid* used to find repos worth adding to `README.md`, not a replacement for it.
+1. **`README.md`** — the published awesome list. Its prose (intro, Contents, `## Specifications`, `## Contributing`, `## Other Resources`) is hand-authored. The **project listing** inside `## Tools and Resources` — everything between the `<!-- BEGIN GENERATED PROJECTS -->` / `<!-- END GENERATED PROJECTS -->` markers — is **generated** by `python pipeline.py render --readme README.md` and injected in place. Do **not** hand-edit between those markers; edits are overwritten on the next render. To change what appears there, adjust the pipeline inputs (see Conventions) and re-render.
+2. **`pipeline.py`** — a discovery pipeline that scrapes GitHub for candidate repositories, scores them with quality signals, AI-classifies them, and renders the curated project listing that populates the README's `## Tools and Resources` block.
 
 The repo also vendors protocol specifications as static assets under `ocpp/`, `ocpi/`, `oicp/`, `emi3/`, `eichrecht/` (PDFs, WSDLs, OCPP JSON schemas) — these are reference material linked from `README.md`.
 
@@ -28,6 +28,10 @@ mise run enrich       # Stage 2 -> repos.enriched.csv
 python pipeline.py ingest --token <GITHUB_PAT> --out repos.csv
 python pipeline.py enrich --in repos.csv --out repos.enriched.csv --token <GITHUB_PAT>
 #   enrich flags: --limit N / --skip-forks / --skip-dormant / --refresh
+
+python pipeline.py render --readme README.md   # Stage 3 -> injects the project
+#   listing between the markers in README.md (also writes the standalone
+#   awesome-ev-charging-projects.md). Omit --readme to only write the standalone file.
 ```
 
 `--token` is optional; without it GitHub's unauthenticated rate limits apply.
@@ -55,10 +59,14 @@ Curation knobs are module-level constants: `TOPICS`, `STARRED_USERS`, `EXCLUDED_
 
 ## Conventions
 
-- `repos.csv` / `repos.enriched.csv` are generated artifacts (git-ignored). `cache_github/` is regenerable API-response cache — treat it as disposable, not source.
-- When adding a repo to the published list, edit `README.md` directly; the pipeline output is only an input to that decision.
+- `repos.csv` / `repos.enriched.csv` are generated artifacts (git-ignored). `classifications.csv` is the durable, committed LLM cache. `cache_github/` is regenerable API-response cache — treat it as disposable, not source.
+- The `## Tools and Resources` project listing is **generated** — do not edit it by hand in `README.md`. To add/remove a repo there: it must be discoverable by `ingest` (via a `TOPICS` match, a `STARRED_USERS` star, an `ADDITIONAL_REPOS` entry, or a GitHub link elsewhere in `README.md`), then `enrich` and `render --readme README.md`. Use `EXCLUDED_REPOS` to drop one. Promotion tier (which decides `Selection` vs `To refine`) is driven by the star lists / contributor status, not by manual ordering.
 
-## Follow-ups / not yet implemented
+## Stage 3 — `render` → README + standalone
 
-- `render` now exists (`python pipeline.py render`) and writes `awesome-ev-charging-projects.md`: a curated view grouped by category/subcategory, with `Selection` / `Dormant` / `To refine` sections ranked by a promotion score (both star lists > juherr or a repo contributor > mateogreil > neither). The older `awesome-ev-charging.md` / `-grouped.md` artifacts were removed.
+`render` (`python pipeline.py render`) builds a curated view from `repos.enriched.csv`, grouped by `category > subcategory` (Libraries additionally split by language), with three blocks: `Selection`, collapsible `Dormant`, and collapsible `To refine`. Blocks are ranked by a promotion score (both star lists `2` > juherr-only or a repo contributor `1` > mateogreil-only `0` > neither `-1`; `Selection` = promotion ≥ 0 and active, `Dormant` = promotion ≥ 0 but dormant/deprecated, `To refine` = promotion < 0). The rendered body has **no** H1 or `## Selection` wrapper — its top level is the per-protocol `### main` — so it slots straight under `## Tools and Resources`.
+
+- Always writes the standalone `awesome-ev-charging-projects.md` (`--out`).
+- With `--readme README.md` it also replaces the text between `README_MARKER_BEGIN` / `README_MARKER_END` via `_inject_between_markers` (which aborts if the markers are missing or out of order).
+- The older `awesome-ev-charging.md` / `-grouped.md` artifacts were removed.
 </content>

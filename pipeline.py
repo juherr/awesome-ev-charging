@@ -40,6 +40,9 @@ STARRED_USERS = {"juherr", "mateogreil"}
 SELF_REPO = "juherr/awesome-ev-charging"  # its contributors' own repos get a promotion
 EXCLUDED_REPOS = {SELF_REPO}
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
+# `render --readme` replaces the text between these HTML comment markers in README.
+README_MARKER_BEGIN = "<!-- BEGIN GENERATED PROJECTS -->"
+README_MARKER_END = "<!-- END GENERATED PROJECTS -->"
 # Durable, committed LLM cache: full_name -> pushed_at, categories, description.
 # Keeps expensive classifications across clones so only new/updated repos re-hit
 # the model. The bulky repos*.csv stay git-ignored.
@@ -693,6 +696,23 @@ def _render_grouped(rows, lines):
         lines.append("")
 
 
+def _inject_between_markers(path, body):
+  """Replace the text between README_MARKER_BEGIN/END in `path` with `body`."""
+  with open(path, "r", encoding="utf-8") as f:
+    content = f.read()
+  begin = content.find(README_MARKER_BEGIN)
+  end = content.find(README_MARKER_END)
+  if begin == -1 or end == -1 or end < begin:
+    raise SystemExit(
+      f"Injection markers not found (or out of order) in {path}: "
+      f"expected {README_MARKER_BEGIN!r} … {README_MARKER_END!r}")
+  updated = (content[:begin + len(README_MARKER_BEGIN)]
+             + "\n\n" + body + "\n"
+             + content[end:])
+  with open(path, "w", encoding="utf-8") as f:
+    f.write(updated)
+
+
 def render(args):
   with open(args.infile, "r", encoding="utf-8", newline="") as f:
     rows = list(csv.DictReader(f))
@@ -702,20 +722,29 @@ def render(args):
   dormant = [r for r in in_list if _inactive(r)]
   refine = [r for r in rows if _promotion(r) < 0]
 
-  lines = ["# 🚗 Awesome EV Charging", "", "_Generated from `repos.enriched.csv`._", ""]
-  lines += [f"## Selection ({len(selection)})", ""]
+  # No H1/`## Selection` wrapper: the body slots straight under an existing
+  # heading (e.g. README's `## Tools and Resources`), so the top level is the
+  # per-protocol `### main` emitted by _render_grouped.
+  lines = []
+
+  def collapsed(title, group):
+    lines.extend(["<details>", f"<summary>{title}</summary>", ""])
+    _render_grouped(group, lines)
+    lines.extend(["</details>", ""])
+
   _render_grouped(selection, lines)
-  lines += [f"## Dormant ({len(dormant)})", ""]
-  _render_grouped(dormant, lines)
-  lines += ["<details>", f"<summary>To refine ({len(refine)} projects)</summary>", ""]
-  _render_grouped(refine, lines)
-  lines += ["</details>", ""]
+  collapsed(f"Dormant ({len(dormant)})", dormant)
+  collapsed(f"To refine ({len(refine)} projects)", refine)
+
+  body = "\n".join(lines).strip() + "\n"
 
   with open(args.out, "w", encoding="utf-8") as f:
-    f.write("\n".join(lines))
+    f.write(body)
+  if getattr(args, "readme", None):
+    _inject_between_markers(args.readme, body)
 
   promoted = sum(1 for r in selection if _promotion(r) == 2)
-  print(f"✅ Wrote {args.out}")
+  print(f"✅ Wrote {args.out}" + (f" + injected into {args.readme}" if getattr(args, "readme", None) else ""))
   print(f"   selection: {len(selection)} (promoted {promoted}) — dormant: {len(dormant)} — to refine: {len(refine)}")
 
 
@@ -748,6 +777,8 @@ def main():
   p_render = sub.add_parser("render", help="Render a curated Markdown view from the enriched CSV.")
   p_render.add_argument("--in", dest="infile", default="repos.enriched.csv", help="Input CSV path.")
   p_render.add_argument("--out", default="awesome-ev-charging-projects.md", help="Output Markdown path.")
+  p_render.add_argument("--readme", help="Also inject the rendered body between the "
+                        "markers in this file (e.g. README.md).")
   p_render.set_defaults(func=render)
 
   args = parser.parse_args()
