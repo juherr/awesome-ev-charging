@@ -71,6 +71,7 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
 
 * [EVRoaming Fundation](https://evroaming.org/)
 * [Specifications on GitHub](https://github.com/ocpi/ocpi)
+  * [2.3.0-d2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2/OCPI-2.3.0-ed2.pdf) (2026-06)
   * [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf) (2025-02)
   * [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf) (2021-10)
   * [2.2.0-d2](https://github.com/ocpi/ocpi/releases/download/2.2-d2/OCPI-2.2-d2.pdf) (2020-06)
@@ -79,6 +80,21 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
   * [2.1.1](https://github.com/ocpi/ocpi/releases/download/2.1.1/OCPI_2.1.1.pdf) (2017-06)
   * 2.1.0 - Deprecated, contains some bugs, use 2.1.1 instead (2016-04)
   * [2.0](https://github.com/ocpi/ocpi/files/135934/OCPI_2.0-d2.pdf) (2016-02)
+* [ocpi.github.io](https://ocpi.github.io/) — OCPI feature-development hub: proposals and processes for upcoming spec versions
+* [ocpi.fyi](https://ocpi.fyi/) 🏅 — a browsable rendering of the OCPI specification with an API reference and version comparison
+
+#### Modules
+
+* [Direct Payment](https://evroaming.org/wp-content/uploads/2024/10/DirectPayment_2_2_1___EVRF_version.pdf) (2.2.1)
+* [e-PoI service](https://www.gireve.com/wp-content/uploads/2025/10/Gireve_Tech_ePoI-OCPI-2.2.1_ImplementationGuide_V1.1-_en.pdf) (2.2.1, Gireve, 2025-10)
+* [Accessibility extension](https://evroaming.org/wp-content/uploads/2026/01/e_accessibility_extension-1.0.0.pdf) (2.3.0, 3.0)
+* Booking (2.3.0)
+  * [ed2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-bookings/OCPI-2.3.0-bookings.pdf) (2026-06)
+  * [1.1](https://evroaming.org/wp-content/uploads/2026/01/OCPI-2.3.0-booking-1.1.pdf) (2025-06)
+* Payments (2.3.0)
+  * [ed2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2-payments/OCPI-2.3.0-ed2-payments.pdf) (2026-06, adds invoice reconciliation)
+  * [ed1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-payments/OCPI-2.3.0-payments.pdf) (2026-06)
+* [Autocharge](https://ocpi.fyi/ocpi/2.3.0/extensions/mod_autocharge_roaming.html) (2.3.0, community)
 
 ### OICP (Open InterCharge Protocol)
 
@@ -88,6 +104,13 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
   * [2.3](https://github.com/hubject/oicp/tree/master/OICP-2.3) (2020-10)
   * [2.2 CPO](https://github.com/hubject/oicp/releases/download/v2.2/OICP-CPO-2.2.pdf), [2.2 EMP](https://github.com/hubject/oicp/releases/download/v2.2/OICP-EMP-2.2.pdf) (2017-10)
   * [2.1 CPO](https://github.com/hubject/oicp/releases/download/v2.1/OICP-CPO-2.1.pdf), [2.1 EMP](https://github.com/hubject/oicp/releases/download/v2.1/OICP-EMP-2.1.pdf) (2016-10, retired 2023-04-13)
+
+### eMIP (eMobility Protocol Inter-Operation)
+
+The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol developed by [Gireve](https://www.gireve.com).
+
+* [Protocol description v1.0.17](https://www.gireve.com/wp-content/uploads/2025/02/Gireve_Tech_eMIP-V0.7.4_ProtocolDescription_1.0.17-en.pdf) (2025-02)
+* [Implementation guide v1.0.7](https://www.gireve.com/wp-content/uploads/2022/09/Gireve_Tech_eMIP-V0.7.4_ImplementationGuide_1.0.7_en.pdf) (2022-09)
 
 ### eMI³ (eMobility ICT Interoperability)
 
