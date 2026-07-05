@@ -207,10 +207,8 @@
 
 ### Other
 
-- **[dalathegreat/Battery-Emulator](https://github.com/dalathegreat/Battery-Emulator)** — ⭐ 2745 — Battery Emulator is firmware that lets repurposed EV battery packs communicate with home inverters for stationary energy storage. _(C++)_
 - **[EVerest/EVerest](https://github.com/EVerest/EVerest)** — ⭐ 218 — EVerest is an open-source modular Linux-based software stack for building and operating EV charging stations with support for AC/DC charging, OCPP, ISO 15118, hardware drivers, energy management, OTA updates, and embedded deployment. _(C++)_
 - **[evcc-io/evcc](https://github.com/evcc-io/evcc)** — ⭐ 6914 — evcc is an extensible EV charge controller and local home energy management system for solar-optimized charging across many chargers, meters, batteries, and home automation devices. _(Go)_
-- **[mnh-jansson/open-battery-information](https://github.com/mnh-jansson/open-battery-information)** — ⭐ 1524 — Open Battery Information provides Arduino and Python/Windows tools and battery data to help inspect and repair locked battery management systems. _(C++)_
 - **[leeyuentuen/alfen_wallbox](https://github.com/leeyuentuen/alfen_wallbox)** — ⭐ 102 — A Home Assistant custom integration for monitoring and controlling Alfen wallboxes. _(Python)_
 - **[powerly-ev/open-ev-charge-android-app](https://github.com/powerly-ev/open-ev-charge-android-app)** — ⭐ 7 — Powerly Open EV Charge Android App is a white-label Kotlin mobile app for discovering chargers, managing EV charging sessions, bookings, billing, roaming, and peer-to-peer charger sharing through the Powerly platform. _(Kotlin)_
 - **[SolarNetwork/solarnetwork-central](https://github.com/SolarNetwork/solarnetwork-central)** — ⭐ 6 — SolarNet is a Java/Postgres cloud platform for managing SolarNetwork accounts, provisioning SolarNode credentials, accepting node data, and exposing REST APIs for that data. _(Java)_
@@ -221,8 +219,10 @@
 
 - **[chargeprice/chargeprice-api-docs](https://github.com/chargeprice/chargeprice-api-docs)** — ⭐ 43 — Documentation for accessing the Chargeprice API, which provides EV charging tariffs, stations, operators, providers, and vehicle data.
 
-#### Battery QA and analytics
+#### Battery
 
+- **[dalathegreat/Battery-Emulator](https://github.com/dalathegreat/Battery-Emulator)** — ⭐ 2745 — Battery Emulator is firmware that lets repurposed EV battery packs communicate with home inverters for stationary energy storage. _(C++)_
+- **[mnh-jansson/open-battery-information](https://github.com/mnh-jansson/open-battery-information)** — ⭐ 1524 — Open Battery Information provides Arduino and Python/Windows tools and battery data to help inspect and repair locked battery management systems. _(C++)_
 - **[remontsuri/EV-QA-Framework](https://github.com/remontsuri/EV-QA-Framework)** — ⭐ 6 — EV-QA-Framework is a Python QA framework for EV battery systems that validates BMS telemetry, detects anomalies, predicts SOH, simulates CAN/J1939 data, and exposes monitoring dashboards. _(Python)_
 
 #### CCS charge controller

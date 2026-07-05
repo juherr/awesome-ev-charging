@@ -107,6 +107,17 @@ SUBCATEGORY_ALIASES = {
   "home automation adapter": "Smart home integration",
 }
 
+# Manual per-repo category overrides for repos the classifier mis-files (e.g.
+# under a bare "Other" with no subcategory). full_name (lowercased) -> the
+# category string that replaces the classifier's, in the same "Main > Sub"
+# (pipe-joined) form. Applied at render time, so it survives re-classification
+# and `enrich --refresh`.
+CATEGORY_OVERRIDES = {
+  "dalathegreat/battery-emulator": "Other > Battery",
+  "mnh-jansson/open-battery-information": "Other > Battery",
+  "remontsuri/ev-qa-framework": "Other > Battery",
+}
+
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
 CLASSIFIER_AGENT = "repo-classifier"
 CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
@@ -646,9 +657,15 @@ def _canon_sub(sub):
 
 
 def _row_categories(row):
-  """Parse the pipe-joined `categories` column into [(main, sub), ...]."""
+  """Parse the pipe-joined `categories` column into [(main, sub), ...].
+
+  A CATEGORY_OVERRIDES entry (keyed by full_name) replaces the classifier's value.
+  """
+  raw = CATEGORY_OVERRIDES.get((row.get("full_name") or "").lower())
+  if raw is None:
+    raw = row.get("categories") or ""
   out = []
-  for chunk in (row.get("categories") or "").split("|"):
+  for chunk in raw.split("|"):
     chunk = chunk.strip()
     if not chunk:
       continue
