@@ -13,6 +13,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 import subprocess
 import tempfile
 import time
@@ -38,6 +39,11 @@ TOPICS = {"ocpp", "ocpi", "emobility", "e-mobility", "iso15118"}
 STARRED_USERS = {"juherr", "mateogreil"}
 SELF_REPO = "juherr/awesome-ev-charging"  # its contributors' own repos get a promotion
 EXCLUDED_REPOS = {SELF_REPO}
+README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
+# Durable, committed LLM cache: full_name -> pushed_at, categories, description.
+# Keeps expensive classifications across clones so only new/updated repos re-hit
+# the model. The bulky repos*.csv stay git-ignored.
+CLASSIFICATIONS_PATH = "classifications.csv"
 ADDITIONAL_REPOS = {
   "SAFE-eV/OCMF-Open-Charge-Metering-Format",
   "SAFE-eV/transparenzsoftware",
@@ -67,13 +73,21 @@ CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
 # The Claude backend gets role + output format from the agent file; the codex
 # backend has no agent definition, so it carries the same contract in-prompt.
 CLASSIFIER_INSTRUCTIONS = (
-  "You classify a GitHub repository related to EV charging into a hierarchical "
-  "category taxonomy, from its README and GitHub topics. Use exactly the main "
-  "categories from the taxonomy below; for each, pick an existing subcategory or "
-  "propose a short one. Do not run any commands or tools — everything you need is "
-  "below. Respond with ONLY a category list, no preamble:\n"
+  "You analyze a GitHub repository related to EV charging, using its own "
+  "description and its README. Produce two things:\n"
+  "1) a concise, factual one-sentence description (English, no marketing) of what "
+  "the project is and does;\n"
+  "2) its categories from the taxonomy below — one or more main categories, each "
+  "with an existing subcategory or a short proposed one.\n"
+  "Do not run any commands or tools — everything you need is below. Respond with "
+  "ONLY, no preamble:\n"
+  "Description: <one sentence>\n"
   "Categories:\n- Main > Sub\n- Main"
 )
+
+# Known protocol versions — used to keep only real version mentions from READMEs.
+OCPP_VERSIONS = ["1.2", "1.5", "1.6", "2.0", "2.0.1", "2.1"]
+OCPI_VERSIONS = ["2.0", "2.1", "2.1.1", "2.2", "2.2.1", "2.3", "2.3.0"]
 
 CSV_FIELDS = [
   "full_name", "html_url", "description", "language", "license",
@@ -164,6 +178,33 @@ def get_contributors(full_name, headers):
   return {u["login"].lower() for u in (data or []) if u.get("login")}
 
 
+_README_NON_REPO = {"orgs", "stars", "sponsors", "topics", "search", "about",
+                    "features", "marketplace", "settings", "apps", "collections"}
+_README_PATH_KW = {"tree", "blob", "releases", "wiki", "issues", "pull", "raw",
+                   "actions", "commits", "graphs"}
+
+
+def readme_repo_names(path=README_PATH):
+  """Extract distinct owner/repo names from the GitHub links in the curated README."""
+  try:
+    with open(path, "r", encoding="utf-8") as f:
+      text = f.read()
+  except OSError:
+    print(f"⚠️  {path} not found; skipping readme source")
+    return []
+  names = {}
+  for owner, repo in re.findall(r"github\.com/([\w.-]+)/([\w.-]+)", text):
+    if owner.lower() in _README_NON_REPO:
+      continue
+    repo = repo.rstrip(".")
+    if repo.endswith(".git"):
+      repo = repo[:-4]
+    if not repo or repo.lower() in _README_PATH_KW:
+      continue
+    names[f"{owner}/{repo}".lower()] = f"{owner}/{repo}"  # dedupe case-insensitively
+  return list(names.values())
+
+
 def search_topic_repo_names(topic, headers):
   """Return the full_names of repositories tagged with a GitHub topic."""
   print(f"🔍 Searching topic '{topic}'...")
@@ -243,23 +284,31 @@ def build_repo_record(obj, source, matched_topics, starred_by, contributors):
 def collect_candidates(headers):
   """Discover candidate repos and their provenance/matched topics.
 
-  Returns {full_name: {"sources": set, "matched_topics": set}}.
+  Keyed case-insensitively so the same repo surfaced by several sources (topic
+  search, manual list, curated README) is fetched once. Returns
+  {lower_full_name: {"full_name": str, "sources": set, "matched_topics": set}}.
   """
+  excluded = {r.lower() for r in EXCLUDED_REPOS}
   candidates = {}
+
+  def add(full_name, source, topic=None):
+    key = full_name.lower()
+    if key in excluded:
+      return
+    meta = candidates.setdefault(key, {"full_name": full_name, "sources": set(), "matched_topics": set()})
+    meta["sources"].add(source)
+    if topic:
+      meta["matched_topics"].add(topic)
 
   for topic in sorted(TOPICS):
     for full_name in search_topic_repo_names(topic, headers):
-      if full_name in EXCLUDED_REPOS:
-        continue
-      meta = candidates.setdefault(full_name, {"sources": set(), "matched_topics": set()})
-      meta["sources"].add("topic")
-      meta["matched_topics"].add(topic)
+      add(full_name, "topic", topic)
 
   for full_name in ADDITIONAL_REPOS:
-    if full_name in EXCLUDED_REPOS:
-      continue
-    meta = candidates.setdefault(full_name, {"sources": set(), "matched_topics": set()})
-    meta["sources"].add("manual")
+    add(full_name, "manual")
+
+  for full_name in readme_repo_names():
+    add(full_name, "readme")
 
   return candidates
 
@@ -278,12 +327,18 @@ def ingest(args):
   candidates = collect_candidates(headers)
   print(f"\n📥 Building records for {len(candidates)} candidate repositories...")
 
+  excluded = {r.lower() for r in EXCLUDED_REPOS}
   records = []
-  for full_name, meta in candidates.items():
-    obj = get_repo_data(full_name, headers)
+  seen = set()
+  for meta in candidates.values():
+    obj = get_repo_data(meta["full_name"], headers)
     if not obj:
       continue
-    starred_by = {u for u, starred in user_starred.items() if full_name in starred}
+    canonical = obj["full_name"]  # follows renames/redirects
+    if canonical.lower() in excluded or canonical.lower() in seen:
+      continue
+    seen.add(canonical.lower())
+    starred_by = {u for u, starred in user_starred.items() if canonical in starred}
     source = "+".join(sorted(meta["sources"]))
     records.append(build_repo_record(obj, source, meta["matched_topics"], starred_by, contributors))
 
@@ -317,9 +372,32 @@ def build_classifier_prompt(row, readme):
   topic_hint = f"\nGitHub topics: {topics.replace('|', ', ')}" if topics else ""
   return (
     f"Taxonomy:\n{CATEGORY_TREE_TEXT}\n"
-    f"{topic_hint}\n\n"
+    f"{topic_hint}\n"
+    f"Repository description: {row.get('description') or '(none)'}\n\n"
     f"README:\n{(readme or '')[:4000]}"
   )
+
+
+def extract_versions(text, keyword, known):
+  """Find supported protocol versions mentioned near `keyword` in a README."""
+  found = set()
+  pattern = rf"{keyword}[\s\-_/:]*[js]?[\s\-_/:]*v?\.?\s*(\d+\.\d+(?:\.\d+)?)"
+  for m in re.finditer(pattern, text or "", re.I):
+    if m.group(1) in known:
+      found.add(m.group(1))
+  return ",".join(sorted(found, key=lambda v: [int(x) for x in v.split(".")]))
+
+
+def parse_classification(text):
+  """Split classifier output into (description, [(main, sub), ...])."""
+  description = ""
+  cat_lines = []
+  for line in (text or "").splitlines():
+    if not description and line.strip().lower().startswith("description:"):
+      description = line.split(":", 1)[1].strip()
+    else:
+      cat_lines.append(line)
+  return description, parse_categories("\n".join(cat_lines))
 
 
 def parse_categories(text):
@@ -349,9 +427,12 @@ def parse_categories(text):
 
 
 def classify_with_claude(row, readme):
-  """Classify a repo by invoking the `repo-classifier` skill agent headless."""
+  """Classify a repo by invoking the `repo-classifier` skill agent headless.
+
+  Returns (description, [(main, sub), ...]).
+  """
   if not readme:
-    return []
+    return "", []
   prompt = build_classifier_prompt(row, readme)
   cmd = [
     "claude", "-p",
@@ -364,17 +445,17 @@ def classify_with_claude(row, readme):
     result = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=180)
     if result.returncode != 0:
       print(f"⚠️  classifier failed for {row['full_name']}: {result.stderr.strip()[:200]}")
-      return []
-    return parse_categories(result.stdout)
+      return "", []
+    return parse_classification(result.stdout)
   except Exception as e:
     print(f"⚠️  classifier error for {row['full_name']}: {e}")
-    return []
+    return "", []
 
 
 def classify_with_codex(row, readme):
-  """Classify a repo by invoking `codex exec` non-interactively as a sub-agent."""
+  """Classify a repo via `codex exec` non-interactively. Returns (description, cats)."""
   if not readme:
-    return []
+    return "", []
   prompt = f"{CLASSIFIER_INSTRUCTIONS}\n\n{build_classifier_prompt(row, readme)}"
   out_fd, out_path = tempfile.mkstemp(suffix=".txt")
   os.close(out_fd)
@@ -391,12 +472,12 @@ def classify_with_codex(row, readme):
     result = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=300)
     if result.returncode != 0:
       print(f"⚠️  classifier failed for {row['full_name']}: {result.stderr.strip()[:200]}")
-      return []
+      return "", []
     with open(out_path, "r", encoding="utf-8") as f:
-      return parse_categories(f.read())
+      return parse_classification(f.read())
   except Exception as e:
     print(f"⚠️  classifier error for {row['full_name']}: {e}")
-    return []
+    return "", []
   finally:
     if os.path.exists(out_path):
       os.remove(out_path)
@@ -405,12 +486,24 @@ def classify_with_codex(row, readme):
 CLASSIFIERS = {"claude": classify_with_claude, "codex": classify_with_codex}
 
 
-def load_enriched_cache(path):
-  """Load a prior enriched CSV as {full_name: row} for incremental reuse."""
+CLASSIFICATION_FIELDS = ["full_name", "pushed_at", "categories", "description"]
+
+
+def load_classifications(path):
+  """Load the committed LLM cache as {full_name: {pushed_at, categories, description}}."""
   if not os.path.exists(path):
     return {}
   with open(path, "r", encoding="utf-8", newline="") as f:
     return {r["full_name"]: r for r in csv.DictReader(f)}
+
+
+def save_classifications(path, cache):
+  """Persist the LLM cache, sorted by full_name for stable, minimal git diffs."""
+  with open(path, "w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=CLASSIFICATION_FIELDS)
+    writer.writeheader()
+    for full_name in sorted(cache, key=str.lower):
+      writer.writerow({k: cache[full_name].get(k, "") for k in CLASSIFICATION_FIELDS})
 
 
 def enrich(args):
@@ -426,38 +519,51 @@ def enrich(args):
   if args.limit:
     rows = rows[:args.limit]
 
-  # Incremental: reuse a prior classification when the repo has not been pushed
-  # to since (same pushed_at) — the README is unchanged, so is its category.
-  # `--refresh` re-classifies everything (e.g. to retry a transient failure).
-  cache = {} if args.refresh else load_enriched_cache(args.out)
+  # Durable committed cache: reuse a repo's classification (categories +
+  # synthesized description) while its pushed_at is unchanged. Merge-write it so
+  # entries for repos not in this run (e.g. under --limit) are preserved.
+  # `--refresh` re-runs the model for every repo.
+  cache = load_classifications(args.cache)
+  reuse = {} if args.refresh else cache
 
   classify = CLASSIFIERS[args.classifier]
   print(f"🏷️  Classifying {len(rows)} repositories via the '{args.classifier}' backend...")
 
   # Stream each row to disk as it is finalized (with a flush) so a long batch is
-  # crash-safe and resumable: a re-run reuses everything already written.
+  # crash-safe and resumable: a re-run reuses everything already in the cache.
   reused = classified = 0
   with open(args.out, "w", encoding="utf-8", newline="") as f:
-    writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories"])
+    writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"])
     writer.writeheader()
     for i, row in enumerate(rows, 1):
-      prev = cache.get(row["full_name"])
+      # README is fetched for every repo (cached, so cheap) to extract supported
+      # protocol versions; only the model call is skipped on a cache hit.
+      readme = fetch_readme_content(row["full_name"], headers)
+      row["ocpp_versions"] = extract_versions(readme, "ocpp", OCPP_VERSIONS)
+      row["ocpi_versions"] = extract_versions(readme, "ocpi", OCPI_VERSIONS)
+      prev = reuse.get(row["full_name"])
       if prev and prev.get("pushed_at") == row["pushed_at"]:
-        row["categories"] = prev["categories"]
+        row["categories"] = prev.get("categories", "")
+        description = prev.get("description", "")
         reused += 1
         tag = "♻️  reused"
       else:
-        readme = fetch_readme_content(row["full_name"], headers)
-        cats = classify(row, readme)
+        description, cats = classify(row, readme)
         row["categories"] = "|".join(f"{m} > {s}" if s else m for m, s in cats)
         classified += 1
         tag = "🏷️  classified"
+      row["description"] = description or row.get("description", "")  # synthesized wins
+      cache[row["full_name"]] = {
+        "full_name": row["full_name"], "pushed_at": row["pushed_at"],
+        "categories": row["categories"], "description": row["description"],
+      }
       writer.writerow(row)
       f.flush()
       print(f"  [{i}/{len(rows)}] {tag}: {row['full_name']} -> {row['categories'] or '(none)'}")
 
+  save_classifications(args.cache, cache)
   print(f"\n✅ Wrote {len(rows)} enriched repositories to {args.out}")
-  print(f"   classified: {classified} — reused (unchanged since last run): {reused}")
+  print(f"   classified: {classified} — reused: {reused} — cache: {args.cache} ({len(cache)} entries)")
 
 
 # --- Rendering ---------------------------------------------------------------
@@ -526,10 +632,29 @@ def _sort_key(row):
   return (-_promotion(row), -_stars(row))
 
 
-def _render_line(row, show_language=True, show_pushed=False):
+_DEPRECATED_RE = re.compile(
+  r"\b(deprecated|discontinued|unmaintained|abandoned|superseded|no longer maintained)\b", re.I)
+
+
+def _is_deprecated(row):
+  """A project the synthesized description flags as deprecated/unmaintained."""
+  return bool(_DEPRECATED_RE.search(row.get("description", "")))
+
+
+def _inactive(row):
+  """Belongs in the Dormant section: stale/archived (dormant) or deprecated."""
+  return row.get("dormant") == "true" or _is_deprecated(row)
+
+
+def _render_line(row, main=None, show_language=True):
   parts = [f"- **[{row['full_name']}]({row['html_url']})**", f"— ⭐ {row['stars']}"]
-  if show_pushed and row.get("pushed_at"):
-    parts.append(f"— 📅 {row['pushed_at'][:10]}")
+  versions = {"OCPP": row.get("ocpp_versions"), "OCPI": row.get("ocpi_versions")}.get(main)
+  if versions:
+    parts.append(f"— {main} {versions.replace(',', ', ')}")
+  if _is_deprecated(row):
+    parts.append("— 🚫 deprecated")
+  if row.get("dormant") == "true":  # dormant anywhere shows the last-update date
+    parts.append(f"— 💤 {row.get('pushed_at', '')[:10]}")
   if row.get("description"):
     parts.append(f"— {row['description']}")
   if show_language and row.get("language"):
@@ -537,12 +662,11 @@ def _render_line(row, show_language=True, show_pushed=False):
   return " ".join(parts)
 
 
-def _render_grouped(rows, lines, show_pushed=False):
+def _render_grouped(rows, lines):
   """Emit `### main` / `#### sub` subsections; a repo appears under each of its categories.
 
   Under a `Libraries` subcategory the technology becomes an extra `##### language`
-  level (and is dropped from the line). `show_pushed` appends the last-update date
-  (used for the dormant section).
+  level (and is dropped from the line).
   """
   groups = defaultdict(lambda: defaultdict(list))
   for row in rows:
@@ -561,11 +685,11 @@ def _render_grouped(rows, lines, show_pushed=False):
         for lang in sorted(by_lang, key=lambda l: (l == "Other", l.lower())):
           lines += [f"##### {lang}", ""]
           for row in sorted(by_lang[lang], key=_sort_key):
-            lines.append(_render_line(row, show_language=False, show_pushed=show_pushed))
+            lines.append(_render_line(row, main=main, show_language=False))
           lines.append("")
       else:
         for row in sorted(subs[sub], key=_sort_key):
-          lines.append(_render_line(row, show_pushed=show_pushed))
+          lines.append(_render_line(row, main=main))
         lines.append("")
 
 
@@ -574,15 +698,15 @@ def render(args):
     rows = list(csv.DictReader(f))
 
   in_list = [r for r in rows if _promotion(r) >= 0]
-  selection = [r for r in in_list if r.get("dormant") != "true"]
-  dormant = [r for r in in_list if r.get("dormant") == "true"]
+  selection = [r for r in in_list if not _inactive(r)]
+  dormant = [r for r in in_list if _inactive(r)]
   refine = [r for r in rows if _promotion(r) < 0]
 
   lines = ["# 🚗 Awesome EV Charging", "", "_Generated from `repos.enriched.csv`._", ""]
   lines += [f"## Selection ({len(selection)})", ""]
   _render_grouped(selection, lines)
   lines += [f"## Dormant ({len(dormant)})", ""]
-  _render_grouped(dormant, lines, show_pushed=True)
+  _render_grouped(dormant, lines)
   lines += ["<details>", f"<summary>To refine ({len(refine)} projects)</summary>", ""]
   _render_grouped(refine, lines)
   lines += ["</details>", ""]
@@ -609,6 +733,8 @@ def main():
   p_enrich = sub.add_parser("enrich", help="Classify repos from a CSV via the skill agent.")
   p_enrich.add_argument("--in", dest="infile", default="repos.csv", help="Input CSV path.")
   p_enrich.add_argument("--out", default="repos.enriched.csv", help="Output CSV path.")
+  p_enrich.add_argument("--cache", default=CLASSIFICATIONS_PATH,
+                        help="Durable LLM cache path (committed).")
   p_enrich.add_argument("--token", help="GitHub personal access token (optional).")
   p_enrich.add_argument("--limit", type=int, help="Only classify the first N rows.")
   p_enrich.add_argument("--classifier", choices=sorted(CLASSIFIERS), default="claude",
