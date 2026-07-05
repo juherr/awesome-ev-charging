@@ -38,7 +38,11 @@ DORMANT_DAYS = 365  # no push in >= 1 year => dormant
 TOPICS = {"ocpp", "ocpi", "emobility", "e-mobility", "iso15118"}
 STARRED_USERS = {"juherr", "mateogreil"}
 SELF_REPO = "juherr/awesome-ev-charging"  # its contributors' own repos get a promotion
-EXCLUDED_REPOS = {SELF_REPO}
+EXCLUDED_REPOS = {
+  SELF_REPO,
+  "ocpi/ocpi",     # the OCPI spec itself — already linked in the Specifications section
+  "hubject/oicp",  # the OICP spec itself — already linked in the Specifications section
+}
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
 # `render --readme` replaces the text between these HTML comment markers in README.
 README_MARKER_BEGIN = "<!-- BEGIN GENERATED PROJECTS -->"
@@ -782,6 +786,11 @@ def _inject_between_markers(path, body):
 def render(args):
   with open(args.infile, "r", encoding="utf-8", newline="") as f:
     rows = list(csv.DictReader(f))
+
+  # Honor EXCLUDED_REPOS here too (not just at ingest), so the published list
+  # never shows an excluded repo even from a stale enriched CSV.
+  excluded = {r.lower() for r in EXCLUDED_REPOS}
+  rows = [r for r in rows if r["full_name"].lower() not in excluded]
 
   in_list = [r for r in rows if _promotion(r) >= 0]
   selection = [r for r in in_list if not _inactive(r)]

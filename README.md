@@ -283,7 +283,6 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 #### Misc
 
-- **[ocpi/ocpi](https://github.com/ocpi/ocpi)** — ⭐ 576 — OCPI 2.0, 2.2, 2.3.0 — This repository contains the OCPI specification for automated EV charging roaming between charge point operators and e-mobility service providers. _(Perl)_
 - **[Quentin-BACQUET/GIREVE_Tech_OCPI_V2.2.1](https://github.com/Quentin-BACQUET/GIREVE_Tech_OCPI_V2.2.1)** — ⭐ 2 — OCPI 2.2.1 — GIREVE OCPI V2.2.1 is documentation for implementing GIREVE’s IOP hub interface, including OCPI integration guidelines for CPO and eMSP roaming workflows.
 - **[ocpi/ocpi-tool](https://github.com/ocpi/ocpi-tool)** — ⭐ 33 — OCPI 2.2.1 — ocpi-tool is a CLI tool for exporting and privacy-filtering data from OCPI platforms for downstream ETL workflows. _(TypeScript)_
 - **[powerly-ev/open-ev-charge-android-app](https://github.com/powerly-ev/open-ev-charge-android-app)** — ⭐ 7 — Powerly Open EV Charge Android App is a white-label Kotlin mobile app for discovering chargers, managing EV charging sessions, bookings, billing, roaming, and peer-to-peer charger sharing through the Powerly platform. _(Kotlin)_
@@ -309,12 +308,6 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 - **[dspace-group/dsV2Gshark](https://github.com/dspace-group/dsV2Gshark)** — ⭐ 100 — dsV2Gshark is a Wireshark plugin for decoding and analyzing ISO 15118, DIN 70121, and related V2G communication between EVs and charging stations. _(C++)_
 - **[citrineos/citrineos](https://github.com/citrineos/citrineos)** — ⭐ 141 — CitrineOS is an open source OCPP 2.0.1 Charging Station Management System software stack with modular services for handling charging station communication and CSMS functions.
 - **[uhi22/ccs32clara](https://github.com/uhi22/ccs32clara)** — ⭐ 107 — Embedded STM32 firmware for a CCS charge controller that communicates with a QCA7005 HomePlug Green PHY modem to control EV charging. _(C)_
-
-### OICP
-
-#### Misc
-
-- **[hubject/oicp](https://github.com/hubject/oicp)** — ⭐ 80 — Repository containing the open-source Open InterCharge Protocol (OICP) specifications, release documents, and related Hubject policy information.
 
 ### Eichrecht
 
