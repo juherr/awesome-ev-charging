@@ -1,0 +1,21 @@
+min_version = "2024.9.5"
+
+[tools]
+python = "3.11.11"
+
+[env]
+# Auto-create and activate a project virtualenv — no manual `source .venv/bin/activate`.
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.install]
+description = "Install Python dependencies into the project venv"
+alias = "i"
+run = "uv pip install -r requirements.txt"
+
+[tasks.ingest]
+description = "Stage 1 — fetch candidate repos + signals into repos.csv"
+run = 'python pipeline.py ingest --token "$(gh auth token 2>/dev/null)" --out repos.csv'
+
+[tasks.enrich]
+description = "Stage 2 — classify repos from repos.csv via the skill agent (incremental)"
+run = 'python pipeline.py enrich --token "$(gh auth token 2>/dev/null)" --in repos.csv --out repos.enriched.csv'
