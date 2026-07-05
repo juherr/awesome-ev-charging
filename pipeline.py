@@ -69,6 +69,17 @@ CATEGORY_TREE = {
   "Other": []
 }
 
+# The classifier invents free-form subcategories under "Other", which fragments
+# near-synonyms into 1-repo buckets. This map folds variants into a canonical
+# label at render time (matched case-insensitively, so pure case dups also merge).
+SUBCATEGORY_ALIASES = {
+  "charging station finder": "Charging station map",
+  "charging station map": "Charging station map",
+  "evse controller": "EVSE firmware",
+  "evse firmware": "EVSE firmware",
+  "evse gateway firmware": "EVSE firmware",
+}
+
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
 CLASSIFIER_AGENT = "repo-classifier"
 CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
@@ -600,6 +611,13 @@ def _stars(row):
   return int(row.get("stars") or 0)
 
 
+def _canon_sub(sub):
+  """Fold a free-form subcategory onto its canonical label (case-insensitive)."""
+  if not sub:
+    return sub
+  return SUBCATEGORY_ALIASES.get(sub.lower(), sub)
+
+
 def _row_categories(row):
   """Parse the pipe-joined `categories` column into [(main, sub), ...]."""
   out = []
@@ -609,7 +627,7 @@ def _row_categories(row):
       continue
     if ">" in chunk:
       main, sub = map(str.strip, chunk.split(">", 1))
-      out.append((main, sub or None))
+      out.append((main, _canon_sub(sub) or None))
     else:
       out.append((chunk, None))
   return out or [("Uncategorized", None)]

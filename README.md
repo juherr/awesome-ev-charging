@@ -353,12 +353,9 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - **[uhi22/ccs32clara](https://github.com/uhi22/ccs32clara)** — ⭐ 107 — Embedded STM32 firmware for a CCS charge controller that communicates with a QCA7005 HomePlug Green PHY modem to control EV charging. _(C)_
 
-#### Charging station finder
-
-- **[ev-map/EVMap](https://github.com/ev-map/EVMap)** — ⭐ 268 — EVMap is an Android app for finding EV charging stations using GoingElectric.de and OpenChargeMap data, with maps, filtering, availability, favorites, and Android Auto/Automotive support. _(Kotlin)_
-
 #### Charging station map
 
+- **[ev-map/EVMap](https://github.com/ev-map/EVMap)** — ⭐ 268 — EVMap is an Android app for finding EV charging stations using GoingElectric.de and OpenChargeMap data, with maps, filtering, availability, favorites, and Android Auto/Automotive support. _(Kotlin)_
 - **[GeiserX/Pumperly](https://github.com/GeiserX/Pumperly)** — ⭐ 25 — Pumperly is a self-hostable route planner that maps fuel stations and EV chargers along routes using routing, geocoding, fuel price, and Open Charge Map data. _(TypeScript)_
 
 #### Data Analytics
@@ -369,17 +366,11 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - **[enbility/eebus-go](https://github.com/enbility/eebus-go)** — ⭐ 111 — Go library for implementing EEBUS use cases, including SHIP/SPINE integration, certificates, mDNS discovery, WebSocket connections, pairing, and example applications. _(Go)_
 
-#### EVSE Controller
-
-- **[SmartEVSE/SmartEVSE-3](https://github.com/SmartEVSE/SmartEVSE-3)** — ⭐ 220 — SmartEVSE v3 is open-source firmware and hardware for an EVSE charge controller with smart load balancing, Modbus/RS485 metering, WiFi, MQTT/REST APIs, and OCPP 1.6J support. _(C)_
-
 #### EVSE firmware
 
-- **[dzurikmiroslav/esp32-evse](https://github.com/dzurikmiroslav/esp32-evse)** — ⭐ 137 — ESP32 EVSE is J1772 charging station firmware with web control, OTA updates, metering, REST, Modbus, scripting, and hardware abstraction. _(C)_
-
-#### EVSE gateway firmware
-
 - **[OpenEVSE/openevse_esp32_firmware](https://github.com/OpenEVSE/openevse_esp32_firmware)** — ⭐ 227 — ESP32 firmware for an OpenEVSE WiFi/Ethernet gateway that provides a local web UI, MQTT control, Emoncms logging, solar/grid-aware charging control, and beta OCPP 1.6 support. _(C)_
+- **[SmartEVSE/SmartEVSE-3](https://github.com/SmartEVSE/SmartEVSE-3)** — ⭐ 220 — SmartEVSE v3 is open-source firmware and hardware for an EVSE charge controller with smart load balancing, Modbus/RS485 metering, WiFi, MQTT/REST APIs, and OCPP 1.6J support. _(C)_
+- **[dzurikmiroslav/esp32-evse](https://github.com/dzurikmiroslav/esp32-evse)** — ⭐ 137 — ESP32 EVSE is J1772 charging station firmware with web control, OTA updates, metering, REST, Modbus, scripting, and hardware abstraction. _(C)_
 
 #### Ensto simulator
 
@@ -1038,7 +1029,7 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - **[Veton-ev/Veton-EMS-Integration](https://github.com/Veton-ev/Veton-EMS-Integration)** — ⭐ 0 — Developer documentation and examples for integrating Veton/Phoenix Contact CHARX EV chargers with an EMS via Modbus, MQTT, REST, and OCPP 1.6.
 
-#### EVSE Firmware
+#### EVSE firmware
 
 - **[pazzk-labs/evse](https://github.com/pazzk-labs/evse)** — ⭐ 16 — Pazzk EVSE is an archived open-source EVSE firmware project for building charging stations with ISO 15118, IEC 61851, OCPP, and Plug & Charge support. _(C)_
 
