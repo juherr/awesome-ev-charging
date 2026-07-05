@@ -353,11 +353,6 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - **[uhi22/ccs32clara](https://github.com/uhi22/ccs32clara)** — ⭐ 107 — Embedded STM32 firmware for a CCS charge controller that communicates with a QCA7005 HomePlug Green PHY modem to control EV charging. _(C)_
 
-#### Charging station map
-
-- **[ev-map/EVMap](https://github.com/ev-map/EVMap)** — ⭐ 268 — EVMap is an Android app for finding EV charging stations using GoingElectric.de and OpenChargeMap data, with maps, filtering, availability, favorites, and Android Auto/Automotive support. _(Kotlin)_
-- **[GeiserX/Pumperly](https://github.com/GeiserX/Pumperly)** — ⭐ 25 — Pumperly is a self-hostable route planner that maps fuel stations and EV chargers along routes using routing, geocoding, fuel price, and Open Charge Map data. _(TypeScript)_
-
 #### Data Analytics
 
 - **[appspace/kwwhat](https://github.com/appspace/kwwhat)** — ⭐ 14 — kWwhat is an open-source dbt data pipeline that transforms raw OCPP logs into structured EV charging models and reliability/utilization metrics.
@@ -380,13 +375,14 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - **[juherr/open-idro-directory](https://github.com/juherr/open-idro-directory)** — ⭐ 2 — Open IDRO Directory aggregates, validates, and publishes e-mobility IDRO identifiers from official registries with provenance and API access. _(TypeScript)_
 
+#### Maps & route planning
+
+- **[ev-map/EVMap](https://github.com/ev-map/EVMap)** — ⭐ 268 — EVMap is an Android app for finding EV charging stations using GoingElectric.de and OpenChargeMap data, with maps, filtering, availability, favorites, and Android Auto/Automotive support. _(Kotlin)_
+- **[GeiserX/Pumperly](https://github.com/GeiserX/Pumperly)** — ⭐ 25 — Pumperly is a self-hostable route planner that maps fuel stations and EV chargers along routes using routing, geocoding, fuel price, and Open Charge Map data. _(TypeScript)_
+
 #### OpenADR simulator
 
 - **[kwtycoon/kilowatt-tycoon](https://github.com/kwtycoon/kilowatt-tycoon)** — ⭐ 7 — Kilowatt Tycoon is a Rust/Bevy tycoon game and EV charging network simulator that models CPO operations and emits OCPP, OCPI, and OpenADR datasets. _(Rust)_
-
-#### Route planner
-
-- **[GeiserX/Pumperly](https://github.com/GeiserX/Pumperly)** — ⭐ 25 — Pumperly is a self-hostable route planner that maps fuel stations and EV chargers along routes using routing, geocoding, fuel price, and Open Charge Map data. _(TypeScript)_
 
 ### Uncategorized
 
@@ -623,11 +619,6 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - **[energywebfoundation/ocn-registry](https://github.com/energywebfoundation/ocn-registry)** — ⭐ 4 — 💤 2022-06-13 — Ethereum smart contracts for registering Open Charging Network nodes, OCPI parties, and service permissions. _(Java)_
 
-#### Charging station map
-
-- **[andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk)** — ⭐ 4 — 🚫 deprecated — A deprecated TypeScript/JavaScript SDK and MCP server for accessing the Open Charge Map REST API for EV charging location data. _(TypeScript)_
-- **[andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php)** — ⭐ 0 — 🚫 deprecated — A deprecated unofficial PHP SDK for accessing the Open Charge Map REST API from PHP applications. _(PHP)_
-
 #### Dashboard frontend
 
 - **[sap-labs-france/ev-dashboard](https://github.com/sap-labs-france/ev-dashboard)** — ⭐ 78 — 💤 2024-08-02 — Angular dashboard frontend for Open e-Mobility that connects to ev-server to monitor, manage, remotely control, bill, and analyze EV charging stations and related assets. _(TypeScript)_
@@ -639,6 +630,11 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 #### MCP Server
 
 - **[andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk)** — ⭐ 4 — 🚫 deprecated — A deprecated TypeScript/JavaScript SDK and MCP server for accessing the Open Charge Map REST API for EV charging location data. _(TypeScript)_
+
+#### Maps & route planning
+
+- **[andreibesleaga/ocm-sdk](https://github.com/andreibesleaga/ocm-sdk)** — ⭐ 4 — 🚫 deprecated — A deprecated TypeScript/JavaScript SDK and MCP server for accessing the Open Charge Map REST API for EV charging location data. _(TypeScript)_
+- **[andreibesleaga/ocm-php](https://github.com/andreibesleaga/ocm-php)** — ⭐ 0 — 🚫 deprecated — A deprecated unofficial PHP SDK for accessing the Open Charge Map REST API from PHP applications. _(PHP)_
 
 #### OCHP Server
 

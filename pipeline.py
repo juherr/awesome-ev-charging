@@ -73,11 +73,12 @@ CATEGORY_TREE = {
 # near-synonyms into 1-repo buckets. This map folds variants into a canonical
 # label at render time (matched case-insensitively, so pure case dups also merge).
 SUBCATEGORY_ALIASES = {
-  # Charging station map / finder / Open Charge Map client libraries
-  "charging station finder": "Charging station map",
-  "charging station map": "Charging station map",
-  "open charge map library": "Charging station map",
-  "open charge map sdk": "Charging station map",
+  # Maps, station finders, route planners, Open Charge Map client libraries
+  "charging station finder": "Maps & route planning",
+  "charging station map": "Maps & route planning",
+  "route planner": "Maps & route planning",
+  "open charge map library": "Maps & route planning",
+  "open charge map sdk": "Maps & route planning",
   # EVSE firmware
   "evse controller": "EVSE firmware",
   "evse firmware": "EVSE firmware",
@@ -656,6 +657,10 @@ def _row_categories(row):
       out.append((main, _canon_sub(sub) or None))
     else:
       out.append((chunk, None))
+  # Dedup (aliasing can collapse two distinct subs onto the same canonical label,
+  # e.g. "Route planner" + "Charging station map" -> one bucket) while preserving order.
+  seen = set()
+  out = [p for p in out if not (p in seen or seen.add(p))]
   return out or [("Uncategorized", None)]
 
 
