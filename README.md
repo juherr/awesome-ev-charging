@@ -98,9 +98,9 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
 
 #### Modules
 
-* [Direct Payment](https://evroaming.org/wp-content/uploads/2024/10/DirectPayment_2_2_1___EVRF_version.pdf) (2.2.1)
+* [Direct Payment](https://evroaming.org/wp-content/uploads/2024/10/DirectPayment_2_2_1___EVRF_version.pdf) (2.2.1, 2024-03)
 * [e-PoI service](https://www.gireve.com/wp-content/uploads/2025/10/Gireve_Tech_ePoI-OCPI-2.2.1_ImplementationGuide_V1.1-_en.pdf) (2.2.1, Gireve, 2025-10)
-* [Accessibility extension](https://evroaming.org/wp-content/uploads/2026/01/e_accessibility_extension-1.0.0.pdf) (2.3.0, 3.0)
+* [Accessibility extension](https://evroaming.org/wp-content/uploads/2026/01/e_accessibility_extension-1.0.0.pdf) (2.3.0, 3.0, 2025-12)
 * Booking (2.3.0)
   * [ed2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-bookings/OCPI-2.3.0-bookings.pdf) (2026-06)
   * [1.1](https://evroaming.org/wp-content/uploads/2026/01/OCPI-2.3.0-booking-1.1.pdf) (2025-06)
