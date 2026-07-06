@@ -132,6 +132,7 @@ CATEGORY_OVERRIDES = {
   "dalathegreat/battery-emulator": "Other > Battery",
   "mnh-jansson/open-battery-information": "Other > Battery",
   "remontsuri/ev-qa-framework": "Other > Battery",
+  "izivia/ocpp-toolkit": "OCPP > Libraries",  # a Kotlin library, not a simulator
 }
 
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
