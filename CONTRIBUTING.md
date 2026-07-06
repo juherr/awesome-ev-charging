@@ -101,7 +101,8 @@ hand-edited cells — never use it when you want to keep manual edits.
 
 1. Make it discoverable by `ingest`, via any one of:
    - it already matches one of the `TOPICS` GitHub topics, or
-   - it's starred by one of the `STARRED_USERS`, or
+   - it's in one of the curated GitHub Stars lists in `STARRED_LISTS`
+     (e.g. `juherr/ev`, `mateogreil/ev-mobility`), or
    - add its `owner/repo` to `ADDITIONAL_REPOS` in `pipeline.py`, or
    - add a GitHub link to it anywhere in `README.md`.
 2. `mise run ingest`
@@ -124,9 +125,10 @@ by manual ordering.
 ## How classification works
 
 New repos — and repos whose upstream `pushed_at` has changed — are classified
-automatically by a Claude skill agent
-([`.claude/agents/repo-classifier.md`](.claude/agents/repo-classifier.md), running
-the Haiku model). It reads the repo's own description and README and produces the
+automatically by a pluggable LLM-CLI backend, selected with `enrich --classifier`
+(`claude` — the default, using the skill agent
+[`.claude/agents/repo-classifier.md`](.claude/agents/repo-classifier.md); `codex`;
+or `copilot`). It reads the repo's own description and README and produces the
 one-line description plus the `Main > Sub` categories. Editing `classifications.csv`
 by hand is exactly how you correct or pin that result.
 

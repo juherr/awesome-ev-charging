@@ -3,7 +3,7 @@
 Two stages, connected by a reviewable CSV:
 
     ingest  -> repos.csv           GitHub raw data + quality signals (no LLM)
-    enrich  -> repos.enriched.csv  category classification via a Claude skill agent
+    enrich  -> repos.enriched.csv  category classification via an LLM CLI (claude/codex/copilot)
 
 Run `python pipeline.py <stage> --help` for stage options.
 """
@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import time
@@ -37,6 +38,14 @@ DORMANT_DAYS = 365  # no push in >= 1 year => dormant
 
 TOPICS = {"ocpp", "ocpi", "emobility", "e-mobility", "iso15118"}
 STARRED_USERS = {"juherr", "mateogreil"}
+# Curated GitHub Stars lists sourced for discovery, as (owner, list-slug). Their
+# repos become candidates (like ADDITIONAL_REPOS); distinct from STARRED_USERS,
+# whose full star sets are only a promotion signal. GraphQL-only, so ingest needs
+# a token to reach these (see get_starred_list_repos).
+STARRED_LISTS = {
+  ("juherr", "ev"),
+  ("mateogreil", "ev-mobility"),
+}
 SELF_REPO = "juherr/awesome-ev-charging"  # its contributors' own repos get a promotion
 EXCLUDED_REPOS = {
   SELF_REPO,
@@ -128,9 +137,13 @@ CATEGORY_OVERRIDES = {
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
 CLASSIFIER_AGENT = "repo-classifier"
 CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
+# Optional model for the `enrich --classifier copilot` backend; empty = copilot's
+# default (auto). Override via the constant if a specific model is desired.
+CLASSIFIER_COPILOT_MODEL = ""
 
 # The Claude backend gets role + output format from the agent file; the codex
-# backend has no agent definition, so it carries the same contract in-prompt.
+# and copilot backends have no agent definition, so they carry the same contract
+# in-prompt.
 CLASSIFIER_INSTRUCTIONS = (
   "You analyze a GitHub repository related to EV charging, using its own "
   "description and its README. Produce two things:\n"
@@ -229,6 +242,69 @@ def get_starred_repos_for_user(user, headers):
   """Return the set of full_names starred by a user."""
   url = f"{BASE_URL}/users/{user}/starred"
   return {item["full_name"] for item in paginate(url, headers, throttle=1)}
+
+
+GRAPHQL_URL = f"{BASE_URL}/graphql"
+
+
+def _graphql(query, variables, headers):
+  """POST a GraphQL query; return the `data` object or None on error."""
+  try:
+    r = requests.post(GRAPHQL_URL, json={"query": query, "variables": variables},
+                      headers=headers)
+    r.raise_for_status()
+    payload = r.json()
+    if payload.get("errors"):
+      print(f"⚠️  GraphQL errors: {payload['errors']}")
+    return payload.get("data")
+  except (requests.RequestException, ValueError) as e:
+    print(f"⚠️  GraphQL request failed: {e}")
+    return None
+
+
+def _dig(obj, *keys):
+  """Walk nested dict keys, tolerating a None (GraphQL null) at any level."""
+  for key in keys:
+    obj = (obj or {}).get(key)
+  return obj
+
+
+def get_starred_list_repos(user, slug, headers):
+  """Return the set of repo full_names in a user's public GitHub Stars list.
+
+  Stars lists are exposed only via GraphQL (no REST endpoint) and require
+  authentication, so this is skipped with a warning when no token is set.
+  There is no `user.list(slug:)` field, so we resolve the list's node id via
+  `user.lists`, then page its items through `node(id:)`.
+  """
+  if not headers.get("Authorization"):
+    print(f"⚠️  no token; skipping starred list {user}/{slug}")
+    return set()
+
+  data = _graphql("query($l:String!){user(login:$l){lists(first:50){nodes{id slug}}}}",
+                  {"l": user}, headers)
+  nodes = _dig(data, "user", "lists", "nodes") or []
+  list_id = next((n["id"] for n in nodes if n.get("slug") == slug), None)
+  if not list_id:
+    print(f"⚠️  starred list {user}/{slug} not found")
+    return set()
+
+  items_query = """query($id:ID!,$after:String){
+    node(id:$id){... on UserList{items(first:100, after:$after){
+      pageInfo{hasNextPage endCursor}
+      nodes{... on Repository{nameWithOwner}}}}}}"""
+  names, after = set(), None
+  while True:
+    data = _graphql(items_query, {"id": list_id, "after": after}, headers)
+    conn = _dig(data, "node", "items") or {}
+    for n in conn.get("nodes") or []:
+      if n.get("nameWithOwner"):
+        names.add(n["nameWithOwner"])
+    page = conn.get("pageInfo") or {}
+    if not page.get("hasNextPage"):
+      break
+    after = page.get("endCursor")
+  return names
 
 
 def get_contributors(full_name, headers):
@@ -368,6 +444,10 @@ def collect_candidates(headers):
 
   for full_name in readme_repo_names():
     add(full_name, "readme")
+
+  for user, slug in sorted(STARRED_LISTS):
+    for full_name in get_starred_list_repos(user, slug, headers):
+      add(full_name, "starred-list")
 
   return candidates
 
@@ -542,7 +622,46 @@ def classify_with_codex(row, readme):
       os.remove(out_path)
 
 
-CLASSIFIERS = {"claude": classify_with_claude, "codex": classify_with_codex}
+def classify_with_copilot(row, readme):
+  """Classify a repo via `copilot -p` non-interactively. Returns (description, cats).
+
+  Uses the GitHub Copilot CLI, which is natively authenticated inside a GitHub
+  Copilot coding-agent environment (no extra API secret). Runs in an empty temp
+  cwd so the agent's tools have no repo files in reach; the prompt is
+  self-contained and instructs the model not to use any tools.
+  """
+  if not readme:
+    return "", []
+  prompt = f"{CLASSIFIER_INSTRUCTIONS}\n\n{build_classifier_prompt(row, readme)}"
+  cmd = [
+    "copilot", "-p", prompt,
+    "--allow-all-tools",   # required to run non-interactively
+    "--no-ask-user",       # never block waiting for interactive input
+    "--silent",            # print only the agent's answer on stdout
+    "--no-color",
+    "--log-level", "none",
+  ]
+  if CLASSIFIER_COPILOT_MODEL:
+    cmd += ["--model", CLASSIFIER_COPILOT_MODEL]
+  workdir = tempfile.mkdtemp()
+  try:
+    result = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, timeout=300)
+    if result.returncode != 0:
+      print(f"⚠️  classifier failed for {row['full_name']}: {result.stderr.strip()[:200]}")
+      return "", []
+    return parse_classification(result.stdout)
+  except Exception as e:
+    print(f"⚠️  classifier error for {row['full_name']}: {e}")
+    return "", []
+  finally:
+    shutil.rmtree(workdir, ignore_errors=True)
+
+
+CLASSIFIERS = {
+  "claude": classify_with_claude,
+  "codex": classify_with_codex,
+  "copilot": classify_with_copilot,
+}
 
 
 CLASSIFICATION_FIELDS = ["full_name", "pushed_at", "categories", "description"]
