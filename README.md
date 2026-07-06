@@ -1171,6 +1171,6 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 Contributions are welcome! If you know of a tool or resource that is not on the list, please feel free to add it.
 
-The easiest way to contribute is to [open an issue](https://github.com/juherr/awesome-ev/issues/new/choose) using the "Add a link" template.
+The easiest way to contribute is to [open an issue](https://github.com/juherr/awesome-ev-charging/issues/new/choose) using the "Add a link" template.
 
-You can also submit a pull request. Please try to follow the existing format.
+You can also submit a pull request. Note that the project listing above is **generated** — descriptions and categories are edited in `classifications.csv`, not by hand in this file. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
