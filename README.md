@@ -98,7 +98,7 @@ Roaming platforms (hubs) that interconnect CPOs and eMSPs, by founding year:
 
 - 🇩🇪 [Hubject](https://hubject.com/) (2012)
 - 🇫🇷 [Gireve](https://gireve.com/) (2013)
-- 🇩🇪 🇳🇱 [e-clearing.net](https://www.e-clearing.net/) (2014)
+- 🇩🇪 [e-clearing.net](https://www.e-clearing.net/) (2014)
 - 🇩🇪 [eNAPI](https://enapi.com/) (2024)
 - 🇫🇷 [CO-OP ev](https://www.co-opev.com/) (2026)
 
