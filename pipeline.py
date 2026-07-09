@@ -72,7 +72,8 @@ ADDITIONAL_REPOS = {
   "gaia-charge/ocpi-types",
   "TECHS-Technological-Solutions/ocpi",
   "ChargeMap/ocpi-protocol",
-  "ChargeMap/autocharge-vehicles-database"
+  "ChargeMap/autocharge-vehicles-database",
+  "ocpp-debugkit/ocpp-debugkit"
 }
 CATEGORY_TREE = {
   "OCPP": ["Server", "Simulator", "Libraries", "Misc"],
