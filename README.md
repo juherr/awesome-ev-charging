@@ -20,7 +20,6 @@ A carefully curated list of specifications, tools, and resources for electric ve
   - [iso15118](#iso15118)
   - [Eichrecht](#eichrecht-1)
   - [Other](#other-2)
-  - [Uncategorized](#uncategorized)
 <!-- END GENERATED TOC -->
 
 [![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
@@ -146,6 +145,7 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 - [smartenergycontrol-be/ocpp-proxy](https://github.com/smartenergycontrol-be/ocpp-proxy) - A Home Assistant OCPP proxy that shares one EV charger across multiple backend services with OCPP 1.6/2.0.1 support and control arbitration (OCPP 1.6, 2.0.1, 2.1 · Python · ⭐ 5).
 - [parklapp/steve-pluggable](https://github.com/parklapp/steve-pluggable) - SteVe Pluggable is a Java/Spring Boot OCPP server library for managing charge points, users, RFID authentication, and ESP backend integration (OCPP 1.2, 1.5, 1.6 · Java · ⭐ 4).
 - [Beep-Technologies/esteban-ocpp](https://github.com/Beep-Technologies/esteban-ocpp) - Esteban-OCPP is a Go OCPP server for administering charge points and users, exposing REST APIs, and running EV charging deployments in cloud or edge environments (OCPP 2.0 · Go · ⭐ 4).
+- [juherr/evolve](https://github.com/juherr/evolve) - EVolve - OCPP server implementation in Java (Java · ⭐ 4).
 - [erik73/app-steve](https://github.com/erik73/app-steve) - Home Assistant add-on that packages the SteVe OCPP server for managing EV charge point communications (Dockerfile · ⭐ 3).
 - [eveys-mobility/OCPP](https://github.com/eveys-mobility/OCPP) - Python OCPP CSMS gateway for Eveys that manages charger WebSocket connections and exposes REST, gRPC, Kafka events, webhooks, metrics, and storage integrations (OCPP 1.6 · Python · ⭐ 3).
 - [FlipSoftware/moovolt-csms](https://github.com/FlipSoftware/moovolt-csms) - Moov.olt is a Rust-based OCPP central system for managing EV chargers through a charging point service and a management server connected via AMQP (Rust · ⭐ 3).
@@ -424,10 +424,6 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 #### Route planning
 
 - [GeiserX/Pumperly](https://github.com/GeiserX/Pumperly) - Pumperly is a self-hostable route planner that maps fuel stations and EV chargers along routes using real-time price and charging-station data (TypeScript · ⭐ 25).
-
-### Uncategorized
-
-- [juherr/evolve](https://github.com/juherr/evolve) - EVolve - OCPP server implementation in Java (Java · ⭐ 4).
 
 <!-- END GENERATED PROJECTS -->
 

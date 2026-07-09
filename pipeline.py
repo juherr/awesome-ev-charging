@@ -134,6 +134,7 @@ CATEGORY_OVERRIDES = {
   "mnh-jansson/open-battery-information": "Other > Battery",
   "remontsuri/ev-qa-framework": "Other > Battery",
   "izivia/ocpp-toolkit": "OCPP > Libraries",  # a Kotlin library, not a simulator
+  "juherr/evolve": "OCPP > Server",  # OCPP server; classifier returned empty categories
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
