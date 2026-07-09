@@ -87,6 +87,13 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
   - [ed1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-payments/OCPI-2.3.0-payments.pdf) (2026-06)
 - [Autocharge](https://ocpi.fyi/ocpi/2.3.0/extensions/mod_autocharge_roaming.html) (2.3.0, community)
 
+#### Roaming
+
+Roaming relies on ID Registration Offices (IDRO) that assign and publish the operator (EVSE) and provider (contract) identifiers exchanged over OCPI.
+
+- [Identification Registration Repository](https://alternative-fuels-observatory.ec.europa.eu/markets-and-policy/policy-insights/identification-registration-repository) - The European reference, maintained by the European Alternative Fuels Observatory.
+- [IDRO Directory](https://idro.juherr.dev/) - A global directory aggregating e-mobility identifiers from national and regional IDRO registries.
+
 ### OICP (Open InterCharge Protocol)
 
 The **Open InterCharge Protocol (OICP)** is another protocol for roaming, developed by Hubject.
