@@ -108,7 +108,7 @@ python pipeline.py render --readme README.md
 ```
 
 This replaces the text between the `GENERATED` markers in `README.md` and also
-rewrites the standalone `awesome-ev-charging-projects.md`. It aborts if the
+rewrites the standalone `legacy-projects.md`. It aborts if the
 markers are missing or out of order.
 
 ### 4. Review the diff — expect broad drift
@@ -135,7 +135,7 @@ touches only generated, committed artifacts. **The regenerable artifacts
 never commit them.** Commit only the durable, published files:
 
 ```bash
-git add classifications.csv README.md awesome-ev-charging-projects.md
+git add classifications.csv README.md legacy-projects.md
 git commit -m "chore(data): refresh project listing
 
 Re-ran ingest + enrich + render. Refreshes N repos whose upstream metadata
@@ -165,5 +165,5 @@ confirmation.
 - ✅ Never pass `--refresh` to `enrich` during a routine refresh — it destroys
   hand-pinned classifications.
 - ✅ Only commit `classifications.csv`, `README.md`,
-  `awesome-ev-charging-projects.md` (+ `pipeline.py` if you changed a constant).
+  `legacy-projects.md` (+ `pipeline.py` if you changed a constant).
 - ✅ No Claude/AI references in commit messages.

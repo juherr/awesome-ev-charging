@@ -29,9 +29,9 @@ python pipeline.py ingest --token <GITHUB_PAT> --out repos.csv
 python pipeline.py enrich --in repos.csv --out repos.enriched.csv --token <GITHUB_PAT>
 #   enrich flags: --limit N / --skip-forks / --skip-dormant / --refresh
 
-python pipeline.py render --readme README.md   # Stage 3 -> injects the project
-#   listing between the markers in README.md (also writes the standalone
-#   awesome-ev-charging-projects.md). Omit --readme to only write the standalone file.
+python pipeline.py render --readme README.md   # Stage 3 -> injects the curated
+#   Selection between the markers in README.md and writes the secondary
+#   legacy-projects.md (dormant + to-refine). Omit --readme to only write the latter.
 ```
 
 `--token` is optional; without it GitHub's unauthenticated rate limits apply.
@@ -69,11 +69,15 @@ Curation knobs are module-level constants: `TOPICS`, `STARRED_USERS`, `STARRED_L
 - `repos.csv` / `repos.enriched.csv` are generated artifacts (git-ignored). `classifications.csv` is the durable, committed LLM cache. `cache_github/` is regenerable API-response cache — treat it as disposable, not source.
 - The `## Tools and Resources` project listing is **generated** — do not edit it by hand in `README.md`. To add/remove a repo there: it must be discoverable by `ingest` (via a `TOPICS` match, a curated stars-list entry in `STARRED_LISTS`, an `ADDITIONAL_REPOS` entry, or a GitHub link elsewhere in `README.md`), then `enrich` and `render --readme README.md`. Use `EXCLUDED_REPOS` to drop one. Promotion tier (which decides `Selection` vs `To refine`) is driven by the star lists / contributor status, not by manual ordering.
 
-## Stage 3 — `render` → README + standalone
+## Stage 3 — `render` → README (Selection) + legacy-projects.md
 
-`render` (`python pipeline.py render`) builds a curated view from `repos.enriched.csv`, grouped by `category > subcategory` (Libraries additionally split by language), with three blocks: `Selection`, collapsible `Dormant`, and collapsible `To refine`. Blocks are ranked by a promotion score (both star lists `2` > juherr-only or a repo contributor `1` > mateogreil-only `0` > neither `-1`; `Selection` = promotion ≥ 0 and active, `Dormant` = promotion ≥ 0 but dormant/deprecated, `To refine` = promotion < 0). The rendered body has **no** H1 or `## Selection` wrapper — its top level is the per-protocol `### main` — so it slots straight under `## Tools and Resources`.
+`render` (`python pipeline.py render`) builds a curated view from `repos.enriched.csv`, grouped by `category > subcategory` (Libraries additionally split by language). Rows are partitioned by a promotion score (both star lists `2` > juherr-only or a repo contributor `1` > mateogreil-only `0` > neither `-1`) and activity into three blocks: `Selection` = promotion ≥ 0 and active, `Dormant` = promotion ≥ 0 but dormant/deprecated, `To refine` = promotion < 0.
 
-- Always writes the standalone `awesome-ev-charging-projects.md` (`--out`).
-- With `--readme README.md` it also replaces the text between `README_MARKER_BEGIN` / `README_MARKER_END` via `_inject_between_markers` (which aborts if the markers are missing or out of order).
-- The older `awesome-ev-charging.md` / `-grouped.md` artifacts were removed.
+To satisfy the `sindresorhus/awesome` requirements (verified with `npx awesome-lint`), the **README publishes only `Selection`** — the awesome list must feature just maintained, curated items. `Dormant` + `To refine` go to a **secondary `legacy-projects.md`** (`--out`), which the README links in prose (not as a list item). Conformance details baked into the render:
+- `_render_line` emits awesome-lint-clean items — `- [owner/name](url) - Description (⭐ N · versions · lang).`: plain (non-bold) link, real ` - ` hyphen separator, description auto-capitalised and period-terminated, metadata folded into the trailing parenthetical so the item still ends with a period.
+- `_render_grouped` single-lists each repo under its **primary (first) category only** — the awesome format forbids duplicate links (`remark-lint:double-link`).
+- `_build_toc` regenerates the **whole** `## Contents` list (between `README_TOC_BEGIN` / `README_TOC_END`) as one contiguous list with **one nesting level** (`##` sections → their `###` children; deeper levels omitted), skipping meta sections (Contributing/License/…). `_slugify` mirrors GitHub's anchor slugger (drops symbols like `³`).
+- The generated project body has **no** H1/`## Selection` wrapper — top level is the per-protocol `### main` — so it slots straight under `## Tools and Resources`.
+- With `--readme README.md`, `_inject_between_markers` replaces the `README_MARKER_BEGIN` / `README_MARKER_END` (projects) and `README_TOC_BEGIN` / `README_TOC_END` (Contents) regions; it aborts if a marker pair is missing or out of order.
+- Not yet conformant: a CC0 `LICENSE` file is still required at the repo root (add via GitHub's "Add license" UI so `licensee` detects it); the AI-generated descriptions are a separate open question before any submission.
 </content>

@@ -97,7 +97,7 @@ jobs:
           add-paths: |
             classifications.csv
             README.md
-            awesome-ev-charging-projects.md
+            legacy-projects.md
           commit-message: |
             chore(data): monthly listing refresh
 

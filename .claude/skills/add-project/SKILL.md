@@ -130,7 +130,7 @@ python pipeline.py render --readme README.md
 Verify the entry landed:
 
 ```bash
-grep -n "<owner>/<repo>" README.md awesome-ev-charging-projects.md
+grep -n "<owner>/<repo>" README.md legacy-projects.md
 ```
 
 The block a repo lands in (`Selection` vs collapsed `Dormant` / `To refine`) is
@@ -166,7 +166,7 @@ Requested in issue #<N>. <one-line description>. Classified as <Main > Sub>.
 Closes #<N>"
 
 # 2) the regenerated listing (includes unrelated refresh drift)
-git add classifications.csv README.md awesome-ev-charging-projects.md
+git add classifications.csv README.md legacy-projects.md
 git commit -m "chore(data): refresh project listing (adds <repo>)
 
 Re-ran enrich + render. Injects <repo> (<Main > Sub>) and refreshes N
@@ -199,6 +199,6 @@ outward-facing actions need confirmation.
 
 - ✅ Never edit `README.md` between the `GENERATED` markers by hand.
 - ✅ Only commit `classifications.csv`, `README.md`,
-  `awesome-ev-charging-projects.md`, and (if changed) `pipeline.py`.
+  `legacy-projects.md`, and (if changed) `pipeline.py`.
 - ✅ Never pass `--refresh` when you want to keep hand-pinned classifications.
 - ✅ No Claude/AI references in commit messages.
