@@ -52,7 +52,7 @@ Descriptions and categories are stored in **`classifications.csv`** — the dura
 
 **Do not commit** the generated artifacts `repos.csv`, `repos.enriched.csv`,
 `cache_github/`, or `list.txt` — they're git-ignored. Only `classifications.csv`,
-`README.md`, and `awesome-ev-charging-projects.md` are meant to be committed.
+`README.md`, and `legacy-projects.md` are meant to be committed.
 
 ### Setup
 
@@ -136,7 +136,7 @@ by hand is exactly how you correct or pin that result.
 
 - ✅ Never edit between the `GENERATED` markers in `README.md`.
 - ✅ Only commit `classifications.csv` (plus `README.md` and
-  `awesome-ev-charging-projects.md`).
+  `legacy-projects.md`).
 - ✅ Don't pass `--refresh` if you want to keep manual edits.
 
 Hand-authored prose sections of the README (intro, `## Specifications`,

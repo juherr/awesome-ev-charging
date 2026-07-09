@@ -136,6 +136,28 @@ CATEGORY_OVERRIDES = {
   "izivia/ocpp-toolkit": "OCPP > Libraries",  # a Kotlin library, not a simulator
 }
 
+# Manual per-repo field overrides for repos whose GitHub record no longer
+# reflects reality — typically a project that migrated off GitHub: the GitHub
+# repo is archived/dormant while active development continues elsewhere (Codeberg,
+# GitLab, self-hosted). Keyed by lowercased full_name -> {csv_column: value}.
+# Applied at render time, so it survives re-ingest and `enrich --refresh`.
+# CSV values are strings, so booleans use "true"/"false" (match the dormant column).
+#
+# Future (Option B): instead of a static override, fetch live metadata from the
+# new host's API — Codeberg runs Forgejo, Gitea-compatible:
+#   GET https://codeberg.org/api/v1/repos/{owner}/{repo}
+#   -> stars_count, updated_at, archived (no auth for public repos)
+# to keep stars / pushed_at / dormant real and auto-refreshed. Escalate to that
+# if off-GitHub migrations become common.
+REPO_OVERRIDES = {
+  # Development moved to Codeberg; the GitHub mirror is archived (hence dormant).
+  # Codeberg confirmed active (updated 2026-07-02, not archived).
+  "tandemdrive/ocpi-tariffs": {
+    "html_url": "https://codeberg.org/tandemdrive/ocpi-tariffs",
+    "dormant": "false",
+  },
+}
+
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
 CLASSIFIER_AGENT = "repo-classifier"
 CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
@@ -784,6 +806,14 @@ def _canon_sub(sub):
   return SUBCATEGORY_ALIASES.get(sub.lower(), sub)
 
 
+def _apply_overrides(row):
+  """Overwrite CSV fields for repos in REPO_OVERRIDES (e.g. migrated off GitHub)."""
+  ov = REPO_OVERRIDES.get((row.get("full_name") or "").lower())
+  if ov:
+    row.update(ov)
+  return row
+
+
 def _row_categories(row):
   """Parse the pipe-joined `categories` column into [(main, sub), ...].
 
@@ -844,19 +874,36 @@ def _inactive(row):
 
 
 def _render_line(row, main=None, show_language=True):
-  parts = [f"- **[{row['full_name']}]({row['html_url']})**", f"— ⭐ {row['stars']}"]
+  """Render one project as an awesome-lint-clean list item:
+  `- [owner/name](url) - Description (metadata).`
+
+  The link is plain (not bold), the separator is a real ` - ` hyphen, and the
+  star count / protocol versions / language / status badges are folded into a
+  parenthetical at the end of the description so the item still ends with a
+  period (both requirements of remark-lint:awesome-list-item).
+  """
+  link = f"[{row['full_name']}]({row['html_url']})"
+  meta = []
   versions = {"OCPP": row.get("ocpp_versions"), "OCPI": row.get("ocpi_versions")}.get(main)
   if versions:
-    parts.append(f"— {main} {versions.replace(',', ', ')}")
-  if _is_deprecated(row):
-    parts.append("— 🚫 deprecated")
-  if row.get("dormant") == "true":  # dormant anywhere shows the last-update date
-    parts.append(f"— 💤 {row.get('pushed_at', '')[:10]}")
-  if row.get("description"):
-    parts.append(f"— {row['description']}")
+    meta.append(f"{main} {versions.replace(',', ', ')}")
   if show_language and row.get("language"):
-    parts.append(f"_({row['language']})_")
-  return " ".join(parts)
+    meta.append(row["language"])
+  if row.get("stars"):
+    meta.append(f"⭐ {row['stars']}")
+  if _is_deprecated(row):
+    meta.append("🚫 deprecated")
+  if row.get("dormant") == "true":  # last-update date (only shown in the legacy file)
+    meta.append(f"💤 {row.get('pushed_at', '')[:10]}")
+  suffix = f" ({' · '.join(meta)})" if meta else ""
+  desc = (row.get("description") or "").strip()
+  if desc:
+    desc = desc[0].upper() + desc[1:]  # awesome-lint: description starts uppercase
+    return f"- {link} - {desc.rstrip('.').rstrip()}{suffix}."
+  # No description: a bare link is allowed for a self-explanatory title. Keep the
+  # metadata as a trailing parenthetical (a link followed by `(...)` without a
+  # dash is accepted by awesome-lint), so stars/versions/language aren't lost.
+  return f"- {link}{suffix}"
 
 
 def _render_grouped(rows, lines):
@@ -865,10 +912,12 @@ def _render_grouped(rows, lines):
   Under a `Libraries` subcategory the technology becomes an extra `##### language`
   level (and is dropped from the line).
   """
+  # Single-list each repo under its primary (first) category only: the awesome
+  # format forbids duplicate links (remark-lint:double-link).
   groups = defaultdict(lambda: defaultdict(list))
   for row in rows:
-    for main, sub in _row_categories(row):
-      groups[main][sub].append(row)
+    main, sub = _row_categories(row)[0]
+    groups[main][sub].append(row)
   for main in sorted(groups, key=_main_key):
     lines += [f"### {main}", ""]
     subs = groups[main]
@@ -907,56 +956,59 @@ def _inject_between_markers(path, body, begin_marker, end_marker):
     f.write(updated)
 
 
-_SLUG_STRIP = re.compile(r"[^\w\s-]")
-
-
 def _slugify(text, seen):
-  """GitHub-style heading anchor, deduplicated in document order via `seen`."""
-  slug = _SLUG_STRIP.sub("", text.strip().lower()).replace(" ", "-")
+  """GitHub-style heading anchor, deduplicated in document order via `seen`.
+
+  Keeps letters/digits/space/hyphen and drops other symbols — including
+  superscripts like ³, which GitHub's slugger removes (so `eMI³` -> `emi`).
+  """
+  cleaned = "".join(
+    c for c in text.strip().lower()
+    if c in " -" or (c.isalnum() if c.isascii() else c.isalpha()))
+  slug = cleaned.replace(" ", "-")
   n = seen.get(slug, 0)
   seen[slug] = n + 1
   return slug if n == 0 else f"{slug}-{n}"
 
 
-def _headings_before(path, marker):
-  """ATX heading texts appearing before `marker` in `path`, in document order.
+def _build_toc(readme_path):
+  """Generate the whole Contents list from the README's own headings.
 
-  Used to seed the slugger so anchors into the generated block account for the
-  hand-authored headings (Contents, Specifications) that precede it.
+  Top-level entries are every `##` section except Contents itself; each section's
+  `###` headings become its (single-level) children — deeper levels are omitted to
+  respect the awesome guideline of "maximum one nesting level". The list is emitted
+  as one contiguous block (the markers wrap it, so it stays a single list, which
+  remark-lint:awesome-toc requires). Anchors are slugged in document order so they
+  match GitHub's heading anchors, including `-1` dedup for repeated headings.
   """
-  try:
-    with open(path, "r", encoding="utf-8") as f:
-      content = f.read()
-  except FileNotFoundError:
-    return []
-  head = content.split(marker, 1)[0]
-  return re.findall(r"^#{1,6}\s+(.*?)\s*$", head, re.M)
-
-
-def _build_toc(selection_lines, readme_path):
-  """Generate the Contents sub-tree (level-1 protocols, level-2 subcategories)
-  for the Selection block, with anchors matching GitHub's slugger."""
+  with open(readme_path, "r", encoding="utf-8") as f:
+    content = f.read()
+  # awesome-toc excludes the meta sections from the Contents list.
+  toc_skip = {"contents", "contributing", "license", "footnotes",
+              "acknowledgments", "acknowledgements"}
   seen = {}
-  for heading in _headings_before(readme_path, README_MARKER_BEGIN):
-    _slugify(heading, seen)  # seed with the headings that precede the block
-  # `## Tools and Resources` is among the seeded headings, so link it directly
-  # rather than re-slugging it (which would return a deduped `-1` anchor).
-  toc = ["- [Tools and Resources](#tools-and-resources)"]
-  for line in selection_lines:
-    if line.startswith("### "):
-      title = line[4:].strip()
-      toc.append(f"  - [{title}](#{_slugify(title, seen)})")
-    elif line.startswith("#### "):
-      title = line[5:].strip()
-      toc.append(f"    - [{title}](#{_slugify(title, seen)})")
-    elif line.startswith("##### "):
-      _slugify(line[6:].strip(), seen)  # consume to keep dedup aligned (not linked)
+  toc = []
+  under_section = False
+  for m in re.finditer(r"^(#{1,6})\s+(.*?)\s*$", content, re.M):
+    level, text = len(m.group(1)), m.group(2).strip()
+    anchor = _slugify(text, seen)  # advance the slugger for every heading, in order
+    if level == 2 and text.lower() in toc_skip:
+      under_section = False
+    elif level == 2:
+      toc.append(f"- [{text}](#{anchor})")
+      under_section = True
+    elif level == 3 and under_section:
+      toc.append(f"  - [{text}](#{anchor})")
   return "\n".join(toc)
 
 
 def render(args):
   with open(args.infile, "r", encoding="utf-8", newline="") as f:
     rows = list(csv.DictReader(f))
+
+  # Apply per-repo field overrides (e.g. a repo that migrated off GitHub) before
+  # partitioning, so _promotion / _inactive / _render_line all see the new values.
+  rows = [_apply_overrides(r) for r in rows]
 
   # Honor EXCLUDED_REPOS here too (not just at ingest), so the published list
   # never shows an excluded repo even from a stale enriched CSV.
@@ -968,30 +1020,39 @@ def render(args):
   dormant = [r for r in in_list if _inactive(r)]
   refine = [r for r in rows if _promotion(r) < 0]
 
-  # No H1/`## Selection` wrapper: the body slots straight under an existing
-  # heading (e.g. README's `## Tools and Resources`), so the top level is the
-  # per-protocol `### main` emitted by _render_grouped. The Selection block is
-  # built on its own first so its headings can seed the generated Contents TOC.
+  # Main list (README): only actively-maintained, curated "best" items, as the
+  # awesome guidelines require. No H1/`## Selection` wrapper — the top level is
+  # the per-protocol `### main`, so it slots straight under `## Tools and Resources`.
   sel_lines = []
   _render_grouped(selection, sel_lines)
+  selection_body = "\n".join(sel_lines).strip() + "\n"
 
-  lines = list(sel_lines)
-
-  def collapsed(title, group):
-    lines.extend(["<details>", f"<summary>{title}</summary>", ""])
-    _render_grouped(group, lines)
-    lines.extend(["</details>", ""])
-
-  collapsed(f"Dormant ({len(dormant)})", dormant)
-  collapsed(f"To refine ({len(refine)} projects)", refine)
-
-  body = "\n".join(lines).strip() + "\n"
+  # Secondary file: dormant/archived/deprecated and not-yet-curated projects,
+  # deliberately kept OUT of the awesome list (which must only feature maintained
+  # items) but preserved here for reference/transparency.
+  legacy = [
+    "# Legacy & pending EV charging projects",
+    "",
+    "Projects kept out of the main [README](README.md) list — which only features "
+    "actively maintained, curated tools — but preserved here for reference: "
+    "dormant, archived, or deprecated projects, plus candidates still awaiting "
+    "curation.",
+    "",
+    f"## Dormant ({len(dormant)})",
+    "",
+  ]
+  _render_grouped(dormant, legacy)
+  legacy += [f"## To refine ({len(refine)} projects)", ""]
+  _render_grouped(refine, legacy)
+  legacy_body = "\n".join(legacy).strip() + "\n"
 
   with open(args.out, "w", encoding="utf-8") as f:
-    f.write(body)
+    f.write(legacy_body)
   if getattr(args, "readme", None):
-    _inject_between_markers(args.readme, body, README_MARKER_BEGIN, README_MARKER_END)
-    _inject_between_markers(args.readme, _build_toc(sel_lines, args.readme),
+    # Inject the Selection body first so _build_toc sees its headings, then the TOC.
+    _inject_between_markers(args.readme, selection_body,
+                            README_MARKER_BEGIN, README_MARKER_END)
+    _inject_between_markers(args.readme, _build_toc(args.readme),
                             README_TOC_BEGIN, README_TOC_END)
 
   promoted = sum(1 for r in selection if _promotion(r) == 2)
@@ -1027,7 +1088,8 @@ def main():
 
   p_render = sub.add_parser("render", help="Render a curated Markdown view from the enriched CSV.")
   p_render.add_argument("--in", dest="infile", default="repos.enriched.csv", help="Input CSV path.")
-  p_render.add_argument("--out", default="awesome-ev-charging-projects.md", help="Output Markdown path.")
+  p_render.add_argument("--out", default="legacy-projects.md",
+                        help="Output path for the secondary listing (dormant + to-refine).")
   p_render.add_argument("--readme", help="Also inject the rendered body between the "
                         "markers in this file (e.g. README.md).")
   p_render.set_defaults(func=render)
