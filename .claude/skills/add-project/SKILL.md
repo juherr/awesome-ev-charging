@@ -8,7 +8,9 @@ description: >-
   liste"). Covers the full pipeline: make the repo discoverable, ingest → enrich
   → render, pin the requested category if the classifier diverges, commit the
   right files, and close the issue. Do NOT hand-edit README.md between the
-  generated markers — always go through this workflow.
+  generated markers — always go through this workflow. For a plain periodic
+  refresh of the whole listing's metadata (no repo to add/remove), use
+  refresh-metadata instead.
 ---
 
 # Add a project to the awesome-ev-charging list
@@ -21,6 +23,12 @@ new entry lands in the right section with a clean commit history.
 
 Read `CONTRIBUTING.md` and `CLAUDE.md` in the repo root for the authoritative
 "why" behind each step; this skill is the executable "how".
+
+**Scope check.** This skill is for adding (or removing) a *specific* repo. If the
+task is just a periodic metadata refresh of the whole listing — re-run the
+pipeline to pick up new stars / dormant status, with no repo to add — use the
+`refresh-metadata` skill instead: it handles the cache-vs-TTL decision and lands
+a single `chore(data)` commit rather than the source+data split below.
 
 ## Inputs to gather first
 
