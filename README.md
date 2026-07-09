@@ -38,7 +38,7 @@ This repository contains a collection of specifications, tools, and resources re
   - [Eichrecht](#eichrecht-1)
     - [Misc](#misc-4)
     - [OCMF Libraries](#ocmf-libraries)
-  - [Other](#other-1)
+  - [Other](#other-2)
     - [API Specification](#api-specification)
     - [Battery](#battery)
     - [CCS charge controller](#ccs-charge-controller)
@@ -353,6 +353,10 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - **[shiv3/gocpi](https://github.com/shiv3/gocpi)** — ⭐ 1 — OCPI 2.1.1, 2.2.1, 2.3.0 — gocpi is a Go library that provides generated typed OCPI clients, server handlers, validation, transport semantics, and pricing utilities for OCPI 2.1.1, 2.2.1, and 2.3.0 e-mobility roaming.
 
+##### Other
+
+- **[tandemdrive/ocpi-tariffs](https://codeberg.org/tandemdrive/ocpi-tariffs)** — ⭐ 41 — A project for calculating tariffs according to OCPI.
+
 #### Misc
 
 - **[Quentin-BACQUET/GIREVE_Tech_OCPI_V2.2.1](https://github.com/Quentin-BACQUET/GIREVE_Tech_OCPI_V2.2.1)** — ⭐ 2 — OCPI 2.2.1 — GIREVE OCPI V2.2.1 is documentation for implementing GIREVE’s IOP hub interface, including OCPI integration guidelines for CPO and eMSP roaming workflows.
@@ -500,7 +504,7 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 - **[juherr/evolve](https://github.com/juherr/evolve)** — ⭐ 4 — EVolve - OCPP server implementation in Java _(Java)_
 
 <details>
-<summary>Dormant (126)</summary>
+<summary>Dormant (125)</summary>
 
 ### OCPP
 
@@ -692,7 +696,6 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 ##### Other
 
-- **[tandemdrive/ocpi-tariffs](https://github.com/tandemdrive/ocpi-tariffs)** — ⭐ 41 — 💤 2025-03-19 — A project for calculating tariffs according to OCPI.
 - **[GLCharge/ocpi](https://github.com/GLCharge/ocpi)** — ⭐ 11 — OCPI 2.1.1, 2.2.1 — 💤 2024-04-19 — Go client libraries generated from OpenAPI specifications for interacting with OCPI protocol APIs.
 
 #### Misc

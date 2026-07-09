@@ -136,6 +136,28 @@ CATEGORY_OVERRIDES = {
   "izivia/ocpp-toolkit": "OCPP > Libraries",  # a Kotlin library, not a simulator
 }
 
+# Manual per-repo field overrides for repos whose GitHub record no longer
+# reflects reality — typically a project that migrated off GitHub: the GitHub
+# repo is archived/dormant while active development continues elsewhere (Codeberg,
+# GitLab, self-hosted). Keyed by lowercased full_name -> {csv_column: value}.
+# Applied at render time, so it survives re-ingest and `enrich --refresh`.
+# CSV values are strings, so booleans use "true"/"false" (match the dormant column).
+#
+# Future (Option B): instead of a static override, fetch live metadata from the
+# new host's API — Codeberg runs Forgejo, Gitea-compatible:
+#   GET https://codeberg.org/api/v1/repos/{owner}/{repo}
+#   -> stars_count, updated_at, archived (no auth for public repos)
+# to keep stars / pushed_at / dormant real and auto-refreshed. Escalate to that
+# if off-GitHub migrations become common.
+REPO_OVERRIDES = {
+  # Development moved to Codeberg; the GitHub mirror is archived (hence dormant).
+  # Codeberg confirmed active (updated 2026-07-02, not archived).
+  "tandemdrive/ocpi-tariffs": {
+    "html_url": "https://codeberg.org/tandemdrive/ocpi-tariffs",
+    "dormant": "false",
+  },
+}
+
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
 CLASSIFIER_AGENT = "repo-classifier"
 CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
@@ -784,6 +806,14 @@ def _canon_sub(sub):
   return SUBCATEGORY_ALIASES.get(sub.lower(), sub)
 
 
+def _apply_overrides(row):
+  """Overwrite CSV fields for repos in REPO_OVERRIDES (e.g. migrated off GitHub)."""
+  ov = REPO_OVERRIDES.get((row.get("full_name") or "").lower())
+  if ov:
+    row.update(ov)
+  return row
+
+
 def _row_categories(row):
   """Parse the pipe-joined `categories` column into [(main, sub), ...].
 
@@ -957,6 +987,10 @@ def _build_toc(selection_lines, readme_path):
 def render(args):
   with open(args.infile, "r", encoding="utf-8", newline="") as f:
     rows = list(csv.DictReader(f))
+
+  # Apply per-repo field overrides (e.g. a repo that migrated off GitHub) before
+  # partitioning, so _promotion / _inactive / _render_line all see the new values.
+  rows = [_apply_overrides(r) for r in rows]
 
   # Honor EXCLUDED_REPOS here too (not just at ingest), so the published list
   # never shows an excluded repo even from a stale enriched CSV.
