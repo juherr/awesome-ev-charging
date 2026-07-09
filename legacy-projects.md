@@ -265,7 +265,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 ### Uncategorized
 
 - [gregszalay/ocpp-charging-station](https://github.com/gregszalay/ocpp-charging-station) - Charging Station firmware for electric vehicles - OCPP 2.0.1. compliant (C++ · ⭐ 22 · 💤 2022-10-14).
-- [ChargeMap/autocharge-vehicles-database](https://github.com/ChargeMap/autocharge-vehicles-database)
+- [ChargeMap/autocharge-vehicles-database](https://github.com/ChargeMap/autocharge-vehicles-database) (⭐ 1 · 💤 2025-02-18)
 
 ## To refine (173 projects)
 
@@ -665,7 +665,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 ### Uncategorized
 
-- [vnbaaij/OCPP.NET](https://github.com/vnbaaij/OCPP.NET)
+- [vnbaaij/OCPP.NET](https://github.com/vnbaaij/OCPP.NET) (C# · ⭐ 10 · 💤 2020-12-27)
 - [glurp/dynamicReverseProxy](https://github.com/glurp/dynamicReverseProxy) - Exemple of a solution for dynamic Http/WS reverse proxy with nginx and /etc/hosts manipulation (⭐ 2 · 💤 2021-09-09).
 - [dattaphani899-create/voltgrid](https://github.com/dattaphani899-create/voltgrid) - Full-stack EV Charge Point Operator platform with OCPP 1.6, Node.js, WebSocket, SQLite and live dashboard (HTML · ⭐ 0).
 - [shiks2/charlie](https://github.com/shiks2/charlie) - Lightweight OCPP 1.6J Central System in Go. Open-source alternative to heavy Java-based CSMS servers. Powers Volt — hosted EV charging infrastructure management (Makefile · ⭐ 0).

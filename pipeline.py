@@ -900,7 +900,10 @@ def _render_line(row, main=None, show_language=True):
   if desc:
     desc = desc[0].upper() + desc[1:]  # awesome-lint: description starts uppercase
     return f"- {link} - {desc.rstrip('.').rstrip()}{suffix}."
-  return f"- {link}"  # bare link is allowed for a self-explanatory title
+  # No description: a bare link is allowed for a self-explanatory title. Keep the
+  # metadata as a trailing parenthetical (a link followed by `(...)` without a
+  # dash is accepted by awesome-lint), so stars/versions/language aren't lost.
+  return f"- {link}{suffix}"
 
 
 def _render_grouped(rows, lines):
