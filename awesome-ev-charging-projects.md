@@ -2,47 +2,47 @@
 
 #### Server
 
-- **[steve-community/steve](https://github.com/steve-community/steve)** — ⭐ 1074 — OCPP 1.2, 1.5, 1.6 — SteVe is a Java-based OCPP server and EV charging station management system for administering charge points, users, RFID authentication, security extensions, and related charging operations. _(Java)_
+- **[steve-community/steve](https://github.com/steve-community/steve)** — ⭐ 1078 — OCPP 1.2, 1.5, 1.6 — SteVe is a Java-based OCPP server and EV charging station management system for administering charge points, users, RFID authentication, security extensions, and related charging operations. _(Java)_
 - **[dallmann-consulting/OCPP.Core](https://github.com/dallmann-consulting/OCPP.Core)** — ⭐ 296 — OCPP 1.6, 2.0 — OCPP.Core is a .NET OCPP server with a web UI for managing charge points, connectors, RFID tokens, transactions, and supported OCPP messages. _(C#)_
-- **[citrineos/citrineos-core](https://github.com/citrineos/citrineos-core)** — ⭐ 258 — OCPP 1.6, 2.0.1 — CitrineOS is a TypeScript monorepo for an OCPP 1.6/2.0.1 charging station management server with message routing, backend services, and an operator web UI. _(TypeScript)_
-- **[EVerest/EVerest](https://github.com/EVerest/EVerest)** — ⭐ 218 — OCPP 1.6, 2.0.1, 2.1 — EVerest is an open-source modular Linux-based software stack for building and operating EV charging stations with support for AC/DC charging, OCPP, ISO 15118, hardware drivers, energy management, OTA updates, and embedded deployment. _(C++)_
-- **[EVtivity/evtivity-csms](https://github.com/EVtivity/evtivity-csms)** — ⭐ 17 — OCPP 1.6, 2.1 — EVtivity CSMS is a TypeScript charging station management system that manages EV charging infrastructure through OCPP 1.6/2.1 station communication, OCPI roaming, ISO 15118 Plug and Charge, REST APIs, and operator/driver web frontends. _(TypeScript)_
+- **[citrineos/citrineos-core](https://github.com/citrineos/citrineos-core)** — ⭐ 260 — OCPP 1.6, 2.0.1 — CitrineOS is an open-source OCPP 1.6/2.0.1 charging station management server written in TypeScript with REST API and web-based operator UI. _(TypeScript)_
+- **[EVtivity/evtivity-csms](https://github.com/EVtivity/evtivity-csms)** — ⭐ 18 — OCPP 1.6, 2.1 — EVtivity CSMS is a TypeScript charging station management system that manages EV charging infrastructure through OCPP 1.6/2.1 station communication, OCPI roaming, ISO 15118 Plug and Charge, REST APIs, and operator/driver web frontends. _(TypeScript)_
+- **[evcc-io/evcc](https://github.com/evcc-io/evcc)** — ⭐ 6920 — evcc is an open-source EV charge controller supporting OCPP and multiple integration protocols for solar-optimized, cloud-free home charging management. _(Go)_
 - **[apostoldevel/ocpp-cs](https://github.com/apostoldevel/ocpp-cs)** — ⭐ 76 — OCPP 1.5, 1.6, 2.0.1 — C++20 OCPP central system with a web UI, REST API, schema validation, and built-in charge point emulators for OCPP 1.5, 1.6, and 2.0.1. _(C++)_
 - **[gertjana/ocpp-backend](https://github.com/gertjana/ocpp-backend)** — ⭐ 23 — OCPP 1.6, 2.0 — An Elixir/Cowboy backend server for OCPP 1.6 charge point operations with limited OCPP 2.0 heartbeat support, a dashboard, and an API for sending charger commands. _(Elixir)_
 - **[ocpp-balanz/ocpp-2w-proxy](https://github.com/ocpp-balanz/ocpp-2w-proxy)** — ⭐ 15 — ocpp-2w-proxy is a Python OCPP proxy that forwards charger traffic between one or more chargers and two central management systems with primary/secondary routing rules. _(Python)_
 - **[savekar-ev/OCPP-1.6-Charging-Point-Management-System](https://github.com/savekar-ev/OCPP-1.6-Charging-Point-Management-System)** — ⭐ 12 — OCPP 1.6 — A full-stack OCPP 1.6 JSON Charge Point Management System for managing EV chargers through a WebSocket server, REST API, admin interface, and PostgreSQL backend. _(TypeScript)_
-- **[joulo-nl/joulo-ocpp-proxy](https://github.com/joulo-nl/joulo-ocpp-proxy)** — ⭐ 9 — OCPP 1.6, 2.0, 2.0.1 — OCPP WebSocket proxy that forwards charger traffic bidirectionally to a primary CSMS and mirrors charger messages read-only to secondary CSMS backends. _(TypeScript)_
 - **[OpenChargingCloud/CSMS](https://github.com/OpenChargingCloud/CSMS)** — ⭐ 8 — OCPP 1.6, 2.1 — An example OCPP 1.6 Central System and OCPP 2.1/2.0.1 Charging Station Management System for testing EV charging infrastructure. _(C#)_
 - **[slachiewicz/ocpp-csms-backend](https://github.com/slachiewicz/ocpp-csms-backend)** — ⭐ 7 — Python/FastAPI and Vue3 CSMS for monitoring and controlling EV charging stations over WebSocket with queue-based charge point services and management logic. _(Python)_
 - **[flowionab/ocpp-csms-server](https://github.com/flowionab/ocpp-csms-server)** — ⭐ 5 — OCPP CSMS Server is a Rust-based central system for managing EV charge points over OCPP 1.6 and 2.0.1 with WebSocket communication and authentication. _(Rust)_
 - **[smartenergycontrol-be/ocpp-proxy](https://github.com/smartenergycontrol-be/ocpp-proxy)** — ⭐ 5 — OCPP 1.6, 2.0.1, 2.1 — A Home Assistant OCPP proxy that shares one EV charger across multiple backend services with OCPP 1.6/2.0.1 support and control arbitration. _(Python)_
 - **[parklapp/steve-pluggable](https://github.com/parklapp/steve-pluggable)** — ⭐ 4 — OCPP 1.2, 1.5, 1.6 — SteVe Pluggable is a Java/Spring Boot OCPP server library for managing charge points, users, RFID authentication, and ESP backend integration. _(Java)_
-- **[erik73/app-steve](https://github.com/erik73/app-steve)** — ⭐ 3 — A Home Assistant add-on that runs the SteVe OCPP server for communicating with EV charge points. _(Dockerfile)_
+- **[Beep-Technologies/esteban-ocpp](https://github.com/Beep-Technologies/esteban-ocpp)** — ⭐ 4 — OCPP 2.0 — Esteban-OCPP is a Go OCPP server for administering charge points and users, exposing REST APIs, and running EV charging deployments in cloud or edge environments. _(Go)_
+- **[erik73/app-steve](https://github.com/erik73/app-steve)** — ⭐ 3 — Home Assistant add-on that packages the SteVe OCPP server for managing EV charge point communications. _(Dockerfile)_
 - **[eveys-mobility/OCPP](https://github.com/eveys-mobility/OCPP)** — ⭐ 3 — OCPP 1.6 — Python OCPP CSMS gateway for Eveys that manages charger WebSocket connections and exposes REST, gRPC, Kafka events, webhooks, metrics, and storage integrations. _(Python)_
-- **[Beep-Technologies/esteban-ocpp](https://github.com/Beep-Technologies/esteban-ocpp)** — ⭐ 3 — OCPP 2.0 — Esteban-OCPP is a Go OCPP server for administering charge points and users, exposing REST APIs, and running EV charging deployments in cloud or edge environments. _(Go)_
 - **[FlipSoftware/moovolt-csms](https://github.com/FlipSoftware/moovolt-csms)** — ⭐ 3 — Moov.olt is a Rust-based OCPP central system for managing EV chargers through a charging point service and a management server connected via AMQP. _(Rust)_
 - **[eliodecolli/Medinilla](https://github.com/eliodecolli/Medinilla)** — ⭐ 3 — OCPP 2.0.1 — Medinilla is an ASP.NET Core CSMS backend implementing selected OCPP messages for managing EV charging station connections and transactions. _(C#)_
 - **[markrpo/ocppws](https://github.com/markrpo/ocppws)** — ⭐ 2 — C++ implementation of an OCPP server over WebSockets with support for core charge point messages. _(C++)_
 - **[elton-saraci/ocpp-central-system](https://github.com/elton-saraci/ocpp-central-system)** — ⭐ 2 — OCPP 1.6 — Spring Boot OCPP 1.6 central system for managing EV charge stations over WebSockets with transaction handling, status monitoring, remote commands, and REST APIs. _(Java)_
 - **[alexeimoisseev/ocpp-server-typescript](https://github.com/alexeimoisseev/ocpp-server-typescript)** — ⭐ 1 — OCPP 1.6, 2.0.1 — A minimal TypeScript OCPP WebSocket server for learning, testing chargers, and running simulators with support for OCPP 1.6J and 2.0.1 core charging flows. _(TypeScript)_
-- **[citrineos/citrineos](https://github.com/citrineos/citrineos)** — ⭐ 141 — OCPP 2.0.1 — CitrineOS is an open source OCPP 2.0.1 Charging Station Management System software stack with modular services for handling charging station communication and CSMS functions.
+- **[citrineos/citrineos](https://github.com/citrineos/citrineos)** — ⭐ 142 — OCPP 2.0.1 — CitrineOS is an open source OCPP 2.0.1 Charging Station Management System software stack with modular services for handling charging station communication and CSMS functions.
 
 #### Simulator
 
-- **[SAP/e-mobility-charging-stations-simulator](https://github.com/SAP/e-mobility-charging-stations-simulator)** — ⭐ 222 — OCPP 1.6, 2.0, 2.0.1 — A Node.js simulator for scaling and controlling OCPP-J charging station instances, including CLI, Web UI, and support for OCPP 1.6 and 2.0.x commands. _(TypeScript)_
-- **[monta-app/ocpp-emulator](https://github.com/monta-app/ocpp-emulator)** — ⭐ 169 — OCPP 1.6, 2.0.1 — A Kotlin Multiplatform desktop emulator for OCPP charge points supporting OCPP 1.6 and partial OCPP 2.0.1 behavior for testing CSMS integrations. _(Kotlin)_
+- **[SAP/e-mobility-charging-stations-simulator](https://github.com/SAP/e-mobility-charging-stations-simulator)** — ⭐ 222 — OCPP 1.6, 2.0, 2.0.1 — A Node.js-based simulator for OCPP-J charging stations that supports OCPP protocol versions 1.6 and 2.0.x with Web UI, CLI, and Docker deployment. _(TypeScript)_
+- **[monta-app/ocpp-emulator](https://github.com/monta-app/ocpp-emulator)** — ⭐ 170 — OCPP 1.6, 2.0.1 — A desktop GUI emulator for OCPP 1.6 and 2.0.1 charge points built with Kotlin Multiplatform, enabling message interception and testing capabilities. _(Kotlin)_
 - **[ozgurbayram/OCPPSimulator](https://github.com/ozgurbayram/OCPPSimulator)** — ⭐ 24 — OCPP 1.6 — A web-based OCPP 1.6 simulator for creating simulated EV charge points, connecting them to a CSMS, sending OCPP messages, and monitoring charging communication. _(TypeScript)_
 - **[matth-x/MicroOcppSimulator](https://github.com/matth-x/MicroOcppSimulator)** — ⭐ 168 — MicroOcppSimulator is a GUI-based simulator and demo application that runs the MicroOCPP client on a host computer and connects to an OCPP server to simulate charging sessions and actions. _(C++)_
 - **[solidstudiosh/ocpp-virtual-charge-point](https://github.com/solidstudiosh/ocpp-virtual-charge-point)** — ⭐ 113 — OCPP 1.6, 2.0.1 — A Node.js terminal-based simulator for OCPP 1.6 and 2.0.1 charging stations with configurable WebSocket connection settings and schema validation. _(TypeScript)_
 - **[apostoldevel/ocpp-cs](https://github.com/apostoldevel/ocpp-cs)** — ⭐ 76 — OCPP 1.5, 1.6, 2.0.1 — C++20 OCPP central system with a web UI, REST API, schema validation, and built-in charge point emulators for OCPP 1.5, 1.6, and 2.0.1. _(C++)_
-- **[OpenChargingCloud/ChargingStationApp](https://github.com/OpenChargingCloud/ChargingStationApp)** — ⭐ 41 — OCPP 1.6, 2.0.1, 2.1 — Electron-based virtual EV charging station for testing OCPP charging station protocols and related extensions. _(TypeScript)_
-- **[shiv3/ocpp-cp-simulator](https://github.com/shiv3/ocpp-cp-simulator)** — ⭐ 35 — OCPP 1.5, 1.6 — OCPP CP Simulator is an OCPP 1.6J charge point simulator with browser, CLI, daemon, and control API interfaces for testing and CSMS development. _(TypeScript)_
+- **[OpenChargingCloud/ChargingStationApp](https://github.com/OpenChargingCloud/ChargingStationApp)** — ⭐ 41 — Electron-based virtual EV charging station for testing OCPP charging station protocols and related extensions. _(TypeScript)_
+- **[shiv3/ocpp-cp-simulator](https://github.com/shiv3/ocpp-cp-simulator)** — ⭐ 36 — OCPP 1.5, 1.6 — OCPP 1.6J charge point simulator with browser UI, CLI, and Socket.IO API for testing charge management systems and AI agents. _(TypeScript)_
 - **[virta-ltd/charge-device-simulator](https://github.com/virta-ltd/charge-device-simulator)** — ⭐ 21 — Python-based device simulator framework for EV charging protocols including OCPP and Ensto, packaged for Docker-based execution. _(Python)_
 - **[road-labs/chargestation-one](https://github.com/road-labs/chargestation-one)** — ⭐ 16 — OCPP 1.6, 2.0.1, 2.1 — Browser-based OCPP charging station simulator supporting OCPP 1.6 and 2.0.1 for testing backend endpoints. _(Less)_
 - **[c-jimenez/open-ocpp-simu](https://github.com/c-jimenez/open-ocpp-simu)** — ⭐ 16 — Open OCPP simulator provides an MQTT-based environment for launching, managing, monitoring, and configuring simulated OCPP charge points that connect to a central system. _(C++)_
 - **[kwtycoon/kilowatt-tycoon](https://github.com/kwtycoon/kilowatt-tycoon)** — ⭐ 7 — OCPP 1.6 — Kilowatt Tycoon is a Rust/Bevy tycoon game and EV charging network simulator that models CPO operations and emits OCPP, OCPI, and OpenADR datasets. _(Rust)_
 - **[PlugSecure-Inc/ocpp-simulator-lab](https://github.com/PlugSecure-Inc/ocpp-simulator-lab)** — ⭐ 6 — OCPP 1.6, 2.0.1, 2.1 — OCPP Simulator Lab is a Python/FastAPI and Vue web tool that simulates OCPP charge points and CPMS endpoints for testing OCPP 1.6J, 2.0.1, and 2.1 behavior. _(Python)_
 - **[vfg27/EmuOCPP](https://github.com/vfg27/EmuOCPP)** — ⭐ 5 — OCPP 1.6, 2.0, 2.0.1 — EmuOCPP is a Mininet/IPMininet-based OCPP emulator for simulating EV charging stations and central systems across OCPP 1.6, 2.0, and 2.0.1 with security profiles and certificate tooling. _(Python)_
+- **[ReliON-Charging/everest-dcfc](https://github.com/ReliON-Charging/everest-dcfc)** — ⭐ 4 — OCPP 1.6, 2.0.1 — A multi-architecture Docker container for running an EVerest-based virtual DC fast charger with configurable OCPP versions, connectors, smart charging, and a Node-RED simulation dashboard. _(C++)_
 - **[wirelane/ocpp-client-simulator](https://github.com/wirelane/ocpp-client-simulator)** — ⭐ 3 — OCPP 1.6 — A Node.js command-line simulator for an OCPP 1.6 JSON/WebSocket charging station that connects to an OCPP server and exercises scenarios such as RFID authorization, remote start/stop, connectors, and signed meter values. _(JavaScript)_
 - **[hlsxx/ocpp-charge-point-simulator](https://github.com/hlsxx/ocpp-charge-point-simulator)** — ⭐ 2 — OCPP 1.6, 2.0.1 — A Rust CLI simulator for testing OCPP 1.6 backends by emulating configurable charge points in automated or idle modes. _(Rust)_
 
@@ -60,13 +60,13 @@
 ##### C++
 
 - **[c-jimenez/open-ocpp](https://github.com/c-jimenez/open-ocpp)** — ⭐ 168 — OCPP 1.6, 2.0.1 — Open OCPP is a C++17 library implementing the WebSocket/JSON variants of OCPP 1.6 and OCPP 2.0.1.
-- **[matth-x/MicroOcpp](https://github.com/matth-x/MicroOcpp)** — ⭐ 524 — OCPP 1.6, 2.0.1 — MicroOCPP is a portable C/C++ OCPP 1.6 and 2.0.1 client library for integrating microcontroller-based EV chargers with OCPP central systems.
-- **[ChargeLab/OpenOCPP](https://github.com/ChargeLab/OpenOCPP)** — ⭐ 76 — OCPP 1.6 — OpenOCPP is multi-platform embedded software implementing OCPP 1.6 and 2.0.1 for EV charging stations.
+- **[matth-x/MicroOcpp](https://github.com/matth-x/MicroOcpp)** — ⭐ 525 — OCPP 1.6, 2.0.1 — MicroOCPP is a portable C/C++ OCPP 1.6 and 2.0.1 client library for integrating microcontroller-based EV chargers with OCPP central systems.
+- **[ChargeLab/OpenOCPP](https://github.com/ChargeLab/OpenOCPP)** — ⭐ 78 — OCPP 1.6 — OpenOCPP is multi-platform embedded software implementing OCPP 1.6 and 2.0.1 for EV charging stations.
 - **[markrpo/ocppws](https://github.com/markrpo/ocppws)** — ⭐ 2 — C++ implementation of an OCPP server over WebSockets with support for core charge point messages.
 
 ##### Go
 
-- **[lorenzodonini/ocpp-go](https://github.com/lorenzodonini/ocpp-go)** — ⭐ 368 — OCPP 1.6, 2.0.1 — Go library for implementing OCPP-J central systems and charge point clients with support for OCPP 1.6, 1.6 Security, and 2.0.1.
+- **[lorenzodonini/ocpp-go](https://github.com/lorenzodonini/ocpp-go)** — ⭐ 369 — OCPP 1.6, 2.0.1 — Go library for implementing OCPP-J central systems and charge point clients with support for OCPP 1.6, 1.6 Security, and 2.0.1.
 - **[aliml92/ocpp](https://github.com/aliml92/ocpp)** — ⭐ 28 — OCPP 1.6, 2.0.1 — A Go library implementing JSON OCPP 1.6 and 2.0.1 with server and charge point client support.
 - **[ChargePi/ocpp-manager](https://github.com/ChargePi/ocpp-manager)** — ⭐ 6 — OCPP 1.6, 2.0.1 — A Go library for managing and validating OCPP configuration variables, including defaults, mandatory keys, custom validators, and versioned configurations.
 - **[shiv3/gocpp](https://github.com/shiv3/gocpp)** — ⭐ 4 — OCPP 1.6, 2.0.1, 2.1 — gocpp is a Go library for building typed OCPP 1.6, 2.0.1, and 2.1 CSMS servers and charge point clients with schema validation and pluggable storage, authentication, and observability.
@@ -74,7 +74,7 @@
 
 ##### Java
 
-- **[ChargeTimeEU/Java-OCA-OCPP](https://github.com/ChargeTimeEU/Java-OCA-OCPP)** — ⭐ 369 — OCPP 1.6, 2.0.1, 2.1 — Java-OCA-OCPP is a Java library for implementing OCPP Central Systems and Charge Points with OCPP 1.6 JSON/SOAP and OCPP 2.x support.
+- **[ChargeTimeEU/Java-OCA-OCPP](https://github.com/ChargeTimeEU/Java-OCA-OCPP)** — ⭐ 370 — OCPP 1.6, 2.0.1, 2.1 — Java-OCA-OCPP is a Java library for implementing OCPP Central Systems and Charge Points with OCPP 1.6 JSON/SOAP and OCPP 2.x support.
 - **[parklapp/steve-pluggable](https://github.com/parklapp/steve-pluggable)** — ⭐ 4 — OCPP 1.2, 1.5, 1.6 — SteVe Pluggable is a Java/Spring Boot OCPP server library for managing charge points, users, RFID authentication, and ESP backend integration.
 
 ##### JavaScript
@@ -84,38 +84,43 @@
 
 ##### Kotlin
 
-- **[monta-app/library-ocpp](https://github.com/monta-app/library-ocpp)** — ⭐ 6 — OCPP 1.6 — Kotlin library for parsing, handling, and sending OCPP 1.6J and 2.0.1 messages between charge points and OCPP servers.
-- **[IZIVIA/ocpp-toolkit](https://github.com/IZIVIA/ocpp-toolkit)** — ⭐ 44 — OCPP 1.5, 1.6, 2.0 — OCPP Toolkit is a Kotlin library for implementing and simulating OCPP charging station and CSMS operations across OCPP versions and transports.
+- **[monta-app/library-ocpp](https://github.com/monta-app/library-ocpp)** — ⭐ 6 — OCPP 1.6 — A Kotlin library for implementing OCPP protocol message handling with support for OCPP 1.6 and 2.0.1, providing synchronous and asynchronous interfaces for charge points and servers.
+- **[IZIVIA/ocpp-toolkit](https://github.com/IZIVIA/ocpp-toolkit)** — ⭐ 44 — OCPP 1.5, 1.6, 2.0 — A Kotlin library providing OCPP protocol implementation for both Charging Station and CSMS roles, supporting versions 1.5, 1.6, and 2.0.1 with WS/JSON and SOAP transport.
 
 ##### Python
 
-- **[mobilityhouse/ocpp](https://github.com/mobilityhouse/ocpp)** — ⭐ 1026 — OCPP 1.6, 2.0.1 — Python library implementing JSON-based OCPP 1.6 and 2.0.1 for building OCPP clients and servers.
+- **[mobilityhouse/ocpp](https://github.com/mobilityhouse/ocpp)** — ⭐ 1025 — OCPP 1.6, 2.0.1 — Python library implementing JSON-based OCPP 1.6 and 2.0.1 for building OCPP clients and servers.
 
 ##### Rust
 
 - **[tommymalmqvist/rust-ocpp](https://github.com/tommymalmqvist/rust-ocpp)** — ⭐ 100 — OCPP 1.6, 2.0.1, 2.1 — rust-ocpp is a Rust library implementing OCPP 1.6, 2.0.1, and work-in-progress 2.1 data models validated against official JSON schemas.
 - **[flowionab/ocpp-client](https://github.com/flowionab/ocpp-client)** — ⭐ 4 — OCPP 1.6 — ocpp-client is a Rust library for implementing OCPP 1.6 and 2.0.1 client communication with CSMS servers.
+- **[evlinked/ocpp-rs](https://github.com/evlinked/ocpp-rs)** — ⭐ 3 — OCPP 1.6, 2.0.1 — A Rust library providing production-grade OCPP 1.6J and 2.0.1 implementation with integrated CSMS server, charge point simulator, and conformance tests.
 
 ##### TypeScript
 
 - **[voltbras/ts-ocpp](https://github.com/voltbras/ts-ocpp)** — ⭐ 49 — TypeScript library for implementing OCPP central systems and charge points with support for OCPP-JSON 1.6 and OCPP-SOAP 1.5.
-- **[jacoscaz/typed-ocpp](https://github.com/jacoscaz/typed-ocpp)** — ⭐ 9 — OCPP 1.6, 2.0, 2.1 — typed-ocpp is a TypeScript library for type-aware validation and typing of OCPP 1.6, 2.0.1, and 2.1 messages using official JSON Schemas.
+- **[jacoscaz/typed-ocpp](https://github.com/jacoscaz/typed-ocpp)** — ⭐ 9 — OCPP 1.6, 2.0, 2.1 — A TypeScript library for type-aware validation of OCPP 1.6, 2.0, and 2.1 messages against official JSON schemas.
 - **[connected-hil/ocpp-tools](https://github.com/connected-hil/ocpp-tools)** — ⭐ 7 — OCPP 1.6, 2.0.1, 2.1 — A TypeScript library providing OCPP 1.6J and 2.0.1 message types, RPC utilities, parsers, and schema-based validation.
+
+##### Other
+
+- **[appspace/kwwhat](https://github.com/appspace/kwwhat)** — ⭐ 14 — OCPP 1.6, 2.0.1, 2.1 — An open-source dbt data transformation library that processes raw OCPP logs into structured analytics models for EV charging reliability, utilization, and session outcome metrics.
 
 #### Misc
 
 - **[lbbrhzn/ocpp](https://github.com/lbbrhzn/ocpp)** — ⭐ 377 — Home Assistant integration for monitoring and controlling EV chargers that communicate via OCPP 1.6j, 2.0.1, and experimental 2.1. _(Python)_
-- **[evcc-io/evcc](https://github.com/evcc-io/evcc)** — ⭐ 6919 — evcc is a local EV charge controller and home energy management system for solar-aware charging across many chargers, meters, batteries, and home automation integrations. _(Go)_
-- **[OpenEVSE/openevse_esp32_firmware](https://github.com/OpenEVSE/openevse_esp32_firmware)** — ⭐ 227 — OCPP 1.6 — ESP32 firmware for an OpenEVSE WiFi/Ethernet gateway that provides a local web UI, MQTT control, Emoncms logging, solar/grid-aware charging control, and beta OCPP 1.6 support. _(C)_
-- **[alexeimoisseev/ocpp.md](https://github.com/alexeimoisseev/ocpp.md)** — ⭐ 18 — OCPP 1.6, 2.0.1, 2.1 — OCPP.md is a structured documentation and schema knowledge base for AI-assisted development with OCPP 1.6J, 2.0.1, and 2.1. _(Python)_
-- **[appspace/kwwhat](https://github.com/appspace/kwwhat)** — ⭐ 14 — OCPP 1.6, 2.0.1, 2.1 — kWwhat is a dbt data pipeline that transforms raw OCPP charging logs into structured models and metrics for EV charger reliability, utilization, uptime, visits, and charge outcomes.
+- **[EVerest/EVerest](https://github.com/EVerest/EVerest)** — ⭐ 221 — OCPP 1.6, 2.0.1, 2.1 — EVerest is an open-source modular framework for building EV charging station software with support for OCPP, ISO 15118, hardware drivers, and energy management. _(C++)_
+- **[OpenEVSE/openevse_esp32_firmware](https://github.com/OpenEVSE/openevse_esp32_firmware)** — ⭐ 227 — OCPP 1.6 — An ESP32 WiFi gateway for OpenEVSE charging controllers with OCPP V1.6, MQTT, and web-based control. _(C)_
+- **[alexeimoisseev/ocpp.md](https://github.com/alexeimoisseev/ocpp.md)** — ⭐ 18 — OCPP 1.6, 2.0.1, 2.1 — An OCPP knowledge base and AI agent plugin providing structured message schemas, sequence diagrams, use-case catalogs, and implementation guidance for OCPP 2.1, 2.0.1, and 1.6J. _(Python)_
 - **[vfg27/CheckOCPP](https://github.com/vfg27/CheckOCPP)** — ⭐ 12 — OCPP 1.6, 2.0, 2.0.1 — CheckOCPP is a Wireshark Lua dissector that detects OCPP JSON traffic versions and validates captured messages against protocol schemas for passive compliance auditing. _(Lua)_
 - **[vampirebyte/rabbitmq-web-ocpp](https://github.com/vampirebyte/rabbitmq-web-ocpp)** — ⭐ 10 — RabbitMQ Web OCPP is a RabbitMQ plugin that translates OCPP-over-WebSocket connections from EV charge stations into AMQP-routed messages. _(Erlang)_
+- **[joulo-nl/joulo-ocpp-proxy](https://github.com/joulo-nl/joulo-ocpp-proxy)** — ⭐ 9 — OCPP 1.6, 2.0, 2.0.1 — An OCPP WebSocket proxy service that routes charger connections to a primary CSMS and optionally mirrors traffic to secondary backends for monitoring and migration. _(TypeScript)_
 - **[powerly-ev/open-ev-charge-android-app](https://github.com/powerly-ev/open-ev-charge-android-app)** — ⭐ 7 — Powerly Open EV Charge Android App is a white-label Kotlin mobile app for discovering chargers, managing EV charging sessions, bookings, billing, roaming, and peer-to-peer charger sharing through the Powerly platform. _(Kotlin)_
-- **[SolarNetwork/solarnetwork-central](https://github.com/SolarNetwork/solarnetwork-central)** — ⭐ 6 — SolarNet is a Java/Postgres cloud platform for managing SolarNetwork accounts, provisioning SolarNode credentials, accepting node data, and exposing REST APIs for that data. _(Java)_
 - **[unified-error-codes/csds](https://github.com/unified-error-codes/csds)** — ⭐ 6 — UEC Software Stack provides backend, UI, and EVSE-agent components for charging station diagnostics using unified error codes and telemetry retrieved via OCPP. _(Python)_
 - **[EVtivity/evtivity-mobile-app](https://github.com/EVtivity/evtivity-mobile-app)** — ⭐ 4 — Native iOS and Android driver app for the EVtivity EV charging platform that connects to its REST API for branded driver portal functionality. _(TypeScript)_
 - **[chargex-consortium/ev-charge-seq-state](https://github.com/chargex-consortium/ev-charge-seq-state)** — ⭐ 4 — OCPP 1.6, 2.0.1, 2.1 — Open-source UML sequence diagrams and finite-state machine models for SAE J1772, ISO 15118, and OCPP EV charging protocol flows.
+- **[ocpp-debugkit/ocpp-debugkit](https://github.com/ocpp-debugkit/ocpp-debugkit)** — ⭐ 3 — An open-source developer toolkit for analyzing and debugging OCPP charging session traces with failure detection, replay engine, and report generation. _(TypeScript)_
 - **[OpenChargingTechnology/Whitepapers](https://github.com/OpenChargingTechnology/Whitepapers)** — ⭐ 2 — OCPP 1.6, 2.1 — A collection of open EV infrastructure ICT whitepapers covering cybersecurity, interoperability, OCPP, OCPI, OICP, ISO 15118, EV roaming, OpenADR, and related protocols.
 - **[eliodecolli/ocpp-test-cases](https://github.com/eliodecolli/ocpp-test-cases)** — ⭐ 1 — OCPP 2.0.1 — AI-generated test cases for base OCPP 2.0.1 implementations, with scripts and prompts used to extract protocol text and generate additional cases. _(Python)_
 - **[OpenChargingTechnology/OCPP-SBOM](https://github.com/OpenChargingTechnology/OCPP-SBOM)** — ⭐ 1 — OCPP 2.1 — OCPP-SBOM provides CycloneDX and SPDX SBOM definitions for OCPP specification release bundles, including PDFs, appendices, schemas, metadata, and hashes for verification and compliance.
@@ -123,12 +128,12 @@
 
 #### Charge Point
 
-- **[SmartEVSE/SmartEVSE-3](https://github.com/SmartEVSE/SmartEVSE-3)** — ⭐ 220 — OCPP 1.6 — SmartEVSE v3 is open-source firmware and hardware for an EVSE charge controller with smart load balancing, Modbus/RS485 metering, WiFi, MQTT/REST APIs, and OCPP 1.6J support. _(C)_
-- **[ChargePi/ChargePi-go](https://github.com/ChargePi/ChargePi-go)** — ⭐ 50 — OCPP 1.6, 2.0.1, 2.1 — ChargePi-go is Linux-based charge point software that abstracts EV charging station hardware and provides OCPP support, a management UI, and an API. _(Go)_
+- **[SmartEVSE/SmartEVSE-3](https://github.com/SmartEVSE/SmartEVSE-3)** — ⭐ 221 — OCPP 1.6 — SmartEVSE v3 is open-source firmware and hardware for an EVSE charge controller with smart load balancing, Modbus/RS485 metering, WiFi, MQTT/REST APIs, and OCPP 1.6J support. _(C)_
+- **[ChargePi/ChargePi-go](https://github.com/ChargePi/ChargePi-go)** — ⭐ 51 — OCPP 1.6, 2.0.1, 2.1 — ChargePi-go is Linux-based charge point software that abstracts EV charging station hardware and provides OCPP support, a management UI, and an API. _(Go)_
 
 #### Proxy
 
-- **[openchargehub/ocpp-proxy](https://github.com/openchargehub/ocpp-proxy)** — ⭐ 15 — OCPP 1.6, 2.0.1, 2.1 — A Home Assistant add-on that proxies a single OCPP 1.6 or 2.0.1 EV charger connection to multiple backend services with arbitration, monitoring, and safety controls. _(Python)_
+- **[openchargehub/ocpp-proxy](https://github.com/openchargehub/ocpp-proxy)** — ⭐ 16 — OCPP 1.6, 2.0.1, 2.1 — A Home Assistant add-on that proxies a single OCPP 1.6 or 2.0.1 EV charger connection to multiple backend services with arbitration, monitoring, and safety controls. _(Python)_
 
 #### Test Suite
 
@@ -138,13 +143,13 @@
 
 #### Server
 
-- **[EVtivity/evtivity-csms](https://github.com/EVtivity/evtivity-csms)** — ⭐ 17 — OCPI 2.2.1 — EVtivity CSMS is a TypeScript charging station management system that manages EV charging infrastructure through OCPP 1.6/2.1 station communication, OCPI roaming, ISO 15118 Plug and Charge, REST APIs, and operator/driver web frontends. _(TypeScript)_
+- **[EVtivity/evtivity-csms](https://github.com/EVtivity/evtivity-csms)** — ⭐ 18 — OCPI 2.2.1 — EVtivity CSMS is a TypeScript charging station management system that manages EV charging infrastructure through OCPP 1.6/2.1 station communication, OCPI roaming, ISO 15118 Plug and Charge, REST APIs, and operator/driver web frontends. _(TypeScript)_
 - **[citrineos/citrineos-ocpi](https://github.com/citrineos/citrineos-ocpi)** — ⭐ 20 — OCPI 2.2.1 — CitrineOS OCPI provides OCPI 2.2.1 CPO modules for CitrineOS Core, using its GraphQL API and PostgreSQL events to handle partner registration, OCPI endpoints, and data pushes to eMSPs. _(TypeScript)_
-- **[olisystems/ocn-node-v2](https://github.com/olisystems/ocn-node-v2)** — ⭐ 1 — OCPI 2.2 — Open Charging Network Node is a Kotlin/JVM OCPI v2.2 node that brokers eRoaming requests between EV charging platforms in the decentralized OCN network. _(Kotlin)_
+- **[olisystems/ocn-node-v2](https://github.com/olisystems/ocn-node-v2)** — ⭐ 1 — OCPI 2.2 — An OCPI v2.2 server implementation that acts as a decentralized eRoaming hub for brokering peer-to-peer EV charging requests between registered platforms. _(Kotlin)_
 
 #### Simulator
 
-- **[savekar-ev/OCPI-2.2.1-EMSP-Simulator](https://github.com/savekar-ev/OCPI-2.2.1-EMSP-Simulator)** — ⭐ 9 — OCPI 2.2.1 — A Python OCPI 2.2.1 EMSP simulator for testing CPO backend compliance, credentials exchange, data synchronization, sessions, commands, and CDR submissions. _(Python)_
+- **[savekar-ev/OCPI-2.2.1-EMSP-Simulator](https://github.com/savekar-ev/OCPI-2.2.1-EMSP-Simulator)** — ⭐ 10 — OCPI 2.2.1 — A Python OCPI 2.2.1 EMSP simulator for testing CPO backend compliance, credentials exchange, data synchronization, sessions, commands, and CDR submissions. _(Python)_
 - **[kwtycoon/kilowatt-tycoon](https://github.com/kwtycoon/kilowatt-tycoon)** — ⭐ 7 — OCPI 2.3.0 — Kilowatt Tycoon is a Rust/Bevy tycoon game and EV charging network simulator that models CPO operations and emits OCPP, OCPI, and OpenADR datasets. _(Rust)_
 - **[OpenChargingCloud/OCPIExplorerDesktopApp](https://github.com/OpenChargingCloud/OCPIExplorerDesktopApp)** — ⭐ 5 — OCPI 2.1, 2.1.1, 2.2, 2.2.1, 2.3.0 — OCPI Explorer DesktopApp is an Electron desktop application for testing and certification of OCPI protocol implementations and vendor extensions across multiple OCPI versions. _(TypeScript)_
 - **[rally-finance/ocpi-mock-hub](https://github.com/rally-finance/ocpi-mock-hub)** — ⭐ 3 — OCPI 2.2.1 — A Go-based mock OCPI 2.2.1 hub server for developing and testing eMSP/CPO OCPI integrations without a live partner. _(Go)_
@@ -154,11 +159,11 @@
 ##### C#
 
 - **[OpenChargingCloud/WWCP_OCPI](https://github.com/OpenChargingCloud/WWCP_OCPI)** — ⭐ 29 — OCPI 2.0, 2.1, 2.1.1, 2.2, 2.2.1, 2.3.0 — WWCP OCPI is a software bridge that enables communication between WWCP entities and OCPI 2.1.1, 2.2.1, 2.3.0, and draft 3.0 implementations for EV roaming.
-- **[BitzArt/OCPI.Net](https://github.com/BitzArt/OCPI.Net)** — ⭐ 28 — OCPI.Net is a C#/.NET library implementing the Open Charge Point Interface for EV charging roaming.
+- **[BitzArt/OCPI.Net](https://github.com/BitzArt/OCPI.Net)** — ⭐ 27 — OCPI.Net is a C#/.NET library implementing the Open Charge Point Interface for EV charging roaming.
 
 ##### Java
 
-- **[steve-community/ocpi-models](https://github.com/steve-community/ocpi-models)** — ⭐ 2 — OCPI 2.2.1 — Java library providing OCPI 2.2.1 data models, Spring MVC endpoint interfaces, and RestTemplate clients for EV charging applications.
+- **[steve-community/ocpi-models](https://github.com/steve-community/ocpi-models)** — ⭐ 2 — OCPI 2.2.1 — A Java library providing OCPI 2.2.1 data models, Spring MVC API mappings, and RestTemplate clients for building OCPI-compatible applications.
 
 ##### Kotlin
 
@@ -170,10 +175,14 @@
 
 ##### Python
 
-- **[TECHS-Technological-Solutions/ocpi](https://github.com/TECHS-Technological-Solutions/ocpi)** — ⭐ 64 — py-ocpi is a Python library implementing OCPI with schemas, CRUD integration, and adapters for connecting central-system data to the protocol.
+- **[TECHS-Technological-Solutions/ocpi](https://github.com/TECHS-Technological-Solutions/ocpi)** — ⭐ 63 — py-ocpi is a Python library implementing OCPI with schemas, CRUD integration, and adapters for connecting central-system data to the protocol.
 - **[extrawest/extrawest_ocpi](https://github.com/extrawest/extrawest_ocpi)** — ⭐ 11 — Extrawest OCPI is a FastAPI-based Python implementation of the OCPI protocol supporting versions 2.2.1 and 2.1.1.
 - **[elumobility/ocpi-python](https://github.com/elumobility/ocpi-python)** — ⭐ 7 — OCPI 2.2.1, 2.3.0 — OCPI Python is a FastAPI and Pydantic v2 implementation of the OCPI protocol supporting versions 2.3.0, 2.2.1, and 2.1.1 for CPO, EMSP, and PTP roles.
 - **[evorada/ocpi-types](https://github.com/evorada/ocpi-types)** — ⭐ 5 — OCPI 2.3.0 — ocpi-types provides auto-generated OCPI protocol type definitions for Go, Python, Rust, and TypeScript across multiple OCPI versions.
+
+##### Rust
+
+- **[evlinked/ocpi-rs](https://github.com/evlinked/ocpi-rs)** — ⭐ 2 — OCPI 2.1.1, 2.2.1, 2.3.0 — A production-grade Rust library implementing the OCPI protocol with typed models, async HTTP client, and server handler traits supporting all OCPI versions for EV charging roaming.
 
 ##### TypeScript
 
@@ -182,7 +191,7 @@
 #### Misc
 
 - **[Quentin-BACQUET/GIREVE_Tech_OCPI_V2.2.1](https://github.com/Quentin-BACQUET/GIREVE_Tech_OCPI_V2.2.1)** — ⭐ 2 — OCPI 2.2.1 — GIREVE OCPI V2.2.1 is documentation for implementing GIREVE’s IOP hub interface, including OCPI integration guidelines for CPO and eMSP roaming workflows.
-- **[ocpi/ocpi-tool](https://github.com/ocpi/ocpi-tool)** — ⭐ 33 — OCPI 2.2.1 — ocpi-tool is a CLI tool for exporting and privacy-filtering data from OCPI platforms for downstream ETL workflows. _(TypeScript)_
+- **[ocpi/ocpi-tool](https://github.com/ocpi/ocpi-tool)** — ⭐ 32 — OCPI 2.2.1 — ocpi-tool is a CLI tool for exporting and privacy-filtering data from OCPI platforms for downstream ETL workflows. _(TypeScript)_
 - **[powerly-ev/open-ev-charge-android-app](https://github.com/powerly-ev/open-ev-charge-android-app)** — ⭐ 7 — Powerly Open EV Charge Android App is a white-label Kotlin mobile app for discovering chargers, managing EV charging sessions, bookings, billing, roaming, and peer-to-peer charger sharing through the Powerly platform. _(Kotlin)_
 - **[Quentin-BACQUET/GIREVE_Tech_OCPI_V2.1.1](https://github.com/Quentin-BACQUET/GIREVE_Tech_OCPI_V2.1.1)** — ⭐ 5 — OCPI 2.1.1 — GIREVE OCPI V2.1.1 is an implementation guide for integrating CPO and eMSP systems with GIREVE’s IOP OCPI 2.1.1 roaming interface.
 - **[OpenChargingCloud/OCPIExplorerWebApp](https://github.com/OpenChargingCloud/OCPIExplorerWebApp)** — ⭐ 2 — OCPI 2.1, 2.1.1, 2.2.1, 2.3.0 — A web application for exploring, testing, and certification support of OCPI protocol implementations and vendor extensions. _(TypeScript)_
@@ -194,21 +203,21 @@
 
 #### Plug&Charge
 
-- **[EVerest/EVerest](https://github.com/EVerest/EVerest)** — ⭐ 218 — EVerest is an open-source modular Linux-based software stack for building and operating EV charging stations with support for AC/DC charging, OCPP, ISO 15118, hardware drivers, energy management, OTA updates, and embedded deployment. _(C++)_
-- **[EVtivity/evtivity-csms](https://github.com/EVtivity/evtivity-csms)** — ⭐ 17 — EVtivity CSMS is a TypeScript charging station management system that manages EV charging infrastructure through OCPP 1.6/2.1 station communication, OCPI roaming, ISO 15118 Plug and Charge, REST APIs, and operator/driver web frontends. _(TypeScript)_
-- **[SwitchEV/RISE-V2G](https://github.com/SwitchEV/RISE-V2G)** — ⭐ 258 — RISE V2G is an open-source reference implementation of the ISO 15118 vehicle-to-grid communication interface between EVs and charging stations, including Plug & Charge and load control support. _(Java)_
+- **[EVtivity/evtivity-csms](https://github.com/EVtivity/evtivity-csms)** — ⭐ 18 — EVtivity CSMS is a TypeScript charging station management system that manages EV charging infrastructure through OCPP 1.6/2.1 station communication, OCPI roaming, ISO 15118 Plug and Charge, REST APIs, and operator/driver web frontends. _(TypeScript)_
+- **[SwitchEV/RISE-V2G](https://github.com/SwitchEV/RISE-V2G)** — ⭐ 260 — RISE V2G is an open-source reference implementation of the ISO 15118 vehicle-to-grid communication interface between EVs and charging stations, including Plug & Charge and load control support. _(Java)_
 - **[chargex-consortium/ev-charge-seq-state](https://github.com/chargex-consortium/ev-charge-seq-state)** — ⭐ 4 — Open-source UML sequence diagrams and finite-state machine models for SAE J1772, ISO 15118, and OCPP EV charging protocol flows.
-- **[hubject/opcp](https://github.com/hubject/opcp)** — ⭐ 72 — Open Plug&Charge Protocol is an open protocol specification for creating, transferring, signing, and interoperating Plug&Charge certificate and contract information based on ISO 15118. _(JavaScript)_
+- **[hubject/opcp](https://github.com/hubject/opcp)** — ⭐ 73 — Open Plug&Charge Protocol is an open protocol specification for creating, transferring, signing, and interoperating Plug&Charge certificate and contract information based on ISO 15118. _(JavaScript)_
 - **[charinev/opnc](https://github.com/charinev/opnc)** — ⭐ 25 — OPNC is an open-source protocol specification for trusted Plug&Charge communication and PKI ecosystem interoperability in EV charging, covering related ISO 15118 functions. _(JavaScript)_
 
 #### Misc
 
 - **[uhi22/pyPLC](https://github.com/uhi22/pyPLC)** — ⭐ 226 — Python tools for experimenting with CCS charging communication, including PLC traffic sniffing and EVSE/PEV modes for ISO 15118/DIN 70121 workflows. _(Python)_
+- **[EVerest/EVerest](https://github.com/EVerest/EVerest)** — ⭐ 221 — EVerest is an open-source modular framework for building EV charging station software with support for OCPP, ISO 15118, hardware drivers, and energy management. _(C++)_
 - **[EcoG-io/iso15118](https://github.com/EcoG-io/iso15118)** — ⭐ 241 — Python implementation of the ISO 15118-2, ISO 15118-20, and ISO 15118-8 communication protocols with SECC and EVCC components. _(Python)_
 - **[dspace-group/dsV2Gshark](https://github.com/dspace-group/dsV2Gshark)** — ⭐ 100 — dsV2Gshark is a Wireshark plugin for decoding and analyzing ISO 15118, DIN 70121, and related V2G communication between EVs and charging stations. _(C++)_
 - **[chargex-consortium/ev-charge-seq-state](https://github.com/chargex-consortium/ev-charge-seq-state)** — ⭐ 4 — Open-source UML sequence diagrams and finite-state machine models for SAE J1772, ISO 15118, and OCPP EV charging protocol flows.
 - **[OpenChargingTechnology/Whitepapers](https://github.com/OpenChargingTechnology/Whitepapers)** — ⭐ 2 — A collection of open EV infrastructure ICT whitepapers covering cybersecurity, interoperability, OCPP, OCPI, OICP, ISO 15118, EV roaming, OpenADR, and related protocols.
-- **[citrineos/citrineos](https://github.com/citrineos/citrineos)** — ⭐ 141 — CitrineOS is an open source OCPP 2.0.1 Charging Station Management System software stack with modular services for handling charging station communication and CSMS functions.
+- **[citrineos/citrineos](https://github.com/citrineos/citrineos)** — ⭐ 142 — CitrineOS is an open source OCPP 2.0.1 Charging Station Management System software stack with modular services for handling charging station communication and CSMS functions.
 - **[uhi22/ccs32clara](https://github.com/uhi22/ccs32clara)** — ⭐ 107 — Embedded STM32 firmware for a CCS charge controller that communicates with a QCA7005 HomePlug Green PHY modem to control EV charging. _(C)_
 
 ### OICP
@@ -222,7 +231,7 @@
 #### Misc
 
 - **[SAFE-eV/transparenzsoftware](https://github.com/SAFE-eV/transparenzsoftware)** — ⭐ 34 — Transparenzsoftware is a Java CLI and Swing application for verifying OCMF metrology measurement data from EV charging station meters for MID and German Eichrecht compliance. _(Java)_
-- **[matth-x/MicroOcpp](https://github.com/matth-x/MicroOcpp)** — ⭐ 524 — MicroOCPP is a portable C/C++ OCPP 1.6 and 2.0.1 client library for integrating microcontroller-based EV chargers with OCPP central systems. _(C++)_
+- **[matth-x/MicroOcpp](https://github.com/matth-x/MicroOcpp)** — ⭐ 525 — MicroOCPP is a portable C/C++ OCPP 1.6 and 2.0.1 client library for integrating microcontroller-based EV chargers with OCPP central systems. _(C++)_
 - **[OpenChargingCloud/WWCP_OCPP](https://github.com/OpenChargingCloud/WWCP_OCPP)** — ⭐ 70 — WWCP OCPP is a software library for building OCPP 1.6, 2.0.1, and 2.1 services and gateways between OCPP and WWCP, including protocol extensions for security, overlay networking, and regulatory data exchange. _(C#)_
 - **[SAFE-eV/OCMF-Open-Charge-Metering-Format](https://github.com/SAFE-eV/OCMF-Open-Charge-Metering-Format)** — ⭐ 32 — A Markdown-maintained specification repository for the Open Charge Metering Format (OCMF) used in EV charging metering data.
 
@@ -232,22 +241,16 @@
 
 ### Other
 
-- **[EVerest/EVerest](https://github.com/EVerest/EVerest)** — ⭐ 218 — EVerest is an open-source modular Linux-based software stack for building and operating EV charging stations with support for AC/DC charging, OCPP, ISO 15118, hardware drivers, energy management, OTA updates, and embedded deployment. _(C++)_
-- **[zephyrproject-rtos/zephyr](https://github.com/zephyrproject-rtos/zephyr)** — ⭐ 15820 — Zephyr is a scalable real-time operating system for resource-constrained embedded and IoT devices across multiple hardware architectures. _(C)_
-- **[evcc-io/evcc](https://github.com/evcc-io/evcc)** — ⭐ 6919 — evcc is a local EV charge controller and home energy management system for solar-aware charging across many chargers, meters, batteries, and home automation integrations. _(Go)_
+- **[OpenEMS/openems](https://github.com/OpenEMS/openems)** — ⭐ 1444 — OpenEMS is an open-source modular energy management system platform for monitoring, controlling, and integrating renewable energy sources, storage, and devices including EV charging stations. _(Java)_
 - **[leeyuentuen/alfen_wallbox](https://github.com/leeyuentuen/alfen_wallbox)** — ⭐ 102 — A Home Assistant custom integration for monitoring and controlling Alfen wallboxes. _(Python)_
+- **[chargeprice/chargeprice-api-docs](https://github.com/chargeprice/chargeprice-api-docs)** — ⭐ 43 — Documentation and API reference for the Chargeprice commercial data platform, providing REST API access to EV charging tariffs, charge points, operators, and vehicle specifications.
 - **[open-ev-data/open-ev-data-dataset](https://github.com/open-ev-data/open-ev-data-dataset)** — ⭐ 26 — OpenEV Data Dataset is a versioned open dataset of electric vehicle specifications authored as layered JSON and compiled into canonical records for analysis and integration. _(JavaScript)_
 - **[powerly-ev/open-ev-charge-android-app](https://github.com/powerly-ev/open-ev-charge-android-app)** — ⭐ 7 — Powerly Open EV Charge Android App is a white-label Kotlin mobile app for discovering chargers, managing EV charging sessions, bookings, billing, roaming, and peer-to-peer charger sharing through the Powerly platform. _(Kotlin)_
-- **[SolarNetwork/solarnetwork-central](https://github.com/SolarNetwork/solarnetwork-central)** — ⭐ 6 — SolarNet is a Java/Postgres cloud platform for managing SolarNetwork accounts, provisioning SolarNode credentials, accepting node data, and exposing REST APIs for that data. _(Java)_
 - **[EVtivity/evtivity-mobile-app](https://github.com/EVtivity/evtivity-mobile-app)** — ⭐ 4 — Native iOS and Android driver app for the EVtivity EV charging platform that connects to its REST API for branded driver portal functionality. _(TypeScript)_
 - **[unified-error-codes/specification](https://github.com/unified-error-codes/specification)** — ⭐ 4 — Draft specification for standardized error codes and diagnostics across the EV charging ecosystem. _(Python)_
 - **[OpenChargingTechnology/Whitepapers](https://github.com/OpenChargingTechnology/Whitepapers)** — ⭐ 2 — A collection of open EV infrastructure ICT whitepapers covering cybersecurity, interoperability, OCPP, OCPI, OICP, ISO 15118, EV roaming, OpenADR, and related protocols.
 - **[ChargePi/openev-data-mcp](https://github.com/ChargePi/openev-data-mcp)** — ⭐ 1 — An MCP server that exposes the open-ev-data electric vehicle specifications dataset as JSON resources backed by PostgreSQL. _(PLpgSQL)_
 - **[xBlaz3kx/evcc-helm-chart](https://github.com/xBlaz3kx/evcc-helm-chart)** — ⭐ 0 — Helm chart for deploying EVCC, an EV charging controller, on Kubernetes with configurable services and SQLite backups. _(Go Template)_
-
-#### API Documentation
-
-- **[chargeprice/chargeprice-api-docs](https://github.com/chargeprice/chargeprice-api-docs)** — ⭐ 43 — Documentation for accessing the Chargeprice API, which provides EV charging tariffs, stations, operators, providers, and vehicle data.
 
 #### API Specification
 
@@ -255,8 +258,8 @@
 
 #### Battery
 
-- **[dalathegreat/Battery-Emulator](https://github.com/dalathegreat/Battery-Emulator)** — ⭐ 2745 — Battery Emulator is firmware that lets repurposed EV battery packs communicate with home inverters for stationary energy storage. _(C++)_
-- **[mnh-jansson/open-battery-information](https://github.com/mnh-jansson/open-battery-information)** — ⭐ 1524 — Open Battery Information provides Arduino and Python/Windows tools and battery data to help inspect and repair locked battery management systems. _(C++)_
+- **[dalathegreat/Battery-Emulator](https://github.com/dalathegreat/Battery-Emulator)** — ⭐ 2763 — Battery-Emulator is firmware that enables reused EV battery packs to interface with residential solar inverters, translating battery management protocols to enable stationary home energy storage. _(C++)_
+- **[mnh-jansson/open-battery-information](https://github.com/mnh-jansson/open-battery-information)** — ⭐ 1545 — Open Battery Information provides Arduino and Python/Windows tools and battery data to help inspect and repair locked battery management systems. _(C++)_
 - **[remontsuri/EV-QA-Framework](https://github.com/remontsuri/EV-QA-Framework)** — ⭐ 6 — EV-QA-Framework is a Python QA framework for EV battery systems that validates BMS telemetry, detects anomalies, predicts SOH, simulates CAN/J1939 data, and exposes monitoring dashboards. _(Python)_
 
 #### CCS charge controller
@@ -267,23 +270,14 @@
 
 - **[openchargemap/ocm-system](https://github.com/openchargemap/ocm-system)** — ⭐ 144 — Open Charge Map is a backend, website, API, and import-processing system for maintaining and serving an open global registry of EV charging locations. _(C#)_
 
-#### Data quality and analytics
+#### Dataset
 
-- **[MTES-MCT/qualicharge](https://github.com/MTES-MCT/qualicharge)** — ⭐ 10 — QualiCharge analyzes EV charging supervision data through an API, CLI, dashboard, and Metabase environment to assess and improve charging service quality. _(Python)_
-
-#### EEBUS Libraries
-
-- **[enbility/eebus-go](https://github.com/enbility/eebus-go)** — ⭐ 111 — eebus-go is a Go library for implementing EEBUS services and use cases with SHIP, SPINE, certificate handling, discovery, connection management, and device pairing. _(Go)_
+- **[vbalagovic/cars-dataset](https://github.com/vbalagovic/cars-dataset)** — ⭐ 23 — CarsDataset is a global automotive specifications database and REST API providing technical specs, performance data, and market prices for 54,000+ vehicle variants (cars, trucks, motorcycles) across 370+ brands from 1898–2026.
 
 #### EVSE firmware
 
-- **[OpenEVSE/openevse_esp32_firmware](https://github.com/OpenEVSE/openevse_esp32_firmware)** — ⭐ 227 — ESP32 firmware for an OpenEVSE WiFi/Ethernet gateway that provides a local web UI, MQTT control, Emoncms logging, solar/grid-aware charging control, and beta OCPP 1.6 support. _(C)_
-- **[SmartEVSE/SmartEVSE-3](https://github.com/SmartEVSE/SmartEVSE-3)** — ⭐ 220 — SmartEVSE v3 is open-source firmware and hardware for an EVSE charge controller with smart load balancing, Modbus/RS485 metering, WiFi, MQTT/REST APIs, and OCPP 1.6J support. _(C)_
+- **[SmartEVSE/SmartEVSE-3](https://github.com/SmartEVSE/SmartEVSE-3)** — ⭐ 221 — SmartEVSE v3 is open-source firmware and hardware for an EVSE charge controller with smart load balancing, Modbus/RS485 metering, WiFi, MQTT/REST APIs, and OCPP 1.6J support. _(C)_
 - **[dzurikmiroslav/esp32-evse](https://github.com/dzurikmiroslav/esp32-evse)** — ⭐ 137 — ESP32 EVSE is J1772 charging station firmware with web control, OTA updates, metering, REST, Modbus, scripting, and hardware abstraction. _(C)_
-
-#### Energy management
-
-- **[OpenEMS/openems](https://github.com/OpenEMS/openems)** — ⭐ 1444 — OpenEMS is a modular energy management platform for monitoring, controlling, and integrating energy storage, renewable generation, EV charging stations, heat pumps, tariffs, and related devices across edge, UI, and backend components. _(Java)_
 
 #### Ensto simulator
 
@@ -297,9 +291,11 @@
 
 - **[lachand/EV_charger](https://github.com/lachand/EV_charger)** — ⭐ 9 — Home Assistant integration for controlling Tuya EV chargers locally over LAN with TinyTuya, including charge control and surplus solar charging modes. _(Python)_
 
-#### Identifier Directory
+#### Libraries
 
-- **[juherr/open-idro-directory](https://github.com/juherr/open-idro-directory)** — ⭐ 2 — Open IDRO Directory aggregates, validates, and publishes e-mobility IDRO identifiers from national and regional registries with provenance and API access. _(TypeScript)_
+##### Go
+
+- **[enbility/eebus-go](https://github.com/enbility/eebus-go)** — ⭐ 111 — A Go library implementing the EEBUS protocol stack for energy management and EV charging applications, with SHIP/SPINE support, certificate handling, mDNS, and device pairing.
 
 #### Maps & route planning
 
@@ -309,6 +305,10 @@
 
 - **[juherr/mobilityid](https://github.com/juherr/mobilityid)** — ⭐ 2 — A multi-language monorepo providing libraries for parsing and handling EV mobility identifiers. _(PHP)_
 
+#### Monitoring
+
+- **[MTES-MCT/qualicharge](https://github.com/MTES-MCT/qualicharge)** — ⭐ 10 — QualiCharge collects and analyzes EV charging station supervision data to monitor and improve service quality. _(Python)_
+
 #### Open Data
 
 - **[openchargemap/ocm-export](https://github.com/openchargemap/ocm-export)** — ⭐ 47 — ocm-export exports live Open Charge Map EV charging POI data into per-country, per-POI JSON files for granular change tracking and reuse. _(JavaScript)_
@@ -317,13 +317,18 @@
 
 - **[kwtycoon/kilowatt-tycoon](https://github.com/kwtycoon/kilowatt-tycoon)** — ⭐ 7 — Kilowatt Tycoon is a Rust/Bevy tycoon game and EV charging network simulator that models CPO operations and emits OCPP, OCPI, and OpenADR datasets. _(Rust)_
 
+#### Platform
+
+- **[zephyrproject-rtos/zephyr](https://github.com/zephyrproject-rtos/zephyr)** — ⭐ 15846 — Zephyr is a scalable, secure real-time operating system (RTOS) for resource-constrained embedded and IoT devices, supporting multiple hardware architectures. _(C)_
+- **[SolarNetwork/solarnetwork-central](https://github.com/SolarNetwork/solarnetwork-central)** — ⭐ 6 — A cloud platform for SolarNetwork that manages user accounts, IoT device provisioning, and energy data collection via REST APIs, with support for OCPP integration. _(Java)_
+
+#### Registry
+
+- **[juherr/open-idro-directory](https://github.com/juherr/open-idro-directory)** — ⭐ 2 — An open-source directory service that aggregates, validates, and publishes e-mobility identifiers from official national and regional IDRO registries via API. _(TypeScript)_
+
 #### Route planning
 
 - **[GeiserX/Pumperly](https://github.com/GeiserX/Pumperly)** — ⭐ 25 — Pumperly is a self-hostable route planner that maps fuel stations and EV chargers along routes using real-time price and charging-station data. _(TypeScript)_
-
-#### Vehicle datasets
-
-- **[vbalagovic/cars-dataset](https://github.com/vbalagovic/cars-dataset)** — ⭐ 23 — CarsDataset provides vehicle specification and European market price data for cars, trucks, and motorcycles through datasets and an API.
 
 ### Uncategorized
 
@@ -384,8 +389,8 @@
 - **[ocpp-balanz/ocppsim](https://github.com/ocpp-balanz/ocppsim)** — ⭐ 6 — OCPP 1.6 — 💤 2025-06-16 — OCPP v1.6 charge point simulator for testing central systems via WebSocket control and scripted charger behavior. _(Python)_
 - **[chargegrid/abusive-charge-point](https://github.com/chargegrid/abusive-charge-point)** — ⭐ 6 — OCPP 1.5 — 💤 2017-08-02 — Abusive Charge Point is an OCPP 1.5j charge point pool simulator that sends randomized charge point messages for testing or load testing an OCPP back office. _(Clojure)_
 - **[alexs-sh/dummy-central-system](https://github.com/alexs-sh/dummy-central-system)** — ⭐ 4 — 💤 2021-08-11 — A Rust dummy OCPP central system that emulates a charging station operator backend handling basic OCPP messages and certificate signing flows. _(Rust)_
-- **[kelseymok/ocpi-implementation](https://github.com/kelseymok/ocpi-implementation)** — ⭐ 4 — 💤 2023-03-23 — A proof-of-concept OCPI CDR implementation that simulates OCPP events, processes them through Kafka consumers, stores OCPI-related data in DynamoDB, and exposes CDRs through an API. _(Python)_
 - **[elumobility/elu-twins](https://github.com/elumobility/elu-twins)** — ⭐ 4 — OCPP 1.6, 2.0.1 — 💤 2024-09-12 — ELU Twins is an e-mobility simulation toolkit for creating virtual OCPP charge points, vehicles, and test CSMS interactions. _(Python)_
+- **[kelseymok/ocpi-implementation](https://github.com/kelseymok/ocpi-implementation)** — ⭐ 4 — 💤 2023-03-23 — A proof-of-concept OCPI CDR implementation that simulates OCPP events, processes them through Kafka consumers, stores OCPI-related data in DynamoDB, and exposes CDRs through an API. _(Python)_
 - **[esiebert/v16-fcs](https://github.com/esiebert/v16-fcs)** — ⭐ 3 — 💤 2025-06-23 — Fake Charging Station is a Python OCPP 1.6 charging station simulator with an API for controlling charger behavior and testing CSMS edge cases. _(Python)_
 - **[tux-evse/ocpp-csms](https://github.com/tux-evse/ocpp-csms)** — ⭐ 3 — OCPP 1.6 — 💤 2023-10-17 — Podman configuration and scripts for running and testing a Maeve-based OCPP CSMS with a simple OCPP 1.6 client. _(Shell)_
 - **[elton-saraci/ocpp-charge-point-simulator](https://github.com/elton-saraci/ocpp-charge-point-simulator)** — ⭐ 3 — OCPP 1.6 — 💤 2025-04-30 — A Java Spring Boot OCPP charge point simulator that connects to a configured central system and exposes local API documentation. _(Java)_
@@ -439,7 +444,7 @@
 
 ##### Scala
 
-- **[ShellRechargeSolutionsEU/ocpp](https://github.com/ShellRechargeSolutionsEU/ocpp)** — ⭐ 210 — OCPP 1.2, 1.5, 1.6, 2.0 — 💤 2021-10-08 — Scala library implementing the OCPP network protocol with message types, JSON serialization, and RPC support for OCPP-J 1.5/1.6 and partial OCPP 2.0.
+- **[ShellRechargeSolutionsEU/ocpp](https://github.com/ShellRechargeSolutionsEU/ocpp)** — ⭐ 211 — OCPP 1.2, 1.5, 1.6, 2.0 — 💤 2021-10-08 — Scala library implementing the OCPP network protocol with message types, JSON serialization, and RPC support for OCPP-J 1.5/1.6 and partial OCPP 2.0.
 - **[ShellRechargeSolutionsEU/docile-charge-point](https://github.com/ShellRechargeSolutionsEU/docile-charge-point)** — ⭐ 82 — OCPP 1.5, 1.6, 2.0 — 💤 2022-01-20 — A Scala-based scriptable OCPP charge point simulator and test tool for running scripted charge point behavior and assertions against OCPP central systems.
 - **[IHomer/scala-ocpp](https://github.com/IHomer/scala-ocpp)** — ⭐ 20 — OCPP 1.2, 1.5, 1.6, 2.0 — 💤 2024-05-27 — Scala libraries implementing OCPP message models, JSON serialization, and OCPP-J RPC connections for charge point and central system communication.
 
@@ -481,7 +486,7 @@
 
 #### Simulator
 
-- **[energywebfoundation/ocn-tools](https://github.com/energywebfoundation/ocn-tools)** — ⭐ 12 — 💤 2022-04-26 — Open Charging Network Tools provides mock OCPI MSP and CPO servers for developing and registering OCN-based applications. _(TypeScript)_
+- **[energywebfoundation/ocn-tools](https://github.com/energywebfoundation/ocn-tools)** — ⭐ 11 — 💤 2022-04-26 — Open Charging Network Tools provides mock OCPI MSP and CPO servers for developing and registering OCN-based applications. _(TypeScript)_
 
 #### Libraries
 
@@ -502,7 +507,7 @@
 
 ##### PHP
 
-- **[ChargeMap/ocpi-protocol](https://github.com/ChargeMap/ocpi-protocol)** — ⭐ 22 — 💤 2021-11-12 — A PHP PSR-compatible library and client SDK for handling OCPI eMSP request/response classes, models, validation, listing pagination, and CPO API calls.
+- **[ChargeMap/ocpi-protocol](https://github.com/ChargeMap/ocpi-protocol)** — ⭐ 21 — 💤 2021-11-12 — A PHP PSR-compatible library and client SDK for handling OCPI eMSP request/response classes, models, validation, listing pagination, and CPO API calls.
 - **[Codivores/Laravel-OCPI-eMSP](https://github.com/Codivores/Laravel-OCPI-eMSP)** — ⭐ 2 — 💤 2025-06-27 — Laravel package implementing OCPI 2.1.1 eMSP functionality, including CDRs, commands, credentials, locations, sessions, and versions modules.
 
 ##### Python
@@ -543,7 +548,7 @@
 
 #### Misc
 
-- **[FlUxIuS/V2GInjector](https://github.com/FlUxIuS/V2GInjector)** — ⭐ 141 — 💤 2024-12-19 — V2GInjector is a tool for capturing, decoding, and injecting V2G packets on HomePlug Green PHY powerline networks used between electric vehicles and charging stations. _(Python)_
+- **[FlUxIuS/V2GInjector](https://github.com/FlUxIuS/V2GInjector)** — ⭐ 142 — 💤 2024-12-19 — V2GInjector is a tool for capturing, decoding, and injecting V2G packets on HomePlug Green PHY powerline networks used between electric vehicles and charging stations. _(Python)_
 - **[endland/sniffer-iso15118vse](https://github.com/endland/sniffer-iso15118vse)** — ⭐ 22 — 💤 2019-11-04 — A modified Wireshark dissector for inspecting ISO 15118-8 vendor-specific elements in Wi-Fi management frames used by EVCC and SECC during wireless EV charging association.
 
 #### Libraries
@@ -572,7 +577,7 @@
 
 ### Other
 
-- **[EVerest/EVerest-archived](https://github.com/EVerest/EVerest-archived)** — ⭐ 347 — 💤 2026-03-16 — Archived repository whose content has moved to the main EVerest repository.
+- **[EVerest/EVerest-archived](https://github.com/EVerest/EVerest-archived)** — ⭐ 346 — 💤 2026-03-16 — Archived repository whose content has moved to the main EVerest repository.
 - **[motown-io/motown](https://github.com/motown-io/motown)** — ⭐ 44 — 💤 2019-02-01 — Motown is an Apache-licensed platform for supporting and managing electric vehicle charging infrastructure. _(Java)_
 - **[openchargemap/ocm-data](https://github.com/openchargemap/ocm-data)** — ⭐ 29 — 🚫 deprecated — 💤 2021-11-05 — Deprecated repository containing gzipped JSON snapshots of Open Charge Map POI and reference data exported from a MongoDB cache. _(Shell)_
 - **[gio-del/eMall](https://github.com/gio-del/eMall)** — ⭐ 11 — 💤 2023-06-06 — eMall is a JavaScript web application for EV drivers and charging point operators to find, book, monitor, and manage charging points, including OCPP communication with chargers. _(JavaScript)_
@@ -628,7 +633,7 @@
 
 #### Security
 
-- **[FlUxIuS/V2GInjector](https://github.com/FlUxIuS/V2GInjector)** — ⭐ 141 — 💤 2024-12-19 — V2GInjector is a tool for capturing, decoding, and injecting V2G packets on HomePlug Green PHY powerline networks used between electric vehicles and charging stations. _(Python)_
+- **[FlUxIuS/V2GInjector](https://github.com/FlUxIuS/V2GInjector)** — ⭐ 142 — 💤 2024-12-19 — V2GInjector is a tool for capturing, decoding, and injecting V2G packets on HomePlug Green PHY powerline networks used between electric vehicles and charging stations. _(Python)_
 
 #### Vehicle Simulator
 
@@ -642,13 +647,13 @@
 </details>
 
 <details>
-<summary>To refine (172 projects)</summary>
+<summary>To refine (173 projects)</summary>
 
 ### OCPP
 
 #### Server
 
-- **[yuncitys/YunCharging](https://github.com/yuncitys/YunCharging)** — ⭐ 69 — OCPP 1.5, 2.0 — 💤 2024-10-17 — YunCharge is an open-source EV and e-bike charging operation and billing platform with user apps, payments, charger management, and support for YunKuaiChong and OCPP protocols. _(Java)_
+- **[yuncitys/YunCharging](https://github.com/yuncitys/YunCharging)** — ⭐ 71 — OCPP 1.5, 2.0 — 💤 2024-10-17 — YunCharge is an open-source EV and e-bike charging operation and billing platform with user apps, payments, charger management, and support for YunKuaiChong and OCPP protocols. _(Java)_
 - **[gennadiygnezdilov/php-ocpp-1.6J](https://github.com/gennadiygnezdilov/php-ocpp-1.6J)** — ⭐ 15 — OCPP 1.6 — 💤 2024-08-09 — A PHP WebSocket server script for handling OCPP 1.6J communication with EV charging stations using Ratchet and MySQL. _(PHP)_
 - **[stromenergy/strom](https://github.com/stromenergy/strom)** — ⭐ 9 — OCPP 1.6, 2.0.1 — 💤 2023-05-20 — Strom is an open-source OCPP 1.6 bridge that lets charge point owners start, stop, monitor, and bill EV charging sessions using Lightning and Nostr payment flows. _(Go)_
 - **[ChargeTimeEU/ChargeTime-HQ](https://github.com/ChargeTimeEU/ChargeTime-HQ)** — ⭐ 8 — 💤 2020-10-13 — ChargeTime-HQ is a JavaFX application for operating EV charging equipment using OCPP. _(Java)_
@@ -673,9 +678,10 @@
 - **[hpxix/Aviator-Beta](https://github.com/hpxix/Aviator-Beta)** — ⭐ 1 — OCPP 2.0.1 — 💤 2024-11-28 — Aviator is a TypeScript/Node.js server runtime for managing EV charging infrastructure with OCPP 2.0.1 message routing, validation, and modular endpoints. _(TypeScript)_
 - **[opencpo/opencpo-admin](https://github.com/opencpo/opencpo-admin)** — ⭐ 1 — OCPP Admin is a FastAPI-based CPO dashboard for managing OCPP charger networks, sessions, tariffs, tokens, PKI, and real-time OCPP messages through an OCPP Core API. _(HTML)_
 - **[opencpo/opencpo-core](https://github.com/opencpo/opencpo-core)** — ⭐ 1 — OCPP 1.6, 2.0.1 — OCPP Core is an OCPP 1.6j and 2.0.1 CSMS server with charger profiles, built-in PKI, ISO 15118 Plug & Charge support, OCPI roaming, REST APIs, and Redis/PostgreSQL-backed state and events. _(Python)_
+- **[SolarNetwork/solarnetwork-node-ocpp](https://github.com/SolarNetwork/solarnetwork-node-ocpp)** — ⭐ 0 — SolarNode plugins enabling OCPP protocol support for the SolarNode energy management platform. _(Java)_
 - **[steve-white/ocpp-server](https://github.com/steve-white/ocpp-server)** — ⭐ 0 — OCPP 1.6 — A Go proof-of-concept OCPP 1.6 CSMS server for connecting chargers, handling basic messages and sessions, and sending charger commands via REST and message queues. _(Go)_
-- **[LastProject-ESIEE/OCPPConfigurationServer](https://github.com/LastProject-ESIEE/OCPPConfigurationServer)** — ⭐ 0 — A Java web application for configuring and updating EV charge points using OCPP 1.6J. _(Java)_
 - **[chethanbhatbs/CMS](https://github.com/chethanbhatbs/CMS)** — ⭐ 0 — OCPP 1.6 — 💤 2026-06-15 — EV Charging CMS is a React and Python charge point operator management system with an OCPP 1.6 WebSocket server, live session monitoring, remote charging operations, CRM, RBAC administration, and a virtual charger for testing. _(JavaScript)_
+- **[LastProject-ESIEE/OCPPConfigurationServer](https://github.com/LastProject-ESIEE/OCPPConfigurationServer)** — ⭐ 0 — A Java web application for configuring and updating EV charge points using OCPP 1.6J. _(Java)_
 - **[dreak/ocpp-central-system](https://github.com/dreak/ocpp-central-system)** — ⭐ 0 — OCPP 1.6 — OCPP 1.6 central system with a NestJS WebSocket backend and React dashboard for managing EV charge points, transactions, and tags. _(TypeScript)_
 
 #### Simulator
@@ -683,14 +689,13 @@
 - **[sap-labs-france/ev-simulator](https://github.com/sap-labs-france/ev-simulator)** — ⭐ 38 — 💤 2024-01-04 — An OCPP-J charging station simulator for e-mobility testing.
 - **[ChargePi/ChargePi](https://github.com/ChargePi/ChargePi)** — ⭐ 27 — OCPP 1.6, 2.0.1 — 🚫 deprecated — 💤 2024-07-25 — ChargePi is a deprecated Raspberry Pi-based EV charge point client implementing OCPP 1.6 JSON/WebSocket for controlling multiple EVSE connectors with LEDs, relays, and power meters. _(Python)_
 - **[Llocer/llocer_ev_examples](https://github.com/Llocer/llocer_ev_examples)** — ⭐ 5 — 💤 2022-07-16 — openEV examples provides sample OCPP server and client simulator code plus OCPI node implementations for credentials and locations modules. _(Java)_
-- **[TumbleOwlee/ferrowl](https://github.com/TumbleOwlee/ferrowl)** — ⭐ 5 — OCPP 1.6, 2.0.1, 2.1 — Ferrowl is a Rust TUI CLI for simulating Modbus clients/servers and OCPP charging stations/CSMS instances. _(Rust)_
+- **[TumbleOwlee/ferrowl](https://github.com/TumbleOwlee/ferrowl)** — ⭐ 5 — OCPP 1.6, 2.0.1, 2.1 — A Rust terminal user interface application for simulating Modbus and OCPP charging devices (stations and central systems) for testing and development. _(Rust)_
 - **[u2ware/ocpp-boot-server](https://github.com/u2ware/ocpp-boot-server)** — ⭐ 5 — Spring Boot-based customizable OCPP server emulator/sample implementation supporting OCPP 1.6, 2.0.1, and 2.1 with pluggable Java handlers and mock testing. _(Java)_
 - **[u2ware/ocpp-boot-client](https://github.com/u2ware/ocpp-boot-client)** — ⭐ 5 — ocpp-boot-client is a Spring Boot OCPP client emulator/sample implementation for OCPP 1.6, 2.0.1, and 2.1 with customizable client handlers and a console UI. _(Java)_
 - **[opencpo/opencpo](https://github.com/opencpo/opencpo)** — ⭐ 4 — OCPP 1.6, 2.0.1 — OpenCPO is an open-source EV charging platform for running a CPO network with an OCPP 1.6/2.0.1 CSMS, admin dashboard, driver PWA, and virtual charger simulator. _(Shell)_
 - **[rohittiwari-dev/ocpp-ws-simulator](https://github.com/rohittiwari-dev/ocpp-ws-simulator)** — ⭐ 3 — OCPP 1.6, 2.0.1, 2.1 — A browser-based simulator for running one or more OCPP charge points against a CSMS for testing and debugging. _(TypeScript)_
-- **[ReliON-Charging/everest-dcfc](https://github.com/ReliON-Charging/everest-dcfc)** — ⭐ 3 — OCPP 1.6, 2.0.1 — A multi-architecture Docker container for running an EVerest-based virtual DC fast charger with configurable OCPP versions, connectors, smart charging, and a Node-RED simulation dashboard. _(C++)_
 - **[rohittiwari-dev/ocpp-ws-io](https://github.com/rohittiwari-dev/ocpp-ws-io)** — ⭐ 2 — OCPP 1.6, 2.0.1, 2.1 — TypeScript OCPP WebSocket toolkit for building RPC clients and servers, charge point simulators, version proxies, smart charging components, and CLI tooling. _(TypeScript)_
-- **[ZhongRuoyu/ocppsim](https://github.com/ZhongRuoyu/ocppsim)** — ⭐ 2 — OCPP 1.6, 2.0.1, 2.1 — ocppsim is a Rust terminal simulator for OCPP-J charge points that connects to a CSMS over WebSocket and drives common charging workflows for protocol development and testing. _(Rust)_
+- **[ZhongRuoyu/ocppsim](https://github.com/ZhongRuoyu/ocppsim)** — ⭐ 2 — OCPP 1.6, 2.0.1, 2.1 — A terminal OCPP-J charge point simulator written in Rust that connects to a CSMS over WebSocket and enables interactive testing of OCPP protocol workflows and charge point behavior. _(Rust)_
 - **[autimit/ocpp-zig-poc](https://github.com/autimit/ocpp-zig-poc)** — ⭐ 2 — 💤 2025-07-02 — A Zig-based CSMS simulator that models EV charging sessions from mocked OCPP-inspired JSON data and calculates power, energy, cost, and host revenue sharing. _(Zig)_
 - **[psnehanshu/charge-point-simulator](https://github.com/psnehanshu/charge-point-simulator)** — ⭐ 2 — 💤 2020-10-09 — A charge point simulator that runs multiple simultaneous charging sessions using OCPP 1.5 JSON. _(JavaScript)_
 - **[brunoluiz/ocpp-server-tool](https://github.com/brunoluiz/ocpp-server-tool)** — ⭐ 2 — OCPP 1.5 — 💤 2017-03-03 — Java command-line tool that simulates an OCPP 1.5 SOAP Central System server for sending supported commands to a charge point. _(Java)_
@@ -699,12 +704,12 @@
 - **[MuhammedAlmaz/ma-ocpp-simulator](https://github.com/MuhammedAlmaz/ma-ocpp-simulator)** — ⭐ 1 — OCPP 1.6, 2.0.1 — 💤 2024-05-09 — A web-based OCPP 1.6 charge point simulator for testing EV charging back-end applications. _(TypeScript)_
 - **[srcfl/device-simulator](https://github.com/srcfl/device-simulator)** — ⭐ 1 — Device Simulator is a Go desktop and Docker app for dynamically simulating solar inverters, batteries, EV chargers, and energy meters over Modbus TCP, MQTT, and OCPP for testing. _(Go)_
 - **[soneeee22000/go-charger-ramp](https://github.com/soneeee22000/go-charger-ramp)** — ⭐ 0 — OCPP 1.6 — A Go charger-supervision service that simulates an OCPP-style heartbeat fleet, tracks charger liveness concurrently, exposes fleet status over HTTP, and shuts down gracefully. _(Go)_
-- **[opencpo/opencpo-charger-farm](https://github.com/opencpo/opencpo-charger-farm)** — ⭐ 0 — OCPP 1.6, 2.0.1 — Virtual Charger Farm is an OCPP 1.6j/2.0.1 virtual charger simulator for stress testing EV charging backends with realistic charger behavior, network faults, charging physics, and scenario reporting. _(Python)_
 - **[dumanburak/ocpp-client-demo](https://github.com/dumanburak/ocpp-client-demo)** — ⭐ 0 — OCPP 1.6 — A Python asyncio demo OCPP 1.6J charge point client that simulates charging station workflows over WebSocket for testing CSMS implementations. _(Python)_
 - **[chethanbhatbs/CMS](https://github.com/chethanbhatbs/CMS)** — ⭐ 0 — OCPP 1.6 — 💤 2026-06-15 — EV Charging CMS is a React and Python charge point operator management system with an OCPP 1.6 WebSocket server, live session monitoring, remote charging operations, CRM, RBAC administration, and a virtual charger for testing. _(JavaScript)_
 - **[eveys-mobility/Simulator](https://github.com/eveys-mobility/Simulator)** — ⭐ 0 — OCPP 1.6 — cOCPP Charge-Point Simulator simulates one or many OCPP 1.6 charging stations via a web UI to test, debug, load-test, and validate CSMS back-office behavior. _(TypeScript)_
 - **[LuRSousa/ChargeGrid-Intelligence](https://github.com/LuRSousa/ChargeGrid-Intelligence)** — ⭐ 0 — ChargeGrid Intelligence is a browser-based proof-of-concept EV charging management simulator with dynamic load balancing, OCPP event logging, dynamic pricing, and solar-aware charging decisions. _(JavaScript)_
 - **[chankinwui/OCPP7ROS](https://github.com/chankinwui/OCPP7ROS)** — ⭐ 0 — 💤 2022-11-01 — A gateway and simulator project connecting OCPP 2.0.1 EV charging systems with ROS 2 robots.
+- **[opencpo/opencpo-charger-farm](https://github.com/opencpo/opencpo-charger-farm)** — ⭐ 0 — OCPP 1.6, 2.0.1 — Virtual Charger Farm is an OCPP 1.6j/2.0.1 virtual charger simulator for stress testing EV charging backends with realistic charger behavior, network faults, charging physics, and scenario reporting. _(Python)_
 - **[MarekPokornyOva/EvChargerSimulator](https://github.com/MarekPokornyOva/EvChargerSimulator)** — ⭐ 0 — OCPP 1.6 — 💤 2025-05-06 — Browser-hosted EV charger simulator that communicates with OCPP 1.6J. _(TypeScript)_
 - **[crakashp2905-hub/CyberDeception-EVSE](https://github.com/crakashp2905-hub/CyberDeception-EVSE)** — ⭐ 0 — Research project providing an OCPP-based EVSE honeypot and machine-learning notebooks for detecting attacks on EV charging infrastructure. _(Jupyter Notebook)_
 
@@ -728,7 +733,6 @@
 
 - **[wang007/e-iot](https://github.com/wang007/e-iot)** — ⭐ 29 — OCPP 1.6, 2.0.1, 2.1 — e-iot is a Vert.x-based Java library for implementing OCPP 1.6J, 2.0.1, 2.1 and Yunkuaichong charging protocols.
 - **[steve-community/ocpp-jaxb](https://github.com/steve-community/ocpp-jaxb)** — ⭐ 18 — OCPP 1.2, 1.5, 1.6, 2.0.1, 2.1 — Java data model mappings for OCPP requests and responses across versions 1.2, 1.5, 1.6, 1.6 security, 2.0.1, and 2.1.
-- **[SolarNetwork/solarnetwork-node-ocpp](https://github.com/SolarNetwork/solarnetwork-node-ocpp)** — ⭐ 0 — SolarNode OCPP provides SolarNode plugins that add OCPP protocol support.
 
 ##### JavaScript
 
@@ -765,18 +769,16 @@
 
 #### Misc
 
-- **[OPCFoundation/UA-EdgeTranslator](https://github.com/OPCFoundation/UA-EdgeTranslator)** — ⭐ 91 — UA Edge Translator is a containerized industrial edge application that maps data from proprietary asset protocols to OPC UA information models using W3C WoT Thing Descriptions. _(C#)_
 - **[apundir/wsbalancer](https://github.com/apundir/wsbalancer)** — ⭐ 31 — 💤 2020-09-10 — A Go stateful WebSocket reverse proxy and load balancer that preserves client sessions while failing over connections between backends, including OCPP-style EV charger server deployments. _(Go)_
 - **[flashg1/evSolarCharger](https://github.com/flashg1/evSolarCharger)** — ⭐ 17 — Home Assistant blueprint that controls EV charging via OCPP and EV-specific APIs to use surplus solar energy, schedules, and weather forecasts.
 - **[pazzk-labs/evse](https://github.com/pazzk-labs/evse)** — ⭐ 16 — Pazzk EVSE is an archived open-source EVSE firmware project for building charging stations with ISO 15118, IEC 61851, OCPP, and Plug & Charge support. _(C)_
-- **[flashg1/SolarCharger](https://github.com/flashg1/SolarCharger)** — ⭐ 16 — Home Assistant custom integration that charges an EV using surplus solar power by adjusting charging based on net power and related automation settings. _(Python)_
 - **[JoaoPedroBelo/bmw-wallbox-ha](https://github.com/JoaoPedroBelo/bmw-wallbox-ha)** — ⭐ 14 — OCPP 2.0.1 — Home Assistant custom integration for locally monitoring and controlling BMW Wallbox chargers over OCPP 2.0.1 with WSS. _(Python)_
 - **[kiranj26/MicroOCPP-on-STM32F4](https://github.com/kiranj26/MicroOCPP-on-STM32F4)** — ⭐ 11 — OCPP 1.6 — 💤 2025-01-27 — Embedded STM32F4 EVSE firmware integrating MicroOCPP with secure networking to provide OCPP 1.6 support for EV chargers. _(C)_
 - **[weemaba999/homeassistant-tap-community](https://github.com/weemaba999/homeassistant-tap-community)** — ⭐ 5 — OCPP 1.6 — Unofficial Home Assistant integration for monitoring and controlling Tap Electric-managed EV chargers via Tap APIs, with optional live session metadata and remote start/stop support. _(Python)_
 - **[energychain/corrently-charge](https://github.com/energychain/corrently-charge)** — ⭐ 4 — 💤 2024-01-10 — Corrently Charge is a Node.js tariff evaluation module that selects EV charging tariffs based on charging goals, time, and energy mix and applies them through a scheduler connection to a CPO backend via OCPP. _(HTML)_
 - **[ChargePi/chargeflow](https://github.com/ChargePi/chargeflow)** — ⭐ 3 — OCPP 1.6, 2.0.1, 2.1 — ChargeFlow is a CLI tool for validating raw OCPP 1.6, 2.0.1, and 2.1 JSON messages against standard or custom schemas. _(Go)_
-- **[eva-sean/oye-proxy](https://github.com/eva-sean/oye-proxy)** — ⭐ 3 — OCPP 1.6 — OYE OCPP Proxy is a Node.js OCPP proxy that sits between EVSE chargers and a CSMS to monitor, log, inject commands, and optionally provide basic standalone charging control. _(JavaScript)_
 - **[hsperker/conversational-websocket-server](https://github.com/hsperker/conversational-websocket-server)** — ⭐ 3 — 💤 2018-02-08 — A Spring Boot JSR-356 WebSocket server with a command-line shell for listing connected clients and sending broadcast or unicast messages. _(Java)_
+- **[eva-sean/oye-proxy](https://github.com/eva-sean/oye-proxy)** — ⭐ 3 — OCPP 1.6 — OYE OCPP Proxy is a Node.js OCPP proxy that sits between EVSE chargers and a CSMS to monitor, log, inject commands, and optionally provide basic standalone charging control. _(JavaScript)_
 - **[alexs-sh/tom](https://github.com/alexs-sh/tom)** — ⭐ 3 — OCPP 1.5 — 💤 2024-06-22 — A Python converter that bridges OCPP SOAP charge points to OCPP JSON central systems, with support for OCPP 1.5 messages. _(Python)_
 - **[jimmyjoseph-web3/ChargeFrog-Hedera](https://github.com/jimmyjoseph-web3/ChargeFrog-Hedera)** — ⭐ 2 — ChargeFrog is a Hedera-based platform for proposing, funding, tokenizing, deploying, using, and auditing community-owned EV charging stations with on-chain carbon impact tracking. _(TypeScript)_
 - **[skazemi/awesome-evse](https://github.com/skazemi/awesome-evse)** — ⭐ 1 — 💤 2024-03-13 — A curated awesome list of EV charging tools, frameworks, libraries, and software.
@@ -786,11 +788,11 @@
 - **[leonard-voss/nocpp](https://github.com/leonard-voss/nocpp)** — ⭐ 0 — OCPP 1.6 — 💤 2025-01-22 — NOCPP is a Python prototype for targeted OCPP 1.6-J penetration testing of charging stations, including fuzzing scenarios, information gathering, and PDF result export. _(Python)_
 - **[arcnode-io/ems-industrial-fixtures](https://github.com/arcnode-io/ems-industrial-fixtures)** — ⭐ 0 — Rust mock implementations of industrial gateway protocols for testing Modbus, SNMP, Redfish, DNP3, and CANbus integrations. _(Rust)_
 - **[mysmartlife-helsinki/ev-charging](https://github.com/mysmartlife-helsinki/ev-charging)** — ⭐ 0 — 💤 2019-06-01 — This repository is an EV charging-related project tagged with OCPP, ECU, and VCCU, but its README does not document specific functionality.
+- **[cz-lucas/alphatecmini-ocpp](https://github.com/cz-lucas/alphatecmini-ocpp)** — ⭐ 0 — OCPP 1.6 — An OCPP v1.6 firmware implementation for ESP32-S3 that wirelessly controls an Alphatec Mini EV wallbox with RFID-based authentication and tariff management. _(C++)_
 - **[BBessler/Solarmanager](https://github.com/BBessler/Solarmanager)** — ⭐ 0 — OCPP 1.6 — Solarmanager is a local home energy management system that monitors PV generation and household consumption to control EV charging, batteries, heating, and smart-home loads. _(Shell)_
 - **[chankinwui/OCPP7ROS](https://github.com/chankinwui/OCPP7ROS)** — ⭐ 0 — 💤 2022-11-01 — A gateway and simulator project connecting OCPP 2.0.1 EV charging systems with ROS 2 robots.
 - **[Veton-ev/Veton-EMS-Integration](https://github.com/Veton-ev/Veton-EMS-Integration)** — ⭐ 0 — OCPP 1.6 — Developer documentation and examples for integrating Veton/Phoenix Contact CHARX EV chargers with an EMS via Modbus, MQTT, REST, and OCPP 1.6.
 - **[slachiewicz/ocpp16jto201gateway](https://github.com/slachiewicz/ocpp16jto201gateway)** — ⭐ 0 — OCPP 1.6, 2.0.1 — 💤 2023-12-02 — OCPP 1.6 JSON to OCPP 2.0.1 gateway for translating charge point communication between protocol versions.
-- **[JustChr/HAgoe_steve](https://github.com/JustChr/HAgoe_steve)** — ⭐ 0 — Home Assistant custom integration that controls go-e wallbox charging using PV, price, battery, and departure constraints while coordinating authorization and metering through SteVe OCPP. _(Python)_
 - **[Cano2020/Offshore-software-team](https://github.com/Cano2020/Offshore-software-team)** — ⭐ 0 — 💤 2021-09-30 — Canopus is a software services team offering app development, emerging technology prototyping, and data science services.
 - **[Emulate-Energy/EDAP](https://github.com/Emulate-Energy/EDAP)** — ⭐ 0 — EDAP is a Python library and example gateway for implementing cloud access and low-latency control of energy devices using the Energy Device Aggregation Protocol. _(Python)_
 - **[MostafaMoradii/eveys-console](https://github.com/MostafaMoradii/eveys-console)** — ⭐ 0 — 💤 2026-05-14 — eveys-console is a sign-in protected web administration console for operating and inspecting an OCPP gateway through its existing Kafka, REST, and WebSocket interfaces. _(TypeScript)_
@@ -818,7 +820,6 @@
 - **[Llocer/llocer_ev_examples](https://github.com/Llocer/llocer_ev_examples)** — ⭐ 5 — 💤 2022-07-16 — openEV examples provides sample OCPP server and client simulator code plus OCPI node implementations for credentials and locations modules. _(Java)_
 - **[EVtivity/evtivity-csms-helm](https://github.com/EVtivity/evtivity-csms-helm)** — ⭐ 2 — OCPI 2.2.1 — Helm chart for deploying the EVtivity CSMS, including OCPP and OCPI services, on Kubernetes. _(Shell)_
 - **[opencpo/opencpo-core](https://github.com/opencpo/opencpo-core)** — ⭐ 1 — OCPI 2.2.1 — OCPP Core is an OCPP 1.6j and 2.0.1 CSMS server with charger profiles, built-in PKI, ISO 15118 Plug & Charge support, OCPI roaming, REST APIs, and Redis/PostgreSQL-backed state and events. _(Python)_
-- **[codexistente/ocpi-python](https://github.com/codexistente/ocpi-python)** — ⭐ 0 — OCPI 2.3.0 — ocpi-python is a Python/FastAPI library and application for implementing and managing OCPI-based EV charging services across multiple OCPI versions. _(Python)_
 
 #### Simulator
 
@@ -828,23 +829,19 @@
 
 ##### Java
 
-- **[extrawest/Extrawest-OCPI-2.2.1-EMSP-Client](https://github.com/extrawest/Extrawest-OCPI-2.2.1-EMSP-Client)** — ⭐ 3 — OCPI 2.2.1 — 💤 2023-12-06 — Java client library generated from OpenAPI for calling an OCPI 2.2.1 eMSP server API.
 - **[Llocer/llocer_ocpi_json](https://github.com/Llocer/llocer_ocpi_json)** — ⭐ 3 — OCPI 2.2.1 — 💤 2024-11-13 — Provides JSON schemas for OCPI 2.2.1 messages and Maven configuration to generate Java POJOs from them.
+- **[extrawest/Extrawest-OCPI-2.2.1-EMSP-Client](https://github.com/extrawest/Extrawest-OCPI-2.2.1-EMSP-Client)** — ⭐ 3 — OCPI 2.2.1 — 💤 2023-12-06 — Java client library generated from OpenAPI for calling an OCPI 2.2.1 eMSP server API.
 
 ##### Makefile
 
-- **[ChargePi/ocpi-sdk-go](https://github.com/ChargePi/ocpi-sdk-go)** — ⭐ 2 — OCPI 2.2.1 — Go client and server libraries generated from OpenAPI specifications for implementing the OCPI 2.2.1 protocol.
+- **[ChargePi/ocpi-sdk-go](https://github.com/ChargePi/ocpi-sdk-go)** — ⭐ 2 — OCPI 2.2.1 — Go SDK providing client and server libraries for the OCPI (Open Charge Point Interface) protocol version 2.2.1, auto-generated from OpenAPI specifications.
 
 ##### Python
 
 - **[Hamza-nabil/ocpi-tariffs-py](https://github.com/Hamza-nabil/ocpi-tariffs-py)** — ⭐ 1 — OCPI 2.2.1 — Python library for calculating and validating OCPI 2.2.1 EV charging tariffs against CDRs, including tariff dimensions, restrictions, time zones, and step-size rounding.
 - **[cdfq384903/Machnata](https://github.com/cdfq384903/Machnata)** — ⭐ 1 — Machnata converts JSON Schema definitions, including OCPP and OCPI schemas, into Protocol Buffers and generated multi-language data structures.
-- **[codexistente/ocpi-python](https://github.com/codexistente/ocpi-python)** — ⭐ 0 — OCPI 2.3.0 — ocpi-python is a Python/FastAPI library and application for implementing and managing OCPI-based EV charging services across multiple OCPI versions.
+- **[codexistente/ocpi-python](https://github.com/codexistente/ocpi-python)** — ⭐ 0 — OCPI 2.3.0 — Python library for implementing the Open Charge Point Interface (OCPI) protocol with FastAPI, supporting OCPI versions 2.1.1, 2.2.1, and 2.3.0.
 - **[javierojan/askacharge-python](https://github.com/javierojan/askacharge-python)** — ⭐ 0 — OCPI 2.2 — Python SDK for the askacharge.com EV charging platform API, providing access to chargers, charging sessions, and signed webhook verification for an OCPP/OCPI-based CSMS.
-
-##### Rust
-
-- **[evlinked/ocpi-rs](https://github.com/evlinked/ocpi-rs)** — ⭐ 1 — OCPI 2.1.1, 2.2.1, 2.3.0 — ocpi-rs is a Rust library/SDK that provides typed OCPI models, an async client, server handler traits, and a CLI for implementing OCPI-based EV charging roaming systems.
 
 #### Misc
 
@@ -908,7 +905,7 @@
 
 ##### C#
 
-- **[OpenChargingCloud/WWCP_eMIP](https://github.com/OpenChargingCloud/WWCP_eMIP)** — ⭐ 3 — A .NET library for connecting World Wide Charging Protocol entities with Gireve eMIP v0.7.4 roaming entities.
+- **[OpenChargingCloud/WWCP_eMIP](https://github.com/OpenChargingCloud/WWCP_eMIP)** — ⭐ 2 — A .NET library for connecting World Wide Charging Protocol entities with Gireve eMIP v0.7.4 roaming entities.
 
 ### OIOI
 
@@ -922,33 +919,41 @@
 
 #### Misc
 
-- **[OpenChargingCloud/ChargyDesktopApp](https://github.com/OpenChargingCloud/ChargyDesktopApp)** — ⭐ 11 — ChargyTS Desktop App is an Electron desktop application for validating cryptographic signatures and metadata in EV charging records for Eichrecht and related European transparency requirements. _(TypeScript)_
-- **[OpenChargingCloud/ChargyMobileApp](https://github.com/OpenChargingCloud/ChargyMobileApp)** — ⭐ 8 — Chargy is a Cordova-based iOS and Android app for verifying cryptographic signatures and metadata in EV charging records under German Eichrecht transparency requirements. _(TypeScript)_
 - **[wiedergruen/ocmf](https://github.com/wiedergruen/ocmf)** — ⭐ 3 — 💤 2019-07-08 — Markdown version of the Open Charge Metering Format specification for further development within the SAFE Group.
-- **[OpenChargingCloud/ChargyWebApp](https://github.com/OpenChargingCloud/ChargyWebApp)** — ⭐ 0 — Chargy WebApp verifies cryptographic signatures in EV charging measurement records for Eichrecht and related European transparency compliance. _(TypeScript)_
 
 #### OCMF
 
 - **[ChargePi/ocmf-go](https://github.com/ChargePi/ocmf-go)** — ⭐ 3 — Go library for generating, signing, and parsing Open Charge Metering Format messages for EV charging meter data. _(Go)_
 
+#### Validator
+
+- **[OpenChargingCloud/ChargyDesktopApp](https://github.com/OpenChargingCloud/ChargyDesktopApp)** — ⭐ 11 — Chargy is a transparency validation tool and library for verifying e-mobility charging processes and cryptographic energy measurements according to German Calibration Law (Eichrecht). _(TypeScript)_
+- **[OpenChargingCloud/ChargyWebApp](https://github.com/OpenChargingCloud/ChargyWebApp)** — ⭐ 0 — Chargy is an open-source transparency software library that validates cryptographic signatures of EV charging processes according to German Calibration Law (Eichrecht) and related EU regulations. _(TypeScript)_
+
+#### Verification
+
+- **[OpenChargingCloud/ChargyMobileApp](https://github.com/OpenChargingCloud/ChargyMobileApp)** — ⭐ 8 — A transparency application for verifying cryptographic signatures of energy measurements in EV charging transactions according to German Eichrecht regulations. _(TypeScript)_
+
 ### Other
 
 - **[pogopaule/awesome-sustainability-jobs](https://github.com/pogopaule/awesome-sustainability-jobs)** — ⭐ 512 — 💤 2025-05-17 — A curated list and map of sustainability-sector companies that offer developer jobs. _(Python)_
-- **[OPCFoundation/UA-EdgeTranslator](https://github.com/OPCFoundation/UA-EdgeTranslator)** — ⭐ 91 — UA Edge Translator is a containerized industrial edge application that maps data from proprietary asset protocols to OPC UA information models using W3C WoT Thing Descriptions. _(C#)_
+- **[OPCFoundation/UA-EdgeTranslator](https://github.com/OPCFoundation/UA-EdgeTranslator)** — ⭐ 91 — An industrial edge gateway application that translates from proprietary protocols (including OCPP) to OPC UA using W3C Web of Things thing descriptions. _(C#)_
 - **[ChargePi/ChargePi](https://github.com/ChargePi/ChargePi)** — ⭐ 27 — 🚫 deprecated — 💤 2024-07-25 — ChargePi is a deprecated Raspberry Pi-based EV charge point client implementing OCPP 1.6 JSON/WebSocket for controlling multiple EVSE connectors with LEDs, relays, and power meters. _(Python)_
-- **[flashg1/SolarCharger](https://github.com/flashg1/SolarCharger)** — ⭐ 16 — Home Assistant custom integration that charges an EV using surplus solar power by adjusting charging based on net power and related automation settings. _(Python)_
 - **[stromenergy/strom](https://github.com/stromenergy/strom)** — ⭐ 9 — 💤 2023-05-20 — Strom is an open-source OCPP 1.6 bridge that lets charge point owners start, stop, monitor, and bill EV charging sessions using Lightning and Nostr payment flows. _(Go)_
 - **[jimmyjoseph-web3/ChargeFrog-Hedera](https://github.com/jimmyjoseph-web3/ChargeFrog-Hedera)** — ⭐ 2 — ChargeFrog is a Hedera-based platform for proposing, funding, tokenizing, deploying, using, and auditing community-owned EV charging stations with on-chain carbon impact tracking. _(TypeScript)_
 - **[skazemi/awesome-evse](https://github.com/skazemi/awesome-evse)** — ⭐ 1 — 💤 2024-03-13 — A curated awesome list of EV charging tools, frameworks, libraries, and software.
 - **[Majkel-code/GE_EvChargingStation](https://github.com/Majkel-code/GE_EvChargingStation)** — ⭐ 1 — 💤 2025-06-05 — GE_EvChargingStation is a FastAPI-based charger and vehicle simulator for running configurable EV charging sessions with logging and optional Electron monitoring. _(Python)_
-- **[M4GNV5/charging-infrastructure-review-paper](https://github.com/M4GNV5/charging-infrastructure-review-paper)** — ⭐ 0 — A SECURWARE 2024 review paper on fast charging communication technologies and cybersecurity for EV charging. _(TeX)_
 - **[api-evangelist/tae-technologies](https://github.com/api-evangelist/tae-technologies)** — ⭐ 0 — TAE Technologies is a company profile repository about aneutronic p-B11 fusion energy, related life sciences, and power solutions.
-- **[Shargus/MasterThesis](https://github.com/Shargus/MasterThesis)** — ⭐ 0 — 💤 2022-12-26 — Master thesis project on real-time state-of-health estimation for electric vehicle battery packs using time-series extrinsic regression. _(TeX)_
+- **[M4GNV5/charging-infrastructure-review-paper](https://github.com/M4GNV5/charging-infrastructure-review-paper)** — ⭐ 0 — A SECURWARE 2024 review paper on fast charging communication technologies and cybersecurity for EV charging. _(TeX)_
 - **[api-evangelist/schaeffler](https://github.com/api-evangelist/schaeffler)** — ⭐ 0 — Schaeffler is a company profile repository documenting a German automotive and industrial supplier of bearings, powertrain components, chassis applications, and e-mobility systems, with no public APIs documented.
+- **[Shargus/MasterThesis](https://github.com/Shargus/MasterThesis)** — ⭐ 0 — 💤 2022-12-26 — Master thesis project on real-time state-of-health estimation for electric vehicle battery packs using time-series extrinsic regression. _(TeX)_
 - **[OpenChargingCommunity/OpenChargingCommunityAPI](https://github.com/OpenChargingCommunity/OpenChargingCommunityAPI)** — ⭐ 0 — 💤 2025-05-29 — Open Charging Community API is an API project for EV charging community functionality. _(C#)_
 - **[arcnode-io/ems-industrial-fixtures](https://github.com/arcnode-io/ems-industrial-fixtures)** — ⭐ 0 — Rust mock implementations of industrial gateway protocols for testing Modbus, SNMP, Redfish, DNP3, and CANbus integrations. _(Rust)_
 - **[Emulate-Energy/EDAP](https://github.com/Emulate-Energy/EDAP)** — ⭐ 0 — EDAP is a Python library and example gateway for implementing cloud access and low-latency control of energy devices using the Energy Device Aggregation Protocol. _(Python)_
-- **[salah2277/steve](https://github.com/salah2277/steve)** — ⭐ 0 — steve is a macOS CLI tool for controlling and inspecting applications through the Accessibility API. _(Swift)_
+
+#### Analytics
+
+- **[JohnApollos/boda-emobility-viability-engine](https://github.com/JohnApollos/boda-emobility-viability-engine)** — ⭐ 0 — A Streamlit-based data analytics and spatial optimization platform for modeling battery swap network expansion and credit default risk assessment in Kenya's electric motorcycle sector. _(Python)_
 
 #### Backend
 
@@ -964,7 +969,7 @@
 
 #### Charging management system
 
-- **[yuncitys/YunCharging](https://github.com/yuncitys/YunCharging)** — ⭐ 69 — 💤 2024-10-17 — YunCharge is an open-source EV and e-bike charging operation and billing platform with user apps, payments, charger management, and support for YunKuaiChong and OCPP protocols. _(Java)_
+- **[yuncitys/YunCharging](https://github.com/yuncitys/YunCharging)** — ⭐ 71 — 💤 2024-10-17 — YunCharge is an open-source EV and e-bike charging operation and billing platform with user apps, payments, charger management, and support for YunKuaiChong and OCPP protocols. _(Java)_
 - **[chethanbhatbs/CMS](https://github.com/chethanbhatbs/CMS)** — ⭐ 0 — 💤 2026-06-15 — EV Charging CMS is a React and Python charge point operator management system with an OCPP 1.6 WebSocket server, live session monitoring, remote charging operations, CRM, RBAC administration, and a virtual charger for testing. _(JavaScript)_
 
 #### Charging station placement optimization
@@ -1011,10 +1016,6 @@
 
 - **[rescoot/sunshine](https://github.com/rescoot/sunshine)** — ⭐ 4 — 💤 2025-06-03 — Sunshine is a Rails web application and API for monitoring telemetry, tracking trips, managing users, and remotely controlling unu/librescoot electric scooters via MQTT. _(HTML)_
 
-#### Energy management
-
-- **[Michito49/evcc](https://github.com/Michito49/evcc)** — ⭐ 0 — evcc is a local EV charge controller and home energy management system for integrating chargers, vehicles, solar, batteries, and energy meters. _(HTML)_
-
 #### Energy market analysis
 
 - **[Matthias-H-Git/European-Energy-Market-Analysis](https://github.com/Matthias-H-Git/European-Energy-Market-Analysis)** — ⭐ 0 — A data analytics project that examines relationships between European electricity markets, renewable generation, EV and heat pump adoption, and electricity price trends using public ENTSO-E and EUROSTAT data. _(Jupyter Notebook)_
@@ -1037,22 +1038,25 @@
 
 - **[arcnode-io/ems-industrial-gateway](https://github.com/arcnode-io/ems-industrial-gateway)** — ⭐ 0 — Rust gateway that reads industrial grid/device protocols, derives measurements, and publishes unit-scoped samples and dispatch acknowledgements over MQTT. _(Rust)_
 
+#### Integration
+
+- **[flashg1/SolarCharger](https://github.com/flashg1/SolarCharger)** — ⭐ 16 — Home Assistant custom integration that optimizes electric vehicle charging based on available surplus solar energy. _(Python)_
+- **[JustChr/HAgoe_steve](https://github.com/JustChr/HAgoe_steve)** — ⭐ 0 — Home Assistant integration providing smart-charging orchestration for go-e wallboxes by coordinating with SteVe (OCPP) backend and optimizing based on solar production, electricity prices, and home battery state. _(Python)_
+
+#### Libraries
+
+##### Makefile
+
+- **[ChargePi/oscp-go](https://github.com/ChargePi/oscp-go)** — ⭐ 3 — A Go library providing auto-generated OSCP (Open Smart Charging Protocol) compatible server and client implementations for smart charging.
+
 #### Mobile app
 
 - **[sap-labs-france/ev-mobile](https://github.com/sap-labs-france/ev-mobile)** — ⭐ 66 — 💤 2023-10-16 — A React Native Android and iOS mobile app for managing electric vehicle charging stations through the Open e-Mobility backend. _(TypeScript)_
 - **[powerly-ev/open-ev-charge-ios-app](https://github.com/powerly-ev/open-ev-charge-ios-app)** — ⭐ 2 — Powerly Open EV Charge is an open-source white-label iOS app for locating EV charging stations, signing in users, and viewing station availability, connector type, and pricing. _(Swift)_
 
-#### Modbus Simulator
-
-- **[TumbleOwlee/ferrowl](https://github.com/TumbleOwlee/ferrowl)** — ⭐ 5 — Ferrowl is a Rust TUI CLI for simulating Modbus clients/servers and OCPP charging stations/CSMS instances. _(Rust)_
-
 #### OCHP bridge
 
 - **[OpenChargingCloud/WWCP_OCHP](https://github.com/OpenChargingCloud/WWCP_OCHP)** — ⭐ 2 — A bridge enabling communication between WWCP entities and OCHP/OCHPdirect roaming and clearing-house implementations. _(C#)_
-
-#### OSCP Libraries
-
-- **[ChargePi/oscp-go](https://github.com/ChargePi/oscp-go)** — ⭐ 3 — Go SDK providing OSCP 2.0-compatible server and client code for smart EV charging integrations. _(Makefile)_
 
 #### Open Data
 
@@ -1063,15 +1067,19 @@
 
 - **[fneum/ev_chargingcoordination2017](https://github.com/fneum/ev_chargingcoordination2017)** — ⭐ 123 — 💤 2018-06-09 — A research codebase for robust cost-minimizing day-ahead scheduling of residential electric vehicle charging in low-voltage distribution networks under uncertainty. _(Python)_
 
+#### Platform
+
+- **[Michito49/evcc](https://github.com/Michito49/evcc)** — ⭐ 0 — evcc is a locally-deployed extensible charge controller and energy management system for coordinating EV charging with renewable energy and home systems. _(HTML)_
+
 #### Security
 
 - **[OpenChargingCloud/PKI](https://github.com/OpenChargingCloud/PKI)** — ⭐ 3 — 💤 2023-08-02 — Open Charging Cloud PKI defines a graph-based, multi-signature quorum public key infrastructure for trust and secure communications in e-mobility.
 - **[OpenChargingCommunity/PKI](https://github.com/OpenChargingCommunity/PKI)** — ⭐ 0 — 💤 2023-08-02 — Open Charging Community PKI defines a graph-based, quorum-controlled public key infrastructure for securing trust relationships in e-mobility.
 - **[crakashp2905-hub/CyberDeception-EVSE](https://github.com/crakashp2905-hub/CyberDeception-EVSE)** — ⭐ 0 — Research project providing an OCPP-based EVSE honeypot and machine-learning notebooks for detecting attacks on EV charging infrastructure. _(Jupyter Notebook)_
 
-#### Smart charging
+#### Site Assessment
 
-- **[JustChr/HAgoe_steve](https://github.com/JustChr/HAgoe_steve)** — ⭐ 0 — Home Assistant custom integration that controls go-e wallbox charging using PV, price, battery, and departure constraints while coordinating authorization and metering through SteVe OCPP. _(Python)_
+- **[mohsinali33226/Hamburg-fast-charging-gap-map](https://github.com/mohsinali33226/Hamburg-fast-charging-gap-map)** — ⭐ 0 — A GIS-based site assessment case study identifying underserved public fast-charging infrastructure gaps around Hamburg for CPO expansion planning.
 
 #### Smart energy and DER management
 
@@ -1097,7 +1105,7 @@
 
 #### Wallbox firmware
 
-- **[BorisBrock/HeidelBridge](https://github.com/BorisBrock/HeidelBridge)** — ⭐ 46 — ESP32 firmware that connects Heidelberg wallboxes to WiFi and exposes Daheimladen-compatible, MQTT, REST, and OTA interfaces for home energy management integration. _(C)_
+- **[BorisBrock/HeidelBridge](https://github.com/BorisBrock/HeidelBridge)** — ⭐ 47 — ESP32 firmware that connects Heidelberg wallboxes to WiFi and exposes Daheimladen-compatible, MQTT, REST, and OTA interfaces for home energy management integration. _(C)_
 
 #### Wallbox library
 
@@ -1121,5 +1129,6 @@
 - **[glurp/dynamicReverseProxy](https://github.com/glurp/dynamicReverseProxy)** — ⭐ 2 — 💤 2021-09-09 — Exemple of a solution for dynamic Http/WS reverse proxy with nginx and /etc/hosts manipulation
 - **[dattaphani899-create/voltgrid](https://github.com/dattaphani899-create/voltgrid)** — ⭐ 0 — Full-stack EV Charge Point Operator platform with OCPP 1.6, Node.js, WebSocket, SQLite and live dashboard _(HTML)_
 - **[shiks2/charlie](https://github.com/shiks2/charlie)** — ⭐ 0 — Lightweight OCPP 1.6J Central System in Go. Open-source alternative to heavy Java-based CSMS servers. Powers Volt — hosted EV charging infrastructure management. _(Makefile)_
+- **[salah2277/steve](https://github.com/salah2277/steve)** — ⭐ 0 — A macOS CLI tool for automating application control and testing via the Accessibility API, unrelated to EV charging. _(Swift)_
 
 </details>
