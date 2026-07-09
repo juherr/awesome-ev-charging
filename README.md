@@ -94,6 +94,14 @@ Roaming relies on ID Registration Offices (IDRO) that assign and publish the ope
 - [Identification Registration Repository](https://alternative-fuels-observatory.ec.europa.eu/markets-and-policy/policy-insights/identification-registration-repository) - The European reference, maintained by the European Alternative Fuels Observatory.
 - [IDRO Directory](https://idro.juherr.dev/) - A global directory aggregating e-mobility identifiers from national and regional IDRO registries.
 
+Roaming platforms (hubs) that interconnect CPOs and eMSPs, by founding year:
+
+- 🇩🇪 [Hubject](https://hubject.com/) (2012)
+- 🇫🇷 [Gireve](https://gireve.com/) (2013)
+- 🇩🇪 🇳🇱 [e-clearing.net](https://www.e-clearing.net/) (2014)
+- 🇩🇪 [eNAPI](https://enapi.com/) (2024)
+- 🇫🇷 [CO-OP ev](https://www.co-opev.com/) (2026)
+
 ### OICP (Open InterCharge Protocol)
 
 The **Open InterCharge Protocol (OICP)** is another protocol for roaming, developed by Hubject.
@@ -105,7 +113,7 @@ The **Open InterCharge Protocol (OICP)** is another protocol for roaming, develo
 
 ### eMIP (eMobility Protocol Inter-Operation)
 
-The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol developed by [Gireve](https://www.gireve.com).
+The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol developed by Gireve.
 
 - [Protocol description v1.0.17](https://www.gireve.com/wp-content/uploads/2025/02/Gireve_Tech_eMIP-V0.7.4_ProtocolDescription_1.0.17-en.pdf) (2025-02)
 - [Implementation guide v1.0.7](https://www.gireve.com/wp-content/uploads/2022/09/Gireve_Tech_eMIP-V0.7.4_ImplementationGuide_1.0.7_en.pdf) (2022-09)
