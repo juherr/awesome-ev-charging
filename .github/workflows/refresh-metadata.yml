@@ -1,0 +1,116 @@
+name: Monthly metadata refresh
+
+# Re-runs the awesome-ev-charging pipeline (ingest -> enrich -> render) once a
+# month and opens a PR with the regenerated listing. Enrichment is incremental:
+# it reuses classifications.csv (committed) keyed by pushed_at, so only repos
+# whose upstream changed since the last run are re-classified via Copilot.
+#
+# Auth: no secret needed. Since 2026-07-02 the Copilot CLI authenticates in
+# Actions with the built-in GITHUB_TOKEN, provided the job grants the
+# `copilot-requests: write` permission below. The same token drives the GitHub
+# API for ingest (public data only). Requires Copilot CLI usage to be enabled
+# for the account/org that owns this repo (Copilot AI credits are billed there).
+#
+# Fallback (only if the built-in token is rejected — e.g. Copilot-in-CLI not
+# enabled for this account): create a fine-grained PAT with the "Copilot
+# Requests" ACCOUNT permission (token Permissions → Account tab → Add
+# permissions → Copilot Requests), store it as a secret, and expose it on the
+# enrich step as COPILOT_GITHUB_TOKEN (it takes precedence over GITHUB_TOKEN).
+
+on:
+  schedule:
+    - cron: "0 6 1 * *" # 1st of each month, 06:00 UTC
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+# One refresh at a time; a new run cancels an in-flight one.
+concurrency:
+  group: metadata-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  copilot-requests: write # lets the Copilot CLI authenticate with GITHUB_TOKEN
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up mise (Python 3.11 + venv)
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+
+      - name: Install Python dependencies
+        run: mise run install
+
+      - name: Set up Node (for the Copilot CLI)
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Ingest — fetch repos + signals
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: mise run ingest
+
+      - name: Enrich — classify changed repos via Copilot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mise exec -- python pipeline.py enrich \
+            --token "$GH_TOKEN" \
+            --in repos.csv --out repos.enriched.csv \
+            --classifier copilot
+
+      - name: Render — inject listing into README + standalone
+        run: mise exec -- python pipeline.py render --readme README.md
+
+      # Guardrail: a transient Copilot failure can return an empty category for a
+      # repo. Don't let that regression reach a PR — fail if the number of
+      # empty-category rows grew versus the committed classifications.csv.
+      - name: Guard against classification regressions
+        run: |
+          before=$(git show HEAD:classifications.csv \
+            | mise exec -- python -c "import sys,csv; print(sum(1 for r in csv.DictReader(sys.stdin) if not r['categories'].strip()))")
+          after=$(mise exec -- python -c "import csv; print(sum(1 for r in csv.DictReader(open('classifications.csv')) if not r['categories'].strip()))")
+          echo "empty-category rows — before: $before, after: $after"
+          if [ "$after" -gt "$before" ]; then
+            echo "::error::Classification regressed: $((after - before)) repo(s) newly lost their category. Not opening a PR."
+            exit 1
+          fi
+
+      - name: Open / update the refresh PR
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          # Built-in GITHUB_TOKEN — scopes the PR to this repo. PRs opened with
+          # it don't trigger further workflows, which avoids CI loops here.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/monthly-metadata-refresh
+          # git-ignored artifacts (repos.csv, repos.enriched.csv, cache_github/)
+          # are never staged, so only the published files land in the PR.
+          add-paths: |
+            classifications.csv
+            README.md
+            awesome-ev-charging-projects.md
+          commit-message: |
+            chore(data): monthly listing refresh
+
+            Automated ingest + enrich + render. Refreshes repos whose upstream
+            metadata (stars, pushed_at, dormant/archived) changed this month.
+          title: "chore(data): monthly listing refresh"
+          body: |
+            Automated monthly metadata refresh (`ingest → enrich → render`).
+
+            Only repos whose upstream `pushed_at` changed since the last run were
+            re-classified (Copilot); the rest were reused from
+            `classifications.csv`. Review the diff — broad reshuffling between the
+            Selection / Dormant / To refine blocks is expected as stars and
+            dormancy shift, not a bug.
+          labels: automated, data-refresh
+          delete-branch: true

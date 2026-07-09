@@ -1,0 +1,36 @@
+version: 2
+
+updates:
+  # GitHub Actions used in .github/workflows/. Because the workflows pin actions
+  # by commit SHA, Dependabot bumps both the SHA and the trailing version comment.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      # One PR per week for all non-major action bumps, to keep noise down.
+      actions-minor:
+        update-types:
+          - minor
+          - patch
+
+  # Python runtime dependencies (requirements.txt).
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+    labels:
+      - dependencies
+      - python
+    groups:
+      pip-minor:
+        update-types:
+          - minor
+          - patch
