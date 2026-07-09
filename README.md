@@ -89,7 +89,7 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
 
 #### Roaming
 
-Roaming relies on ID Registration Offices (IDRO) that assign and publish the CPO (operator) and eMSP (provider) identifiers exchanged over OCPI.
+Roaming relies on ID Registration Offices (IDRO) that assign and publish the operator (CPO) and provider (eMSP) identifiers exchanged over OCPI.
 
 - [Identification Registration Repository](https://alternative-fuels-observatory.ec.europa.eu/markets-and-policy/policy-insights/identification-registration-repository) - The European reference, maintained by the European Alternative Fuels Observatory.
 - [IDRO Directory](https://idro.juherr.dev/) - A global directory aggregating e-mobility identifiers from national and regional IDRO registries.
