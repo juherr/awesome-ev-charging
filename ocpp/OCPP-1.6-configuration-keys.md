@@ -35,7 +35,7 @@ key when it implements the corresponding profile.
 | LocalPreAuthorize | Required | RW | boolean |
 | MaxEnergyOnInvalidId | Optional | R | integer |
 | MeterValueSampleInterval | Required | RW | integer |
-| MeterValuesAlignedData | Required | RW | integer |
+| MeterValuesAlignedData | Required | RW | csl :<br>Energy.Active.Import.Register<br>Power.Active.Import<br>Current.Import<br>Voltage<br>Temperature<br>Current.Offered<br>Frequency<br>Power.Factor |
 | MeterValuesAlignedDataMaxLength | Optional | R | integer |
 | MeterValuesSampledData | Required | RW | csl :<br>Energy.Active.Import.Register<br>Power.Active.Import<br>Current.Import<br>Voltage<br>Temperature<br>Current.Offered<br>Frequency<br>Power.Factor |
 | MeterValuesSampledDataMaxLength | Optional | R | integer |
@@ -44,9 +44,9 @@ key when it implements the corresponding profile.
 | ResetRetries | Required | RW | integer |
 | StopTransactionOnEVSideDisconnect | Required | RW | boolean |
 | StopTransactionOnInvalidId | Required | RW | boolean |
-| StopTxnAlignedData | Required | R | string |
+| StopTxnAlignedData | Required | RW | csl :<br>Energy.Active.Import.Register<br>Power.Active.Import<br>Current.Import<br>Voltage<br>Temperature<br>Current.Offered<br>Frequency<br>Power.Factor |
 | StopTxnAlignedDataMaxLength | Optional | R | integer |
-| StopTxnSampledData | Required | R | string |
+| StopTxnSampledData | Required | RW | csl :<br>Energy.Active.Import.Register<br>Power.Active.Import<br>Current.Import<br>Voltage<br>Temperature<br>Current.Offered<br>Frequency<br>Power.Factor |
 | StopTxnSampledDataMaxLength | Optional | R | integer |
 | SupportedFeatureProfiles | Required | R | csl :<br>Core<br>FirmwareManagement<br>LocalAuthListManagement<br>RemoteTrigger<br>Reservation<br>SmartCharging |
 | SupportedFeatureProfilesMaxLength | Optional | R | integer |
