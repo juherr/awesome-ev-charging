@@ -154,7 +154,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 #### Libraries
 
-##### C#
+##### C\#
 
 - [kraftvaerk/OCPI](https://github.com/kraftvaerk/OCPI) - C# reference framework for OCPI 2.1.1 DTOs and protocol interfaces (⭐ 16 · 💤 2022-12-08).
 
@@ -347,7 +347,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 - [kiranj26/MicroOCPP-on-STM32F4](https://github.com/kiranj26/MicroOCPP-on-STM32F4) - Embedded STM32F4 EVSE firmware integrating MicroOCPP with secure networking to provide OCPP 1.6 support for EV chargers (OCPP 1.6 · ⭐ 12 · 💤 2025-01-27).
 
-##### C#
+##### C\#
 
 - [fabyr/ocpp-sharp](https://github.com/fabyr/ocpp-sharp) - Ocpp-sharp is a C#/.NET library for implementing OCPP 1.6 and 2.0.1 message handling, server setup, and example client/server communication (OCPP 1.6, 2.0.1 · ⭐ 10).
 
@@ -493,7 +493,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 #### Libraries
 
-##### C#
+##### C\#
 
 - [OpenChargingCloud/WWCP_OICP](https://github.com/OpenChargingCloud/WWCP_OICP) - A .NET library providing OICP v2.3 reference implementation with CPO, EMP, and Central Service functionality for e-mobility roaming communication between WWCP and OICP entities (⭐ 11).
 
@@ -505,7 +505,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 #### Libraries
 
-##### C#
+##### C\#
 
 - [OpenChargingCloud/WWCP_eMIP](https://github.com/OpenChargingCloud/WWCP_eMIP) - A .NET library bridging the World Wide Charging Protocol (WWCP) and Gireve's eMobility Interoperation Protocol (eMIP) for EV charging roaming and communication (now deprecated) (⭐ 2 · 🚫 deprecated).
 
@@ -513,7 +513,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 #### Libraries
 
-##### C#
+##### C\#
 
 - [OpenChargingCloud/WWCP_OIOI](https://github.com/OpenChargingCloud/WWCP_OIOI) - A .NET 6 library connecting WWCP entities with PlugSurfing OIOI v4.x e-mobility provider protocol implementations (⭐ 2 · 💤 2023-09-11).
 
@@ -614,7 +614,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 #### Libraries
 
-##### C#
+##### C\#
 
 - [OpenChargingCloud/WWCP_Core](https://github.com/OpenChargingCloud/WWCP_Core) - WWCP Core is a .NET library providing foundational data structures, entities, and reference implementations for the World Wide Charging Protocol Suite, enabling unified EV charging interoperability across OCPP, OCPI, OICP, and ISO15118 protocols (⭐ 7).
 - [OpenChargingCloud/WWCP_OCHP](https://github.com/OpenChargingCloud/WWCP_OCHP) - A library that bridges communication between World Wide Charging Protocol (WWCP) entities and Open Clearing House Protocol (OCHP v1.4/OCHPdirect v0.2) implementations for e-mobility roaming and clearing (⭐ 2).
