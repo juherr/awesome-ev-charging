@@ -51,6 +51,9 @@ EXCLUDED_REPOS = {
   SELF_REPO,
   "ocpi/ocpi",     # the OCPI spec itself — already linked in the Specifications section
   "hubject/oicp",  # the OICP spec itself — already linked in the Specifications section
+  # A fusion-energy company's API portal; matched only because it tags itself
+  # `e-mobility`. Unrelated to EV charging protocols.
+  "api-evangelist/tae-technologies",
 }
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
 # `render --readme` replaces the text between these HTML comment markers in README:
