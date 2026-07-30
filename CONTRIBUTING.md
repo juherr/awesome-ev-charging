@@ -16,7 +16,7 @@ There are two ways to contribute, depending on how hands-on you want to be.
 If you just want to suggest a tool or report a wrong description/category, open an
 issue with the **"Add a link"** template:
 
-👉 https://github.com/juherr/awesome-ev-charging/issues/new/choose
+👉 <https://github.com/juherr/awesome-ev-charging/issues/new/choose>
 
 The template asks for three things:
 
@@ -37,12 +37,12 @@ and open a pull request.
 Descriptions and categories are stored in **`classifications.csv`** — the durable,
 **committed** source of truth. Its columns are:
 
-| Column        | Meaning                                                                 |
-| ------------- | ----------------------------------------------------------------------- |
-| `full_name`   | `owner/repo`                                                            |
-| `pushed_at`   | last push timestamp (cache key — leave it alone)                        |
+| Column        | Meaning                                                                   |
+| ------------- | ------------------------------------------------------------------------- |
+| `full_name`   | `owner/repo`                                                              |
+| `pushed_at`   | last push timestamp (cache key — leave it alone)                          |
 | `categories`  | one or more `Main > Sub` entries, pipe-separated (e.g. `Other > Battery`) |
-| `description` | the factual one-sentence description shown in the list                  |
+| `description` | the factual one-sentence description shown in the list                    |
 
 - Valid **main** categories come from `CATEGORY_TREE` in `pipeline.py`: `OCPP`,
   `OCPI`, `iso15118`, `OICP`, `EMIP`, `OIOI`, `Eichrecht`, `Other`. **Sub**categories
@@ -79,14 +79,14 @@ hand-edited cells — never use it when you want to keep manual edits.
 
 ### Common workflows
 
-**Fix a description**
+#### Fix a description
 
 1. Edit the `description` cell for that repo's row in `classifications.csv`.
 2. `mise run enrich` — reuses the cache (no LLM call) since `pushed_at` is unchanged.
 3. `python pipeline.py render --readme README.md`
 4. Commit `classifications.csv` and `README.md`.
 
-**Change or move a category (section)**
+#### Change or move a category (section)
 
 - *Option A — edit the data:* change the `categories` cell in
   `classifications.csv`, then `mise run enrich` → `render`.
@@ -97,7 +97,7 @@ hand-edited cells — never use it when you want to keep manual edits.
 - To merge near-duplicate subcategory names, add them to `SUBCATEGORY_ALIASES`
   in `pipeline.py` and re-render.
 
-**Add a project**
+#### Add a project
 
 1. Make it discoverable by `ingest`, via any one of:
    - it already matches one of the `TOPICS` GitHub topics, or
@@ -115,7 +115,7 @@ Whether a repo lands in the **Selection** block or the collapsed **To refine**
 block is decided by a promotion score (the star lists / contributor status), not
 by manual ordering.
 
-**Remove a project**
+#### Remove a project
 
 1. Add its `full_name` to `EXCLUDED_REPOS` in `pipeline.py`.
 2. `python pipeline.py render --readme README.md` — re-rendering is enough to drop

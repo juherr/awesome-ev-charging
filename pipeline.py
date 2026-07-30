@@ -51,6 +51,9 @@ EXCLUDED_REPOS = {
   SELF_REPO,
   "ocpi/ocpi",     # the OCPI spec itself — already linked in the Specifications section
   "hubject/oicp",  # the OICP spec itself — already linked in the Specifications section
+  # A fusion-energy company's API portal; matched only because it tags itself
+  # `e-mobility`. Unrelated to EV charging protocols.
+  "api-evangelist/tae-technologies",
 }
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
 # `render --readme` replaces the text between these HTML comment markers in README:
@@ -907,6 +910,17 @@ def _render_line(row, main=None, show_language=True):
   return f"- {link}{suffix}"
 
 
+def _escape_trailing_hashes(text):
+  """Backslash-escape a trailing `#` run so it reads as text, not a heading delimiter.
+
+  A language like `C#` ends a heading with a hash. CommonMark already renders
+  `##### C#` as "C#" (a closing sequence must be preceded by a space), but
+  markdownlint's MD020 flags it anyway; escaping is the fix its maintainer
+  prescribes (DavidAnson/markdownlint#404) and renders identically.
+  """
+  return re.sub(r"#+$", lambda m: m.group().replace("#", r"\#"), text)
+
+
 def _render_grouped(rows, lines):
   """Emit `### main` / `#### sub` subsections; a repo appears under each of its categories.
 
@@ -930,7 +944,7 @@ def _render_grouped(rows, lines):
         for row in subs[sub]:
           by_lang[row.get("language") or "Other"].append(row)
         for lang in sorted(by_lang, key=lambda l: (l == "Other", l.lower())):
-          lines += [f"##### {lang}", ""]
+          lines += [f"##### {_escape_trailing_hashes(lang)}", ""]
           for row in sorted(by_lang[lang], key=_sort_key):
             lines.append(_render_line(row, main=main, show_language=False))
           lines.append("")

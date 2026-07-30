@@ -1,0 +1,34 @@
+name: markdownlint
+
+# Style-check the docs this repo authors. Scope and rule config live in
+# .markdownlint-cli2.jsonc so a local `npx markdownlint-cli2` matches CI exactly.
+# Complements awesome-lint.yml, which enforces the sindresorhus/awesome format on
+# README.md alone.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "**/*.md"
+      - ".markdownlint-cli2.jsonc"
+      - ".github/workflows/markdownlint.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      - name: Run markdownlint
+        run: npx --yes markdownlint-cli2
