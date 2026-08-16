@@ -1,3 +1,3 @@
 # Test-only dependencies. Runtime deps live in requirements.txt; the tests never
 # reach the network, so nothing here is needed to run the pipeline itself.
-pytest==8.4.2
+pytest==9.0.3
