@@ -472,3 +472,40 @@ def test_committed_certificate_mirror_has_no_unknown_tokens():
   certs = csms.read_csv(csms.CERTS_PATH, fields=csms.CERT_FIELDS)
   assert certs, "csms-certificates.csv should not be empty"
   assert csms.unresolved_tokens(certs) == []
+
+
+def committed_body(path, begin_marker, end_marker):
+  """The generated block of a deliverable, exactly as `cmd_render` writes it."""
+  with open(path, "r", encoding="utf-8") as f:
+    content = f.read()
+  begin = content.index(begin_marker) + len(begin_marker)
+  return content[begin:content.index(end_marker)].strip("\n")
+
+
+def test_committed_markdown_matches_a_fresh_render(monkeypatch):
+  """The CSVs are canonical and the Markdown is only a view of them.
+
+  Without this, a PR editing a curated row but forgetting to re-render merges
+  green and the published tables disagree with their own source until the
+  monthly refresh job notices. The GitHub stub answers for every curated repo,
+  so the test asserts the render is reproducible — not that the repos still
+  exist, which is the refresh job's business and needs the network.
+  """
+  stub_github(monkeypatch)
+  certs = csms.read_csv(csms.CERTS_PATH, fields=csms.CERT_FIELDS)
+  vendors = csms.read_csv(csms.VENDORS_PATH, fields=csms.VENDOR_FIELDS)
+  claims = csms.read_features(csms.FEATURES_PATH, csms.product_slugs(vendors))
+  entries = csms.sort_entries(csms.merge(certs, vendors, {}, claims))
+
+  directory = "\n".join(
+    csms.md_table(csms.TABLE_HEADERS, [csms.render_row(e) for e in entries]))
+  annex = "\n".join(
+    csms.md_table(csms.FEATURE_TABLE_HEADERS,
+                  [csms.render_feature_row(e) for e in entries]))
+
+  assert directory == committed_body(csms.CSMS_MD_PATH, csms.CSMS_MARKER_BEGIN,
+                                     csms.CSMS_MARKER_END), \
+    "csms.md is stale — re-run `python csms.py render`"
+  assert annex == committed_body(csms.FEATURES_MD_PATH, csms.FEATURES_MARKER_BEGIN,
+                                 csms.FEATURES_MARKER_END), \
+    "csms-features.md is stale — re-run `python csms.py render`"

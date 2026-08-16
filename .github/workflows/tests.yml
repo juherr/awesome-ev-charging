@@ -13,6 +13,10 @@ on:
       - "csms.csv"
       - "csms-features.csv"
       - "csms-certificates.csv"
+      # The generated views are asserted against a fresh render, so a hand-edit
+      # between the markers has to trip the suite too.
+      - "csms.md"
+      - "csms-features.md"
       - "requirements*.txt"
       - "mise.toml"
       - "pytest.ini"
