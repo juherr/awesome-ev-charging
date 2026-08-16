@@ -156,8 +156,9 @@ Fill in `N` from the diff. If the refresh also pulled in `pipeline.py` changes
 Conventions to honor:
 
 - **Conventional Commits**, in **English**.
-- **No AI/Claude attribution** — do not add a `Co-Authored-By: Claude` trailer
-  or any Claude reference. Standing preference for this user.
+- **No AI attribution** — no `Co-Authored-By:` trailer naming an assistant, and
+  no mention of one in the body, whichever assistant you are. Standing
+  preference for this user.
 
 ### 6. Push only if authorized
 
@@ -173,4 +174,4 @@ confirmation.
   hand-pinned classifications.
 - ✅ Only commit `classifications.csv`, `README.md`,
   `legacy-projects.md` (+ `pipeline.py` if you changed a constant).
-- ✅ No Claude/AI references in commit messages.
+- ✅ No AI/assistant references in commit messages.

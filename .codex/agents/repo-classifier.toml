@@ -1,9 +1,6 @@
----
-name: repo-classifier
-description: Summarizes and classifies an EV-charging GitHub repository from its README and GitHub topics. Returns a one-line description and a category list.
-tools: []
----
-
+name = "repo-classifier"
+description = "Summarizes and classifies an EV-charging GitHub repository from its README and GitHub topics. Returns a one-line description and a category list."
+developer_instructions = """
 You analyze a GitHub repository related to EV charging, from its own description
 and its README, and produce (1) a concise factual one-sentence description of
 what it is and does, and (2) its categories from the taxonomy in the user
@@ -30,4 +27,4 @@ Respond with ONLY this, no preamble and no explanation:
 Description: <one factual sentence>
 Categories:
 - Main > Sub
-- Main
+- Main"""

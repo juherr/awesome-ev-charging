@@ -2,15 +2,30 @@ min_version = "2024.9.5"
 
 [tools]
 python = "3.11.11"
+# The install tasks below shell out to `uv`, and the venv has no pip to fall back
+# on. Declaring it here is what makes them work on a bare runner — CI had only
+# ever passed because a developer's machine happened to have uv on PATH.
+uv = "0.12.5"
 
 [env]
 # Auto-create and activate a project virtualenv — no manual `source .venv/bin/activate`.
 _.python.venv = { path = ".venv", create = true }
 
 [tasks.install]
-description = "Install Python dependencies into the project venv"
+description = "Install runtime dependencies into the project venv"
 alias = "i"
 run = "uv pip install -r requirements.txt"
+
+# Separate from `install` so the monthly refresh job, which runs no tests, does
+# not pull pytest in just to render a table.
+[tasks.install-dev]
+description = "Install runtime + test dependencies"
+run = "uv pip install -r requirements.txt -r requirements-dev.txt"
+
+[tasks.test]
+description = "Run the test suite (no network access needed)"
+alias = "t"
+run = "pytest -q"
 
 [tasks.ingest]
 description = "Stage 1 — fetch candidate repos + signals into repos.csv"

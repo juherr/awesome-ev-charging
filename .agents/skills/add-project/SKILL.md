@@ -178,9 +178,9 @@ repos whose upstream pushed_at changed since the last enrichment."
 Conventions to honor:
 
 - **Conventional Commits**, in **English**.
-- **No AI/Claude attribution** in commit messages — do not add a
-  `Co-Authored-By: Claude` trailer or any Claude reference. This is a standing
-  preference for this user.
+- **No AI attribution** in commit messages — no `Co-Authored-By:` trailer
+  naming an assistant, and no mention of one in the body, whichever assistant
+  you are. This is a standing preference for this user.
 - If the change is only the code override path (no data refresh), one `feat`
   commit on `pipeline.py` + `README.md` is enough.
 
@@ -203,4 +203,4 @@ outward-facing actions need confirmation.
 - ✅ Only commit `classifications.csv`, `README.md`,
   `legacy-projects.md`, and (if changed) `pipeline.py`.
 - ✅ Never pass `--refresh` when you want to keep hand-pinned classifications.
-- ✅ No Claude/AI references in commit messages.
+- ✅ No AI/assistant references in commit messages.

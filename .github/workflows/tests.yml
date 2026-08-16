@@ -1,0 +1,43 @@
+name: tests
+
+# The CSMS catalogue enforces invariants that only hold if something checks
+# them: a controlled feature vocabulary, a source URL behind every curated
+# feature, and a deterministic render. The suite needs no network and no
+# secret — it validates the committed CSVs and renders from in-memory fixtures.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "**/*.py"
+      # Globs, not the three names we happen to have: the suite validates the
+      # catalogue as a whole, so a future csms-*.csv has to trip it without
+      # anyone remembering to extend this list. The generated views are checked
+      # against a fresh render, so a hand-edit between the markers counts too.
+      - "csms*.csv"
+      - "csms*.md"
+      - "requirements*.txt"
+      - "mise.toml"
+      - "pytest.ini"
+      - ".github/workflows/tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up mise (Python 3.11 + venv)
+        uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
+
+      - name: Install Python dependencies
+        run: mise run install-dev
+
+      - name: Run tests
+        run: mise run test
