@@ -41,14 +41,18 @@ def render(certs=(), vendors=(), claims=None):
   return csms.sort_entries(products)
 
 
+# `strict=True` on both: a row that no longer matches its header would otherwise
+# zip short, and every assertion below would fail on a KeyError naming the column
+# rather than the length mismatch that caused it.
 def directory_row(entries, index=0):
   """One rendered directory row, keyed by column name."""
-  return dict(zip(csms.TABLE_HEADERS, csms.render_row(entries[index])))
+  return dict(zip(csms.TABLE_HEADERS, csms.render_row(entries[index]), strict=True))
 
 
 def feature_row(entries, index=0):
   """One rendered annex row, keyed by column name."""
-  return dict(zip(csms.FEATURE_TABLE_HEADERS, csms.render_feature_row(entries[index])))
+  return dict(zip(csms.FEATURE_TABLE_HEADERS,
+                  csms.render_feature_row(entries[index]), strict=True))
 
 
 def stub_github(monkeypatch, **repo_fields):
