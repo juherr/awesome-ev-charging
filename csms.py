@@ -19,6 +19,7 @@ import io
 import json
 import os
 import re
+import tempfile
 import time
 from collections import defaultdict
 
@@ -228,12 +229,22 @@ def write_atomic(path, text):
   """Write a file via a temporary sibling, so readers never see it half-written.
 
   Both the cache and the committed mirror are read back by later runs; a process
-  killed mid-write would otherwise leave a truncated file behind.
+  killed mid-write would otherwise leave a truncated file behind. The temporary
+  file is unique per call — a fixed name would let two writers aimed at the same
+  path corrupt each other's — and lives in the destination directory so the
+  replace stays on one filesystem, which is what makes it atomic.
   """
-  tmp = f"{path}.tmp"
-  with open(tmp, "w", newline="", encoding="utf-8") as f:
-    f.write(text)
-  os.replace(tmp, path)
+  directory = os.path.dirname(path) or "."
+  fd, tmp = tempfile.mkstemp(dir=directory, prefix=os.path.basename(path) + ".",
+                             suffix=".tmp")
+  try:
+    with os.fdopen(fd, "w", newline="", encoding="utf-8") as f:
+      f.write(text)
+    os.replace(tmp, path)
+  except BaseException:
+    if os.path.exists(tmp):
+      os.unlink(tmp)
+    raise
 
 
 def post_json_cached(url, payload, ttl=pipeline.CACHE_TTL):
@@ -243,8 +254,10 @@ def post_json_cached(url, payload, ttl=pipeline.CACHE_TTL):
   the Accept header, so the OCA endpoint needs its own helper. Shares the same
   cache directory, which is already git-ignored.
   """
-  # The payload is part of the key: one URL serves every page and filter.
-  key = hashlib.md5((url + json.dumps(payload, sort_keys=True)).encode()).hexdigest()
+  # The payload is part of the key: one URL serves every page and filter. The
+  # digest only derives a filename — nothing here is a security boundary — but
+  # SHA-256 keeps the file clear of the scanners that flag MD5 on sight.
+  key = hashlib.sha256((url + json.dumps(payload, sort_keys=True)).encode()).hexdigest()
   cache_path = os.path.join(pipeline.CACHE_DIR, key + ".json")
 
   if os.path.exists(cache_path) and (time.time() - os.path.getmtime(cache_path) < ttl):
