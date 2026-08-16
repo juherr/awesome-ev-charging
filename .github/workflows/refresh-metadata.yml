@@ -77,13 +77,28 @@ jobs:
       # refuses to write a mirror that is short or smaller than the committed
       # one. That guard lives in csms.py, which knows both counts — so it also
       # protects local runs, and it fires before `render` can consume bad data.
+      #
+      # Both steps are non-blocking: the CSMS catalogue is secondary to the
+      # project listing, and a registry outage must not cost the whole monthly
+      # refresh. If either fails, the next step restores both files so the PR
+      # never carries a new mirror alongside a table rendered from the old one.
       - name: CSMS — refresh the OCA certificate mirror
+        id: csms_fetch
+        continue-on-error: true
         run: mise exec -- python csms.py fetch --out csms-certificates.csv
 
       - name: CSMS — re-render csms.md
+        id: csms_render
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: mise exec -- python csms.py render --token "$GH_TOKEN"
+
+      - name: Drop partial CSMS changes if either step failed
+        if: steps.csms_fetch.outcome == 'failure' || steps.csms_render.outcome == 'failure'
+        run: |
+          echo "::warning::CSMS refresh failed — leaving the committed catalogue untouched."
+          git checkout -- csms-certificates.csv csms.md
 
       # Guardrail: a transient Copilot failure can return an empty category for a
       # repo. Don't let that regression reach a PR — fail if the number of

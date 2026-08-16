@@ -15,6 +15,7 @@ Run `python csms.py <stage> --help` for stage options.
 import argparse
 import csv
 import hashlib
+import io
 import json
 import os
 import re
@@ -223,6 +224,18 @@ def canonical_product(company, designation):
 
 # --- HTTP with on-disk cache -------------------------------------------------
 
+def write_atomic(path, text):
+  """Write a file via a temporary sibling, so readers never see it half-written.
+
+  Both the cache and the committed mirror are read back by later runs; a process
+  killed mid-write would otherwise leave a truncated file behind.
+  """
+  tmp = f"{path}.tmp"
+  with open(tmp, "w", newline="", encoding="utf-8") as f:
+    f.write(text)
+  os.replace(tmp, path)
+
+
 def post_json_cached(url, payload, ttl=pipeline.CACHE_TTL):
   """POST a JSON body and cache the response on disk, keyed by URL + payload.
 
@@ -230,21 +243,26 @@ def post_json_cached(url, payload, ttl=pipeline.CACHE_TTL):
   the Accept header, so the OCA endpoint needs its own helper. Shares the same
   cache directory, which is already git-ignored.
   """
+  # The payload is part of the key: one URL serves every page and filter.
   key = hashlib.md5((url + json.dumps(payload, sort_keys=True)).encode()).hexdigest()
   cache_path = os.path.join(pipeline.CACHE_DIR, key + ".json")
 
   if os.path.exists(cache_path) and (time.time() - os.path.getmtime(cache_path) < ttl):
-    with open(cache_path, "r", encoding="utf-8") as f:
-      return json.load(f)
+    try:
+      with open(cache_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+    except (OSError, ValueError):
+      # A half-written cache file must read as a miss, not poison every run.
+      pass
 
   try:
     r = requests.post(url, json=payload, timeout=HTTP_TIMEOUT,
                       headers={"Content-Type": "application/json"})
     r.raise_for_status()
     content = r.text
-    with open(cache_path, "w", encoding="utf-8") as f:
-      f.write(content)
-    return json.loads(content)
+    parsed = json.loads(content)
+    write_atomic(cache_path, content)
+    return parsed
   except Exception as e:
     print(f"⚠️  OCA request failed: {e}")
     return None
@@ -339,10 +357,11 @@ def cmd_fetch(args):
     raise SystemExit(f"{args.out} would shrink from {previous} to {len(rows)} rows "
                      f"— refusing. Pass --allow-shrink if the registry really did.")
 
-  with open(args.out, "w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(f, fieldnames=CERT_FIELDS)
-    writer.writeheader()
-    writer.writerows(rows)
+  buffer = io.StringIO()
+  writer = csv.DictWriter(buffer, fieldnames=CERT_FIELDS)
+  writer.writeheader()
+  writer.writerows(rows)
+  write_atomic(args.out, buffer.getvalue())
 
   unresolved = unresolved_tokens(rows)
   if unresolved:
@@ -442,28 +461,36 @@ def enrich_from_github(entry, repo, headers):
   entry["open_source"] = True
   entry.setdefault("first_release", (obj.get("created_at") or "")[:10])
 
-  # /releases?per_page=1 rather than /releases/latest: the latter 404s on repos
-  # with no release, which is the common case here and only produces noise.
+  # The release list rather than /releases/latest: the latter 404s on repos with
+  # no release, which is common here and only produces noise. Take the newest
+  # stable one — "Latest version" unqualified reads as shipped, so advertising a
+  # beta or an alpha there would overstate what the project has released.
   releases = pipeline.github_request_cached(
-    f"{pipeline.BASE_URL}/repos/{repo}/releases?per_page=1", headers=headers)
-  release = releases[0] if isinstance(releases, list) and releases else None
-  if release:
+    f"{pipeline.BASE_URL}/repos/{repo}/releases?per_page=10", headers=headers)
+  releases = releases if isinstance(releases, list) else []
+  stable = next((r for r in releases if not r.get("draft") and not r.get("prerelease")), None)
+  if releases:
     # The releases page is the de facto changelog for a GitHub-hosted project.
     entry.setdefault("changelog", f"https://github.com/{repo}/releases")
-    if release.get("tag_name"):
-      entry.setdefault("latest_version", release["tag_name"])
-      entry.setdefault("latest_version_date", (release.get("published_at") or "")[:10])
-  # No tagged release: the last push is the closest honest proxy.
+  if stable and stable.get("tag_name"):
+    entry.setdefault("latest_version", stable["tag_name"])
+    entry.setdefault("latest_version_date", (stable.get("published_at") or "")[:10])
+  # No stable release: the last push is the closest honest proxy.
   entry.setdefault("latest_version_date", (obj.get("pushed_at") or "")[:10])
 
 
-def _overlay(entry, row, fields):
+def _overlay(entry, row, fields, fill_only=False):
   """Copy the non-empty curated values of `fields` onto an entry.
 
   Curated data completes what the registry gave; an empty cell never blanks a
   value, which is what lets one curated row carry only what it actually knows.
+
+  `fill_only` is for company-level rows: a fact stated for the whole vendor is a
+  default, so it must not overwrite what a product row said about one product.
   """
   for field in fields:
+    if fill_only and clean(entry.get(field)):
+      continue
     value = clean(row.get(field))
     if value:
       entry[field] = value
@@ -535,7 +562,7 @@ def merge(certs, vendors, headers):
       print(f"⚠️  {row.get('slug')}: no OCA company matches {row.get('oca_company')!r}")
       continue
     for entry in targets:
-      _overlay(entry, row, COMPANY_FIELDS)
+      _overlay(entry, row, COMPANY_FIELDS, fill_only=True)
 
   return products
 

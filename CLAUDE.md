@@ -76,7 +76,7 @@ python csms.py render   # -> injects the table into csms.md
 mise run csms           # both, with the gh token wired in
 ```
 
-**Stage 1 — `fetch`.** The OCA certified-products page renders client-side but is backed by a public JSON endpoint: `POST https://openchargealliance.org/wp-json/custom/v1/ajax-loader` with `{id: "299052", paged: N, post_type: "certificate", filters: [{field: "product-type", value: "Charging Station Management System"}]}`, 6 items/page. `post_json_cached` is the POST counterpart of `github_request_cached` (which is GET-only and picks its cache extension from the `Accept` header), sharing `cache_github/`. Values are whitespace-collapsed and pipe-escaped, dates converted to ISO. Aborts rather than writing a truncated mirror if a page fails.
+**Stage 1 — `fetch`.** The OCA certified-products page renders client-side but is backed by a public JSON endpoint: `POST https://openchargealliance.org/wp-json/custom/v1/ajax-loader` with `{id: "299052", paged: N, posts_per_page: 50, post_type: "certificate", filters: [{field: "product-type", value: "Charging Station Management System"}]}`. The endpoint defaults to 6 items per page but honours `posts_per_page`, so asking for 50 turns the sweep into 6 requests instead of 49. `post_json_cached` is the POST counterpart of `github_request_cached` (which is GET-only and picks its cache extension from the `Accept` header), sharing `cache_github/`; its key hashes the payload as well as the URL, since one URL serves every page and filter. Values are whitespace-collapsed and pipe-escaped, dates converted to ISO. Aborts rather than writing a truncated mirror if a page fails.
 
 **Stage 2 — `render`.** Three files, one rule each:
 
