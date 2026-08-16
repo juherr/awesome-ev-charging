@@ -10,13 +10,12 @@ on:
   pull_request:
     paths:
       - "**/*.py"
-      - "csms.csv"
-      - "csms-features.csv"
-      - "csms-certificates.csv"
-      # The generated views are asserted against a fresh render, so a hand-edit
-      # between the markers has to trip the suite too.
-      - "csms.md"
-      - "csms-features.md"
+      # Globs, not the three names we happen to have: the suite validates the
+      # catalogue as a whole, so a future csms-*.csv has to trip it without
+      # anyone remembering to extend this list. The generated views are checked
+      # against a fresh render, so a hand-edit between the markers counts too.
+      - "csms*.csv"
+      - "csms*.md"
       - "requirements*.txt"
       - "mise.toml"
       - "pytest.ini"
