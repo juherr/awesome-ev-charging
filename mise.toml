@@ -19,3 +19,10 @@ run = 'python pipeline.py ingest --token "$(gh auth token 2>/dev/null)" --out re
 [tasks.enrich]
 description = "Stage 2 — classify repos from repos.csv via the skill agent (incremental)"
 run = 'python pipeline.py enrich --token "$(gh auth token 2>/dev/null)" --in repos.csv --out repos.enriched.csv'
+
+[tasks.csms]
+description = "Refresh the OCA certificate mirror and re-render csms.md"
+run = [
+  'python csms.py fetch',
+  'python csms.py render --token "$(gh auth token 2>/dev/null)"',
+]

@@ -4,6 +4,8 @@ name: Monthly metadata refresh
 # month and opens a PR with the regenerated listing. Enrichment is incremental:
 # it reuses classifications.csv (committed) keyed by pushed_at, so only repos
 # whose upstream changed since the last run are re-classified via Copilot.
+# The same run also re-mirrors the Open Charge Alliance CSMS certificate
+# registry (csms.py fetch -> render), which needs no LLM and no secret.
 #
 # Auth: no secret needed. Since 2026-07-02 the Copilot CLI authenticates in
 # Actions with the built-in GITHUB_TOKEN, provided the job grants the
@@ -71,6 +73,18 @@ jobs:
       - name: Render — inject listing into README + standalone
         run: mise exec -- python pipeline.py render --readme README.md
 
+      # The OCA registry is scraped from an undocumented endpoint, so `fetch`
+      # refuses to write a mirror that is short or smaller than the committed
+      # one. That guard lives in csms.py, which knows both counts — so it also
+      # protects local runs, and it fires before `render` can consume bad data.
+      - name: CSMS — refresh the OCA certificate mirror
+        run: mise exec -- python csms.py fetch --out csms-certificates.csv
+
+      - name: CSMS — re-render csms.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: mise exec -- python csms.py render --token "$GH_TOKEN"
+
       # Guardrail: a transient Copilot failure can return an empty category for a
       # repo. Don't let that regression reach a PR — fail if the number of
       # empty-category rows grew versus the committed classifications.csv.
@@ -98,14 +112,18 @@ jobs:
             classifications.csv
             README.md
             legacy-projects.md
+            csms-certificates.csv
+            csms.md
           commit-message: |
             chore(data): monthly listing refresh
 
-            Automated ingest + enrich + render. Refreshes repos whose upstream
-            metadata (stars, pushed_at, dormant/archived) changed this month.
+            Automated ingest + enrich + render, plus the OCA CSMS mirror.
+            Refreshes repos whose upstream metadata (stars, pushed_at,
+            dormant/archived) changed this month.
           title: "chore(data): monthly listing refresh"
           body: |
-            Automated monthly metadata refresh (`ingest → enrich → render`).
+            Automated monthly metadata refresh (`ingest → enrich → render`), plus a
+            refresh of the OCA CSMS certificate mirror (`csms fetch → render`).
 
             Only repos whose upstream `pushed_at` changed since the last run were
             re-classified (Copilot); the rest were reused from
