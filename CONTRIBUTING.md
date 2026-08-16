@@ -51,8 +51,9 @@ Descriptions and categories are stored in **`classifications.csv`** — the dura
   `Other > Open Charge Map SDK|Other > MCP Server`.
 
 **Do not commit** the generated artifacts `repos.csv`, `repos.enriched.csv`,
-`cache_github/`, or `list.txt` — they're git-ignored. Only `classifications.csv`,
-`README.md`, and `legacy-projects.md` are meant to be committed.
+`cache_github/`, or `list.txt` — they're git-ignored. The files meant to be
+committed are `classifications.csv`, `README.md`, `legacy-projects.md`,
+`csms.csv` and `csms-certificates.csv` (plus `csms.md`).
 
 ### Setup
 
@@ -132,12 +133,82 @@ or `copilot`). It reads the repo's own description and README and produces the
 one-line description plus the `Main > Sub` categories. Editing `classifications.csv`
 by hand is exactly how you correct or pin that result.
 
+## Adding or correcting a CSMS entry
+
+[`csms.md`](csms.md) is a separate deliverable with its own script, `csms.py`.
+It lists Charging Station Management Systems as products rather than
+repositories, with their OCA certification status and certified feature
+profiles. Its table also lives between `GENERATED` markers — **never edit it by
+hand**.
+
+Two data files feed it:
+
+| File | Nature | Rule |
+| --- | --- | --- |
+| `csms-certificates.csv` | Generated mirror of the [OCA certified products registry](https://openchargealliance.org/certified-companies/) | Never edit it. Refresh with `python csms.py fetch`; corrections belong upstream with the OCA |
+| `csms.csv` | Curated, one row per product | No script ever writes it. This is where you contribute |
+
+To add a product that is **not** OCA-certified (open source or commercial), add
+a row to `csms.csv`. To attach facts to an **already certified** product, add a
+row and fill `oca_company` / `oca_product` with the exact strings from
+`csms-certificates.csv` — the render merges the two. A mismatch prints a
+warning rather than failing, since the OCA does rename and withdraw entries.
+
+For facts that belong to the **company** rather than to one product — website,
+founding year, HQ — fill `oca_company` and leave `oca_product` empty. The row
+then applies to every product that company has certified, so one row covers a
+vendor with several listings.
+
+`changelog` holds the product's release-notes URL; the rendered *Latest
+version* cell links to it. Open-source entries get their GitHub releases page
+automatically, so only fill it for commercial products.
+
+The hand-authored prose in `csms.md` quotes a few figures from the registry
+(certificate counts, the share of Korean certificates, how many products are
+certified on both OCPP versions). Nothing regenerates those — re-check them
+after a `csms.py fetch` that moves the numbers.
+
+Then:
+
+```bash
+mise run csms   # fetch + render, or run the two csms.py stages separately
+```
+
+Rules specific to this file:
+
+- **Every curated value needs a URL in that row's `sources` column.** If you
+  cannot cite it, leave the cell empty — an empty cell reads as *unknown*, and
+  that is the honest answer. The one exception is `contributor:<name>`, for a
+  fact a maintainer knows from their own research but cannot cite publicly;
+  say so in `notes` too, and replace it with a URL when one turns up.
+- **Do not record private evaluation data here.** No sales contacts or personal
+  email addresses, no prices obtained under a quote or an NDA, no subjective
+  verdicts on a vendor's reputation or product quality. This file is a public,
+  factual catalogue; keep commercial assessments in your own notes.
+- **Never set a certification by hand.** `OCA-certified` is derived from the
+  registry. A commercial product built on an open-source project does not make
+  that project certified — see the `steve` and `powerfill` rows for the worked
+  example.
+- **Spotted the same product twice?** The registry certifies a product *and
+  software version*, so one platform can appear under several designations.
+  A trailing dotted version is stripped automatically; anything else needs an
+  entry in `PRODUCT_ALIASES` in `csms.py`. Only merge when the certificates
+  clearly describe one platform — a vendor may genuinely ship two CSMS.
+- **`api` is `Y` only for documentation reachable without an account.** Put the
+  spec URL in `api_docs`. A login-gated developer portal leaves the cell empty.
+- **`pricing` uses one of four values**, with the page in `pricing_url`:
+  `Price list` (figures published), `On request` (pricing page quotes nothing),
+  `Published` (page exists, contents unverified), `Free (self-hosted)`
+  (open-source software).
+
 ## Golden rules
 
-- ✅ Never edit between the `GENERATED` markers in `README.md`.
-- ✅ Only commit `classifications.csv` (plus `README.md` and
-  `legacy-projects.md`).
+- ✅ Never edit between the `GENERATED` markers in `README.md` or `csms.md`.
+- ✅ Only commit `classifications.csv` and `csms.csv` (plus the generated
+  `README.md`, `legacy-projects.md`, `csms-certificates.csv` and `csms.md`).
 - ✅ Don't pass `--refresh` if you want to keep manual edits.
+- ✅ No source, no value — leave curated CSMS cells empty rather than guessing.
 
 Hand-authored prose sections of the README (intro, `## Specifications`,
-`## Contributing`) are the only parts you may edit directly.
+`## Contributing`) are the only parts you may edit directly, along with the
+prose around the table in `csms.md`.
