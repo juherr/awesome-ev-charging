@@ -611,8 +611,10 @@ def group_certificates(certs):
       key, new_entry(product, row["company"], row["company_link"]))
 
     # Spelling variants merged: keep the fullest name, and any participant link
-    # whichever certificate happens to carry it.
-    if len(row["company"]) > len(entry["company"]):
+    # whichever certificate happens to carry it. Length alone would leave two
+    # equally long spellings decided by mirror row order, which `fetch`
+    # regenerates — so the name breaks ties on itself and stays stable.
+    if (len(row["company"]), row["company"]) > (len(entry["company"]), entry["company"]):
       entry["company"] = row["company"]
     entry["company_link"] = entry["company_link"] or row["company_link"]
 
@@ -896,16 +898,26 @@ def cmd_render(args):
 
   entries = sort_entries(products)
 
-  # Both bodies first, then both writes: the two files are one view of one
-  # dataset, and a failure while rendering the annex must not leave a fresh
-  # directory next to a stale annex.
+  # Both files are one view of one dataset, so the render is all-or-nothing:
+  # every body is built and every injection validated in memory before the
+  # first byte is written. A missing annex, or one whose markers were edited
+  # away, must not leave a fresh directory next to a stale annex.
   directory = "\n".join(md_table(TABLE_HEADERS, [render_row(e) for e in entries]))
   annex = "\n".join(
     md_table(FEATURE_TABLE_HEADERS, [render_feature_row(e) for e in entries]))
-  pipeline._inject_between_markers(args.md, directory,
-                                   CSMS_MARKER_BEGIN, CSMS_MARKER_END)
-  pipeline._inject_between_markers(args.features_md, annex,
-                                   FEATURES_MARKER_BEGIN, FEATURES_MARKER_END)
+  rendered = []
+  for path, body, begin, end in (
+      (args.md, directory, CSMS_MARKER_BEGIN, CSMS_MARKER_END),
+      (args.features_md, annex, FEATURES_MARKER_BEGIN, FEATURES_MARKER_END)):
+    try:
+      with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    except OSError as e:
+      raise SystemExit(f"Cannot read {path}: {e}")
+    rendered.append(
+      (path, pipeline._replace_between_markers(content, body, begin, end, path)))
+  for path, content in rendered:
+    write_atomic(path, content)
 
   certified = sum(1 for e in entries if e["certificates"])
   source = sum(1 for e in entries if e.get("source_available"))

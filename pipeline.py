@@ -958,19 +958,29 @@ def _render_grouped(rows, lines):
         lines.append("")
 
 
-def _inject_between_markers(path, body, begin_marker, end_marker):
-  """Replace the text between `begin_marker` and `end_marker` in `path` with `body`."""
-  with open(path, "r", encoding="utf-8") as f:
-    content = f.read()
+def _replace_between_markers(content, body, begin_marker, end_marker, path):
+  """Return `content` with the text between the two markers replaced by `body`.
+
+  Kept separate from the write so a caller injecting into several files can
+  validate every one of them before touching any: `path` is only used to name
+  the offending file in the error.
+  """
   begin = content.find(begin_marker)
   end = content.find(end_marker)
   if begin == -1 or end == -1 or end < begin:
     raise SystemExit(
       f"Injection markers not found (or out of order) in {path}: "
       f"expected {begin_marker!r} … {end_marker!r}")
-  updated = (content[:begin + len(begin_marker)]
-             + "\n" + body + "\n"
-             + content[end:])
+  return (content[:begin + len(begin_marker)]
+          + "\n" + body + "\n"
+          + content[end:])
+
+
+def _inject_between_markers(path, body, begin_marker, end_marker):
+  """Replace the text between `begin_marker` and `end_marker` in `path` with `body`."""
+  with open(path, "r", encoding="utf-8") as f:
+    content = f.read()
+  updated = _replace_between_markers(content, body, begin_marker, end_marker, path)
   with open(path, "w", encoding="utf-8") as f:
     f.write(updated)
 
