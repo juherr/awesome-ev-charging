@@ -85,7 +85,7 @@ VENDOR_FIELDS = {
   "source_available": IDENTITY, "repo": IDENTITY,
   "website": COMPANY, "api": COMPANY, "api_docs": COMPANY,
   "pricing": COMPANY, "pricing_url": COMPANY, "changelog": COMPANY,
-  "hq_country": IDENTITY, "hq_city": COMPANY, "company_founded": COMPANY,
+  "hq_country": COMPANY, "hq_city": COMPANY, "company_founded": COMPANY,
   "first_release": PRODUCT, "latest_version": PRODUCT,
   "latest_version_date": PRODUCT,
   "ocpp_claimed": IDENTITY,
@@ -863,6 +863,18 @@ def render_feature_row(entry):
   ]
 
 
+def render_bodies(entries):
+  """Both generated table bodies, as (directory, feature annex).
+
+  One owner for "what the deliverables contain", so the freshness test can
+  compare against the real render instead of its own copy of these two lines.
+  """
+  return (
+    "\n".join(md_table(TABLE_HEADERS, [render_row(e) for e in entries])),
+    "\n".join(md_table(FEATURE_TABLE_HEADERS, [render_feature_row(e) for e in entries])),
+  )
+
+
 def sort_entries(products):
   """Order products for display, deterministically.
 
@@ -902,9 +914,7 @@ def cmd_render(args):
   # every body is built and every injection validated in memory before the
   # first byte is written. A missing annex, or one whose markers were edited
   # away, must not leave a fresh directory next to a stale annex.
-  directory = "\n".join(md_table(TABLE_HEADERS, [render_row(e) for e in entries]))
-  annex = "\n".join(
-    md_table(FEATURE_TABLE_HEADERS, [render_feature_row(e) for e in entries]))
+  directory, annex = render_bodies(entries)
   rendered = []
   for path, body, begin, end in (
       (args.md, directory, CSMS_MARKER_BEGIN, CSMS_MARKER_END),

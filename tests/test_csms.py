@@ -46,6 +46,11 @@ def directory_row(entries, index=0):
   return dict(zip(csms.TABLE_HEADERS, csms.render_row(entries[index])))
 
 
+def feature_row(entries, index=0):
+  """One rendered annex row, keyed by column name."""
+  return dict(zip(csms.FEATURE_TABLE_HEADERS, csms.render_feature_row(entries[index])))
+
+
 def stub_github(monkeypatch, **repo_fields):
   """Answer enrich_from_github's only call without touching the network."""
   monkeypatch.setattr(csms.pipeline, "get_repo_data",
@@ -309,27 +314,29 @@ def test_a_feature_can_be_both_certified_and_documented():
     vendors=[vendor(slug="acme", product="Acme CSMS", company="Acme Ltd",
                     oca_company="Acme Ltd", oca_product="Acme CSMS")],
     claims={"acme": {"Core": ["https://acme.example/docs"]}})
-  certified, documented = csms.render_feature_row(entries[0])[2:]
-  assert certified == "Core"
-  assert documented == "[Core](https://acme.example/docs)"
+  row = feature_row(entries)
+  assert row["Certified (OCA)"] == "Core"
+  assert row["Vendor-documented"] == "[Core](https://acme.example/docs)"
 
 
 def test_vendor_documented_feature_carries_its_source_link():
   entries = render(vendors=[vendor(slug="acme", product="Acme", company="Acme Ltd")],
                    claims={"acme": {"Smart Charging": ["https://acme.example/sc"]}})
-  assert csms.render_feature_row(entries[0])[3] == \
+  assert feature_row(entries)["Vendor-documented"] == \
          "[Smart Charging](https://acme.example/sc)"
 
 
 def test_further_sources_stay_reachable():
   entries = render(vendors=[vendor(slug="acme", product="Acme", company="Acme Ltd")],
                    claims={"acme": {"Tariffs": ["https://one", "https://two"]}})
-  assert csms.render_feature_row(entries[0])[3] == "[Tariffs](https://one) [2](https://two)"
+  assert feature_row(entries)["Vendor-documented"] == \
+         "[Tariffs](https://one) [2](https://two)"
 
 
 def test_no_evidence_renders_as_an_empty_cell_on_both_sides():
   entries = render(vendors=[vendor(slug="acme", product="Acme", company="Acme Ltd")])
-  assert csms.render_feature_row(entries[0])[2:] == ["", ""]
+  row = feature_row(entries)
+  assert (row["Certified (OCA)"], row["Vendor-documented"]) == ("", "")
 
 
 # --- The directory table ------------------------------------------------------
@@ -367,25 +374,18 @@ def test_product_name_carries_the_website_link():
   assert row["Product"] == "[Acme](https://acme.example)"
 
 
-def test_public_api_documentation_is_linked_from_the_api_cell():
+@pytest.mark.parametrize("api,api_docs,expected", [
+  ("Y", "https://acme.example/api", "[Y](https://acme.example/api)"),
+  # An API attested by a source but documented behind a login is still a Y.
+  ("Y", "", "Y"),
+  # Empty means unverified, never "no API".
+  ("", "", ""),
+], ids=["public docs", "login-gated", "unverified"])
+def test_the_api_cell_separates_existence_from_public_documentation(api, api_docs,
+                                                                    expected):
   entries = render(vendors=[vendor(slug="acme", product="Acme", company="Acme Ltd",
-                                   api="Y", api_docs="https://acme.example/api")])
-  row = directory_row(entries)
-  assert row["API"] == "[Y](https://acme.example/api)"
-
-
-def test_login_gated_api_is_recorded_without_a_link():
-  """An API attested by a source but documented behind a login is still a Y."""
-  entries = render(vendors=[vendor(slug="acme", product="Acme", company="Acme Ltd",
-                                   api="Y")])
-  row = directory_row(entries)
-  assert row["API"] == "Y"
-
-
-def test_unverified_api_stays_empty():
-  entries = render(vendors=[vendor(slug="acme", product="Acme", company="Acme Ltd")])
-  row = directory_row(entries)
-  assert row["API"] == ""
+                                   api=api, api_docs=api_docs)])
+  assert directory_row(entries)["API"] == expected
 
 
 def test_ocpi_is_derived_from_a_curated_feature():
@@ -496,12 +496,7 @@ def test_committed_markdown_matches_a_fresh_render(monkeypatch):
   vendors = csms.read_csv(csms.VENDORS_PATH, fields=csms.VENDOR_FIELDS)
   claims = csms.read_features(csms.FEATURES_PATH, csms.product_slugs(vendors))
   entries = csms.sort_entries(csms.merge(certs, vendors, {}, claims))
-
-  directory = "\n".join(
-    csms.md_table(csms.TABLE_HEADERS, [csms.render_row(e) for e in entries]))
-  annex = "\n".join(
-    csms.md_table(csms.FEATURE_TABLE_HEADERS,
-                  [csms.render_feature_row(e) for e in entries]))
+  directory, annex = csms.render_bodies(entries)
 
   assert directory == committed_body(csms.CSMS_MD_PATH, csms.CSMS_MARKER_BEGIN,
                                      csms.CSMS_MARKER_END), \
