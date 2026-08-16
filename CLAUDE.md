@@ -8,6 +8,7 @@ A curated "awesome list" of EV charging protocol tools (OCPP, OCPI, ISO 15118, O
 
 1. **`README.md`** — the published awesome list. Its prose (intro, Contents, `## Specifications`, `## Contributing`, `## Other Resources`) is hand-authored. The **project listing** inside `## Tools and Resources` — everything between the `<!-- BEGIN GENERATED PROJECTS -->` / `<!-- END GENERATED PROJECTS -->` markers — is **generated** by `python pipeline.py render --readme README.md` and injected in place. Do **not** hand-edit between those markers; edits are overwritten on the next render. To change what appears there, adjust the pipeline inputs (see Conventions) and re-render.
 2. **`pipeline.py`** — a discovery pipeline that scrapes GitHub for candidate repositories, scores them with quality signals, AI-classifies them, and renders the curated project listing that populates the README's `## Tools and Resources` block.
+3. **`csms.md` + `csms.py`** — a separate product-level catalogue of Charging Station Management Systems (see "csms.py" below). Independent of `pipeline.py`, which it only imports.
 
 The repo also vendors protocol specifications as static assets under `ocpp/`, `ocpi/`, `oicp/`, `emi3/`, `eichrecht/` (PDFs, WSDLs, OCPP JSON schemas) — these are reference material linked from `README.md`.
 
@@ -64,6 +65,40 @@ Curation knobs are module-level constants: `TOPICS`, `STARRED_USERS`, `STARRED_L
 `CATEGORY_OVERRIDES` (keyed by lowercased `full_name`) replaces the classifier's category at render. `REPO_OVERRIDES` (same key → `{csv_column: value}` dict) overwrites arbitrary row fields at render — used mainly for a **repo that migrated off GitHub**: the GitHub repo is archived/dormant while active development continues elsewhere (e.g. `tandemdrive/ocpi-tariffs` moved to Codeberg), so the override points `html_url` at the new host and forces `dormant` back to `false`. Both are applied at render time (via `_apply_overrides` / `_row_categories`), so they survive `ingest` and `enrich --refresh`. Future evolution: instead of a static `REPO_OVERRIDES` entry, fetch live metadata from the new host's API (Codeberg runs Forgejo, Gitea-compatible: `GET https://codeberg.org/api/v1/repos/{owner}/{repo}` → `stars_count`, `updated_at`, `archived`, no auth) to keep the signals real and auto-refreshed.
 
 **GitHub caching:** every read goes through `github_request_cached`, a filesystem cache in `cache_github/` keyed by MD5 of the URL, 24h TTL (`CACHE_TTL`). Delete cache files to force a refresh. Note: `get_starred_repos_for_user` and the search pagination call `requests.get` directly and are **not** cached.
+
+## csms.py — the CSMS catalogue
+
+A **deliberately separate script** from `pipeline.py`: that module is GitHub discovery, this one mirrors a non-GitHub registry. It `import pipeline` purely to reuse `github_request_cached`, `auth_headers`, `get_repo_data`, `_inject_between_markers` and `CACHE_DIR`. **Do not fold it back into `pipeline.py`.**
+
+```bash
+python csms.py fetch    # -> csms-certificates.csv (OCA registry mirror)
+python csms.py render   # -> injects the table into csms.md
+mise run csms           # both, with the gh token wired in
+```
+
+**Stage 1 — `fetch`.** The OCA certified-products page renders client-side but is backed by a public JSON endpoint: `POST https://openchargealliance.org/wp-json/custom/v1/ajax-loader` with `{id: "299052", paged: N, post_type: "certificate", filters: [{field: "product-type", value: "Charging Station Management System"}]}`, 6 items/page. `post_json_cached` is the POST counterpart of `github_request_cached` (which is GET-only and picks its cache extension from the `Accept` header), sharing `cache_github/`. Values are whitespace-collapsed and pipe-escaped, dates converted to ISO. Aborts rather than writing a truncated mirror if a page fails.
+
+**Stage 2 — `render`.** Three files, one rule each:
+
+- `csms-certificates.csv` — generated, one row per certificate (~293). Never hand-edited.
+- `csms.csv` — curated, one row per product. **No script ever writes it.** Every curated value needs a URL in its `sources` column.
+- `csms.md` — the table is injected between `<!-- BEGIN/END GENERATED CSMS -->`; the surrounding prose (methodology, feature legend, caveats) is hand-authored and survives regeneration.
+
+`canonical_product(company, designation)` decides product identity before grouping: it strips a trailing dotted version (`eBAB Server v1.6` / `v1.6.1` → one product; a dot is required so `MON-CSMS-V10` survives) and applies `PRODUCT_ALIASES`, a hand-maintained table for platforms the registry renamed between certificates (Driivz, NEC, KEPCO KDN, Elvo, I-Charge Solutions). It collapses 9 duplicates. It is applied to curated `oca_product` values too, so a contributor may cite either the raw OCA designation or the merged name. Only merge when the certificates clearly describe one platform — vendors do ship several CSMS, and some registry entries are hardware model numbers misfiled under the CSMS product type.
+
+`merge` unions the two: certificates grouped by `(company, canonical product)` lowercased become certified entries; curated rows matching via `oca_company`/`oca_product` are overlaid onto them; the rest are appended as non-certified. So **`OCA-certified` and `Open-source` are derived, never typed**, and `csms.csv` only needs rows that add information — not the ~203 certified products. A curated row that collides with a certified key merges into it rather than replacing it.
+
+**Feature derivation** (`derive_features`) expands the OCA certificate type into feature names. `CERT_LETTERS` is the verbatim legend from the registry's own `Certificate type` filter (`S` Advanced Security, `L` Local Authorization List Management, `C` Smart Charging, `D` Advanced Device Management, `R` Reservation, `U` Advanced User Interface, `I` ISO 15118 Support). `OCPP16_FULL` — the expansion of `Full` on OCPP 1.6 into the six OCPP 1.6 feature profiles — is **our inference, not an OCA statement**, and `csms.md` says so. `Subset`/`Family` are scope qualifiers and yield no features. Unknown tokens are collected and make `render` exit non-zero rather than silently emitting an empty cell; the monthly workflow also fails if the mirror drops below 250 rows.
+
+Features are derived at render, never stored — `certificate_type` stays raw in the CSV, so fixing the mapping fixes the whole file.
+
+The rendered table carries `API` (`Y` + link, only when the spec is reachable without an account), `Pricing` (`Price list` / `On request` / `Published` / `Free (self-hosted)`, linked to the page) and `Website` (domain, or `owner/repo` for GitHub via `_host`). `Latest version` links to the product's `changelog`; open-source rows get `github.com/<repo>/releases` automatically, so no separate column is needed.
+
+A curated row with `oca_company` set and `oca_product` **empty** carries company-level facts (`COMPANY_FIELDS`: website, founding year, HQ, API, pricing…) and is applied to every product that company certified — one row instead of one per listing.
+
+Two traps this design exists to avoid: a commercial product built on an open-source project does not make that project certified (`steve` vs `powerfill` rows), and `enrich_from_github` deliberately ignores the repo's `homepage` field because projects point it at a hosted commercial offering.
+
+Scope for non-certified rows: companies publishing a **named, OCPP-based management platform**. CPO networks, roaming hubs and unnamed vendor portals are out — `csms.md` states this so the omissions read as a choice.
 
 ## Conventions
 

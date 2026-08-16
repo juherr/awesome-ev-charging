@@ -199,7 +199,7 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 ## Tools and Resources
 
-This list features actively maintained, curated projects. Dormant, archived, or not-yet-reviewed projects are collected separately in [legacy-projects.md](legacy-projects.md).
+This list features actively maintained, curated projects. Dormant, archived, or not-yet-reviewed projects are collected separately in [legacy-projects.md](legacy-projects.md). Charging Station Management Systems — open source and commercial, with their OCA certification status and certified feature profiles — are catalogued in [csms.md](csms.md).
 
 <!-- BEGIN GENERATED PROJECTS -->
 ### OCPP
