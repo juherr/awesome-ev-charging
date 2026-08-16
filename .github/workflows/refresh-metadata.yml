@@ -98,7 +98,7 @@ jobs:
         if: steps.csms_fetch.outcome == 'failure' || steps.csms_render.outcome == 'failure'
         run: |
           echo "::warning::CSMS refresh failed — leaving the committed catalogue untouched."
-          git checkout -- csms-certificates.csv csms.md
+          git checkout -- csms-certificates.csv csms.md csms-features.md
 
       # Guardrail: a transient Copilot failure can return an empty category for a
       # repo. Don't let that regression reach a PR — fail if the number of
@@ -129,6 +129,7 @@ jobs:
             legacy-projects.md
             csms-certificates.csv
             csms.md
+            csms-features.md
           commit-message: |
             chore(data): monthly listing refresh
 

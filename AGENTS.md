@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## What this repository is
 
@@ -20,9 +20,7 @@ auto-creates/activates a `.venv` — no manual `source .venv/bin/activate`. Run
 
 ```bash
 mise install          # install the pinned Python
-mise run install      # (alias: mise run i) runtime deps into .venv
-mise run install-dev  # runtime + pytest; `install` alone keeps the CI data job lean
-mise run test         # (alias: mise run t) pytest
+mise run install      # (alias: mise run i) uv pip install -r requirements.txt into .venv
 
 mise run ingest       # Stage 1 -> repos.csv   (wires --token via `gh auth token`)
 mise run enrich       # Stage 2 -> repos.enriched.csv
@@ -60,9 +58,9 @@ A two-stage pipeline connected by a **CSV boundary** — ingestion (deterministi
 `collect_candidates` merges four **discovery** sources by `full_name` — topic search (`search_topic_repo_names` across `TOPICS`), manual additions (`ADDITIONAL_REPOS`), GitHub links in the curated README (`readme_repo_names`), and curated GitHub Stars lists (`get_starred_list_repos` for each `(owner, slug)` in `STARRED_LISTS`, e.g. `juherr/ev`, `mateogreil/ev-mobility`). Stars lists are GraphQL-only and require a token, so ingest skips them (with a warning) when unauthenticated. Separately, the **full** star sets of `STARRED_USERS` (`get_starred_repos_for_user`) are read only as a **promotion signal** (`starred_by`), not as a discovery source. `build_repo_record` is the single record builder for **all** sources — it reads every field from the full `/repos` object, so `pushed_at` (hence the `dormant`/`days_since_push` signals) is present for every repo, not just manual ones. Signals in the CSV: `dormant` (no push ≥ `DORMANT_DAYS` OR archived), `stars`, `forks`, `open_issues`, `topic_matches`, `promoted`, `archived`, `is_fork`, plus `source` (the `+`-joined provenance, e.g. `readme+starred-list+topic`).
 
 **Stage 2 — `enrich` → `repos.enriched.csv`** (`enrich`, `classify_with_*`):
-Reads the CSV, fetches each README (cached), and appends a `categories` column. Classification runs through a **pluggable LLM-CLI backend** selected by `--classifier` (registry `CLASSIFIERS`, default `claude`):
+Reads the CSV, fetches each README (cached), and appends a `categories` column. Classification runs through a **pluggable LLM-CLI backend** selected by `--classifier` (registry `CLASSIFIERS`, default `Codex`):
 
-- `claude` — `classify_with_claude` shells out to `claude -p --agent repo-classifier --strict-mcp-config --output-format text` (agent defined in `.claude/agents/repo-classifier.md`);
+- `Codex` — `classify_with_claude` shells out to `Codex -p --agent repo-classifier --strict-mcp-config --output-format text` (agent defined in `.Codex/agents/repo-classifier.md`);
 - `codex` — `classify_with_codex` runs `codex exec --sandbox read-only --ephemeral`, carrying the role/output contract in-prompt (`CLASSIFIER_INSTRUCTIONS`) since it has no agent file;
 - `copilot` — `classify_with_copilot` runs `copilot -p --allow-all-tools --silent` in an empty temp cwd, also using `CLASSIFIER_INSTRUCTIONS`. The GitHub Copilot CLI is natively authenticated inside a Copilot coding-agent environment. Elsewhere it reads a token from `COPILOT_GITHUB_TOKEN` → `GH_TOKEN` → `GITHUB_TOKEN` (in that precedence; classic `ghp_` PATs are ignored). **In GitHub Actions** (since 2026-07-02) no secret is needed: grant the job the `copilot-requests: write` permission and it authenticates with the built-in `GITHUB_TOKEN` — see `.github/workflows/refresh-metadata.yml`. **In any other CI runner** it needs a fine-grained PAT owned by a personal account with the **Copilot Requests** *account* permission (token Permissions → Account tab).
 
