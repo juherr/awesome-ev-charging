@@ -407,9 +407,22 @@ def read_csv(path, fields=None, quiet=False):
   return rows
 
 
+def company_key(company):
+  """Normalise a company name so its spelling variants group as one vendor.
+
+  The registry spells the same company several ways across certificates —
+  "Shenzhen Infypower Co. Ltd" / "Co., Ltd", "Instituto Tecnológico de la
+  Energía" with and without "(ITE)" — which would otherwise split one product
+  into two rows. Punctuation and parentheticals are dropped, legal suffixes are
+  not: "Co Ltd" still distinguishes companies that differ only by that.
+  """
+  bare = re.sub(r"\([^)]*\)", " ", clean(company))
+  return re.sub(r"\s+", " ", re.sub(r"[.,]", " ", bare)).strip().lower()
+
+
 def _key(company, product):
-  """Case-insensitive join key shared by certificates and curated rows."""
-  return (clean(company).lower(), clean(product).lower())
+  """Join key shared by certificates and curated rows."""
+  return (company_key(company), clean(product).lower())
 
 
 def new_entry(product, company, company_link="", country=""):
@@ -437,6 +450,13 @@ def group_certificates(certs):
     key = _key(row["company"], product)
     entry = products.setdefault(
       key, new_entry(product, row["company"], row["company_link"], row["country"]))
+
+    # Spelling variants merged: keep the fullest name, and any participant link
+    # or country, whichever certificate happens to carry them.
+    if len(row["company"]) > len(entry["company"]):
+      entry["company"] = row["company"]
+    entry["company_link"] = entry["company_link"] or row["company_link"]
+    entry["country"] = entry["country"] or row["country"]
 
     version = row["protocol_version"].replace("OCPP", "").strip()
     entry["versions"].add(version)
@@ -570,7 +590,7 @@ def merge(certs, vendors, headers):
     by_company[company].append(entry)
 
   for row in company_rows:
-    targets = by_company.get(clean(row.get("oca_company")).lower())
+    targets = by_company.get(company_key(row.get("oca_company")))
     if not targets:
       print(f"⚠️  {row.get('slug')}: no OCA company matches {row.get('oca_company')!r}")
       continue
