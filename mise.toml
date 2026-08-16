@@ -8,9 +8,20 @@ python = "3.11.11"
 _.python.venv = { path = ".venv", create = true }
 
 [tasks.install]
-description = "Install Python dependencies into the project venv"
+description = "Install runtime dependencies into the project venv"
 alias = "i"
 run = "uv pip install -r requirements.txt"
+
+# Separate from `install` so the monthly refresh job, which runs no tests, does
+# not pull pytest in just to render a table.
+[tasks.install-dev]
+description = "Install runtime + test dependencies"
+run = "uv pip install -r requirements.txt -r requirements-dev.txt"
+
+[tasks.test]
+description = "Run the test suite (no network access needed)"
+alias = "t"
+run = "pytest -q"
 
 [tasks.ingest]
 description = "Stage 1 — fetch candidate repos + signals into repos.csv"
