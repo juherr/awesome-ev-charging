@@ -1,0 +1,38 @@
+slug,feature,source_url,note
+ampeco,Core,https://developers.ampeco.com/reference/chargepointsendcustomocpp,Charge point API exposes OCPP commands including Reset and custom OCPP messages
+ampeco,Smart Charging,https://developers.ampeco.com/reference/chargepointsetchargingprofile,Set and clear OCPP charging profiles per charge point
+ampeco,ISO 15118 Support,https://developers.ampeco.com/reference/chargepointinstallcertificate,Charge point certificate install/delete and security profile endpoints
+ampeco,Plug & Charge,https://developers.ampeco.com/reference/certificateissueanemaid,Issues and reissues EMAIDs for contract-based authentication
+ampeco,OCPI Roaming,https://developers.ampeco.com/reference/roamingemspcreate,Roaming CPO and EMSP partners with CDR exchange endpoints
+ampeco,Tariffs,https://developers.ampeco.com/reference/electricityratecreate,Electricity rates with price periods and per-session tariff changes
+ampeco,Payments,https://developers.ampeco.com/reference/transactionissueinvoice,"Pre-authorisation, invoicing and receipt endpoints"
+ampeco,Token Management,https://developers.ampeco.com/reference/idtagcreate,Id tag create/read/list endpoints
+ampeco,Load Management,https://developers.ampeco.com/reference/circuitsetchargepointpriority,Circuit-level charge point priority and session boost
+ampeco,Reporting,https://developers.ampeco.com/reference/revenuesv1_2listing,Revenue and expense listings alongside communication and OCPI logs
+ampeco,Multi-tenancy,https://developers.ampeco.com/reference/partnercreate,Partner accounts with their own admins and invites
+ampeco,Remote Commands,https://developers.ampeco.com/reference/chargepointstartchargingsession,Remote start and stop of a charging session
+be-energised,Core,https://www.chargepoint.com/en-gb/products/software/be-energised,"""Compatible with all OCPP-compliant charging stations in the European market"""
+be-energised,Payments,https://www.chargepoint.com/en-gb/products/software/be-energised,"""Automated billing processes"" covering sales taxes, multiple currencies and several languages"
+be-energised,White-label,https://www.chargepoint.com/en-gb/products/software/be-energised,"""Your customers see you, not us"" — partners resell it under their own brand"
+citrineos,Core,https://github.com/citrineos/citrineos-core,"""Dynamic OCPP 1.6 and 2.0.1 message schema validation, prior to transmission using AJV"""
+citrineos,OCPI Roaming,https://github.com/citrineos/citrineos-core,Ships an ocpi-server application that runs alongside Core
+driivz,Token Management,https://driivz.com/platform/operations-management/,"""Efficiently manage chargers, drivers, hosts, sites, fuel cards, RFID tokens, roaming partners"""
+driivz,OCPI Roaming,https://driivz.com/platform/interoperability-and-extensibility/,"""Supports OCPI-based interoperability, enabling integration with established roaming hubs and direct peer-to-peer OCPI connections"""
+driivz,ISO 15118 Support,https://driivz.com/platform/interoperability-and-extensibility/,"""Supports both Plug & Charge (ISO 15118) and Autocharge"""
+driivz,Plug & Charge,https://driivz.com/platform/interoperability-and-extensibility/,"""Supports both Plug & Charge (ISO 15118) and Autocharge"""
+driivz,White-label,https://driivz.com/platform/interoperability-and-extensibility/,"""Whether you're building a custom white-label mobile app or automating complex billing and tariff structures"""
+driivz,Tariffs,https://driivz.com/platform/interoperability-and-extensibility/,Same sentence cites automating complex billing and tariff structures
+driivz,Load Management,https://driivz.com/platform/energy-management-system/,"""Optimize energy flow at EV charging sites by orchestrating the grid, renewables, batteries, and EVs"""
+driivz,Reporting,https://driivz.com/platform/reporting-and-analytics/,"""Use one of dozens of reports built into Driivz's EV charging platform, or build your own"""
+driivz,Payments,https://driivz.com/platform/ev-billing/,Billing module monetising networks across business models
+monta,Remote Commands,https://developer.monta.com/reference/start-charge-1,"Start, stop and unlock endpoints in the public API"
+monta,Smart Charging,https://developer.monta.com/reference/set-charging-profile-1,Set and clear charging profiles plus per-charge-point charging rules
+monta,Token Management,https://developer.monta.com/reference/get-charge-auth-tokens-1,"Charge auth tokens can be created, listed and blocked"
+monta,Tariffs,https://developer.monta.com/reference/get-all-tariffs-1,Tariff CRUD including dynamic price lookups
+monta,Payments,https://developer.monta.com/reference/get-wallets-1,"Wallets, wallet transactions and invoices"
+monta,Reporting,https://developer.monta.com/reference/get-insights-charges-charger-report-1,Charge point and driver insight reports with cost breakdowns
+monta,Multi-tenancy,https://developer.monta.com/reference/get-teams-1,Teams and team members as separate tenants
+steve,Core,https://github.com/steve-community/steve,"""Electric charge points using the following OCPP versions are supported: OCPP1.2S, OCPP1.2J, OCPP1.5S, OCPP1.5J, OCPP1.6S, OCPP1.6J"""
+steve,Advanced Security,https://github.com/steve-community/steve,"""A complete implementation of OCPP 1.6 Security Whitepaper Edition 3"", security profiles 0-3"
+steve,Firmware Management,https://github.com/steve-community/steve,"""Signed Firmware Updates: Cryptographically signed firmware updates with certificate validation"""
+steve,Token Management,https://github.com/steve-community/steve,"Administration of ""charge points, user data, and RFID cards for user authentication"""

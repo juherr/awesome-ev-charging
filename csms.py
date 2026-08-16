@@ -1,9 +1,20 @@
 """Charging Station Management System (CSMS) product listing.
 
-Two stages, connected by a reviewable CSV:
+Two stages, connected by reviewable CSVs:
 
     fetch   -> csms-certificates.csv  the Open Charge Alliance certificate registry
-    render  -> csms.md                one table, merging certificates + curated data
+    render  -> csms.md                the compact directory
+            -> csms-features.md       the feature annex
+
+The curated CSVs are the canonical dataset; the Markdown files are only a view:
+
+    OCA registry ──► csms-certificates.csv ─┐
+                                            ├─► render ─► csms.md
+    csms.csv          (curated products) ───┤          └─► csms-features.md
+    csms-features.csv (curated features) ───┘
+
+Nothing may reach the Markdown that cannot be reconstructed from those three
+files plus the rules in this module.
 
 Deliberately a separate script from pipeline.py: that module is GitHub discovery,
 this one mirrors a non-GitHub registry. It imports pipeline only to reuse the
@@ -21,7 +32,8 @@ import os
 import re
 import tempfile
 import time
-from collections import defaultdict
+import unicodedata
+from collections import Counter, defaultdict
 
 import requests
 
@@ -41,11 +53,15 @@ HTTP_TIMEOUT = 30  # seconds; without it a stalled connection hangs the CI job
 
 CERTS_PATH = "csms-certificates.csv"
 VENDORS_PATH = "csms.csv"
+FEATURES_PATH = "csms-features.csv"
 CSMS_MD_PATH = "csms.md"
-# `render` replaces the text between these markers, so the prose around the table
-# (intro, methodology, feature legend, caveats) stays hand-authored.
+FEATURES_MD_PATH = "csms-features.md"
+# `render` replaces the text between these markers, so the prose around each table
+# (intro, caveats, legend) stays hand-authored.
 CSMS_MARKER_BEGIN = "<!-- BEGIN GENERATED CSMS -->"
 CSMS_MARKER_END = "<!-- END GENERATED CSMS -->"
+FEATURES_MARKER_BEGIN = "<!-- BEGIN GENERATED CSMS FEATURES -->"
+FEATURES_MARKER_END = "<!-- END GENERATED CSMS FEATURES -->"
 
 CERT_FIELDS = [
   "certificate_no", "company", "company_link", "country",
@@ -54,7 +70,8 @@ CERT_FIELDS = [
 ]
 
 # Every column of csms.csv, in file order, with the scope it carries:
-#   IDENTITY — decides which entry the row lands on; `merge` handles each by hand
+#   IDENTITY — never overlaid: `merge` reads each one by hand, either to place the
+#              row on an entry or because the value needs coercing (a set, a flag)
 #   COMPANY  — a fact about the vendor, so one row can set it for all its products
 #   PRODUCT  — a fact about this product only
 # The overlay lists below are derived from this table, so adding a column here is
@@ -65,13 +82,13 @@ IDENTITY, COMPANY, PRODUCT = "identity", "company", "product"
 VENDOR_FIELDS = {
   "slug": IDENTITY, "product": IDENTITY, "company": IDENTITY,
   "oca_company": IDENTITY, "oca_product": IDENTITY,
-  "open_source": IDENTITY, "repo": IDENTITY,
+  "source_available": IDENTITY, "repo": IDENTITY,
   "website": COMPANY, "api": COMPANY, "api_docs": COMPANY,
   "pricing": COMPANY, "pricing_url": COMPANY, "changelog": COMPANY,
   "hq_country": IDENTITY, "hq_city": COMPANY, "company_founded": COMPANY,
   "first_release": PRODUCT, "latest_version": PRODUCT,
   "latest_version_date": PRODUCT,
-  "ocpp_claimed": IDENTITY, "features_claimed": IDENTITY,
+  "ocpp_claimed": IDENTITY,
   "ocpi": PRODUCT, "iso15118": PRODUCT, "eichrecht": PRODUCT,
   "license": PRODUCT, "deployment": PRODUCT,
   "status": COMPANY, "notes": COMPANY, "sources": COMPANY,
@@ -79,6 +96,12 @@ VENDOR_FIELDS = {
 
 COMPANY_FIELDS = [f for f, scope in VENDOR_FIELDS.items() if scope == COMPANY]
 OVERLAY_FIELDS = [f for f, scope in VENDOR_FIELDS.items() if scope != IDENTITY]
+
+# csms-features.csv — one row per (product, feature, source). Normalised rather
+# than a list column in csms.csv, because the sourcing rule applies per feature:
+# a claim without a URL is not a claim, and a row per fact keeps the diff
+# reviewable when a vendor's documentation changes.
+FEATURE_FIELDS = ["slug", "feature", "source_url", "note"]
 
 # --- Certificate type -> supported features ----------------------------------
 
@@ -113,8 +136,16 @@ OCPP16_FULL = [
 # identical to a derived feature, so it is left unresolved instead: the first such
 # certificate fails the render and forces a deliberate, documented decision.
 
-# Short labels for the Markdown table — the full names blow the column width out.
-FEATURE_SHORT = {
+# The controlled vocabulary: canonical name -> short label for the table, where
+# the full names blow the column width out. Insertion order is the display order.
+#
+# One vocabulary for both kinds of evidence. A curated feature naming something
+# the OCA also certifies must use the OCA's own name, so "certified" and
+# "vendor-documented" stay comparable instead of drifting into two dialects; a
+# name outside this table fails the render rather than accumulating marketing
+# labels. Adding a capability is a deliberate edit here, not a free-text cell.
+FEATURE_VOCAB = {
+  # Derivable from an OCA certificate type (see CERT_LETTERS / OCPP16_FULL).
   "Core": "Core",
   "Advanced Security": "Security",
   "Smart Charging": "Smart Charging",
@@ -125,10 +156,26 @@ FEATURE_SHORT = {
   "Advanced Device Management": "Device Mgmt",
   "Advanced User Interface": "User Interface",
   "ISO 15118 Support": "ISO 15118",
+  # Vendor-documented only: no OCA certificate expands into these, so they can
+  # reach an entry only through csms-features.csv, with a source.
+  "Plug & Charge": "Plug & Charge",
+  "OCPI Roaming": "OCPI Roaming",
+  "Tariffs": "Tariffs",
+  "Payments": "Payments",
+  "Token Management": "Token Mgmt",
+  "Load Management": "Load Mgmt",
+  "Reporting": "Reporting",
+  "Multi-tenancy": "Multi-tenancy",
+  "White-label": "White-label",
+  "Remote Commands": "Remote Commands",
 }
 
 # Stable display order, most-common first, so the column reads consistently.
-FEATURE_RANK = {name: i for i, name in enumerate(FEATURE_SHORT)}
+FEATURE_RANK = {name: i for i, name in enumerate(FEATURE_VOCAB)}
+
+# The OCPI column is a shorthand for one vocabulary entry, so a curated feature
+# row and the product-level `ocpi` cell cannot disagree about the same fact.
+OCPI_FEATURE = "OCPI Roaming"
 
 
 def derive_features(certificate_type, protocol_version):
@@ -162,9 +209,14 @@ def derive_features(certificate_type, protocol_version):
 
 
 def sort_features(features):
-  """Order a feature set for display, unknown names last (alphabetically)."""
-  return sorted(set(features),
-                key=lambda f: (FEATURE_RANK.get(f, len(FEATURE_RANK)), f))
+  """Order a feature set for display.
+
+  Indexing FEATURE_RANK rather than tolerating a miss: both ways into a feature
+  name are closed (vocabulary_gaps guards the derived ones, read_features the
+  curated ones), so an unknown name is a broken invariant, not a value to sort
+  last — and render_feature_row would raise on it a line later regardless.
+  """
+  return sorted(set(features), key=FEATURE_RANK.__getitem__)
 
 
 def unresolved_tokens(certs):
@@ -174,7 +226,33 @@ def unresolved_tokens(certs):
                                           r["protocol_version"])[1]})
 
 
+def vocabulary_gaps():
+  """Feature names the certificate rules emit but the vocabulary does not define.
+
+  The two tables are edited independently — a letter added to CERT_LETTERS is a
+  natural place to forget FEATURE_VOCAB — and a gap would surface as a KeyError
+  in the middle of rendering rather than as something a contributor can act on.
+  """
+  emitted = set(CERT_LETTERS.values()) | set(OCPP16_FULL) | {"Core"}
+  return sorted(emitted - set(FEATURE_VOCAB))
+
+
 # --- Product identity ---------------------------------------------------------
+
+def company_key(company):
+  """Normalise a company name so its spelling variants group as one vendor.
+
+  The registry spells the same company several ways across certificates —
+  "Shenzhen Infypower Co. Ltd" / "Co., Ltd", "Instituto Tecnológico de la
+  Energía" with and without "(ITE)" — which would otherwise split one product
+  into two rows. Every Unicode punctuation mark is dropped, not just the period
+  and comma seen so far, so a hyphen, apostrophe or middle dot cannot introduce
+  the same split again. Legal suffixes are deliberately kept: "Co Ltd" still
+  distinguishes companies that differ only by that.
+  """
+  bare = re.sub(r"\([^)]*\)", " ", str(company or ""))
+  bare = "".join(" " if unicodedata.category(c).startswith("P") else c for c in bare)
+  return re.sub(r"\s+", " ", bare).strip().lower()
 
 # Vendors often bake a version into the product designation, so the same product
 # appears once per certificate ("eBAB Server v1.6" / "eBAB Server v1.6.1"). Strip
@@ -213,9 +291,15 @@ PRODUCT_ALIASES = {
 }
 
 
+# Re-keyed with company_key so an alias survives the registry respelling the
+# company. Keyed on the raw name, "Driivz Ltd." would silently stop matching
+# "Driivz Ltd" and the merge it encodes would come undone without a warning.
+ALIASES_BY_COMPANY = {company_key(c): a for c, a in PRODUCT_ALIASES.items()}
+
+
 def canonical_product(company, designation):
   """Return the display name a certificate's product should be grouped under."""
-  alias = PRODUCT_ALIASES.get((company or "").strip().lower(), {})
+  alias = ALIASES_BY_COMPANY.get(company_key(company), {})
   hit = alias.get((designation or "").strip().lower())
   if hit:
     return hit
@@ -407,17 +491,87 @@ def read_csv(path, fields=None, quiet=False):
   return rows
 
 
-def company_key(company):
-  """Normalise a company name so its spelling variants group as one vendor.
+def is_company_row(row):
+  """A curated row naming a company but no product carries company-level facts."""
+  return bool(clean(row.get("oca_company")) and not clean(row.get("oca_product")))
 
-  The registry spells the same company several ways across certificates —
-  "Shenzhen Infypower Co. Ltd" / "Co., Ltd", "Instituto Tecnológico de la
-  Energía" with and without "(ITE)" — which would otherwise split one product
-  into two rows. Punctuation and parentheticals are dropped, legal suffixes are
-  not: "Co Ltd" still distinguishes companies that differ only by that.
+
+def is_product_row(row):
+  """A curated row that becomes an entry of its own, and so can own features.
+
+  The same predicate decides which slugs `product_slugs` accepts and which rows
+  `merge` turns into entries. Stated twice, the looser one would validate a slug
+  the merge then has nowhere to attach, and its features would vanish behind a
+  warning.
   """
-  bare = re.sub(r"\([^)]*\)", " ", clean(company))
-  return re.sub(r"\s+", " ", re.sub(r"[.,]", " ", bare)).strip().lower()
+  return bool(not is_company_row(row) and clean(row.get("product")))
+
+
+def product_slugs(vendors, path=VENDORS_PATH):
+  """Every product-row slug in csms.csv, rejecting missing or duplicate ones.
+
+  The slug is what csms-features.csv joins on, so it has to be present and
+  unique before any feature can be attached. A duplicate would silently give one
+  product another's features, which is exactly the failure the sourcing
+  discipline exists to prevent.
+  """
+  counts = Counter(clean(row.get("slug")) for row in vendors)
+  missing = counts.pop("", 0)
+  duplicates = sorted(slug for slug, n in counts.items() if n > 1)
+
+  problems = []
+  if missing:
+    problems.append(f"{missing} row(s) without a slug")
+  if duplicates:
+    problems.append(f"duplicate slug(s) {duplicates}")
+  if problems:
+    raise SystemExit(f"{path}: " + "; ".join(problems) + " — every row needs one "
+                     f"unique slug, it is the key {FEATURES_PATH} joins on.")
+
+  return {clean(r.get("slug")) for r in vendors if is_product_row(r)}
+
+
+def read_features(path, slugs):
+  """Read the curated feature file into {slug: {feature: [source URLs]}}.
+
+  Everything is validated up front and reported at once: a contributor fixing
+  one typo per run would give up long before the file rendered.
+  """
+  claims = defaultdict(lambda: defaultdict(set))
+  unknown_features, unknown_slugs, unsourced = set(), set(), set()
+
+  for row in read_csv(path, fields=FEATURE_FIELDS):
+    slug, feature = clean(row.get("slug")), clean(row.get("feature"))
+    source = clean(row.get("source_url"))
+    if feature not in FEATURE_VOCAB:
+      unknown_features.add(feature or "(empty)")
+    if slug not in slugs:
+      unknown_slugs.add(slug or "(empty)")
+    if not source:
+      unsourced.add(f"{slug or '(empty)'} / {feature or '(empty)'}")
+    else:
+      # Anything collected below is discarded by the raise, so the accumulation
+      # needs no guard of its own — one condition per rule, stated once.
+      claims[slug][feature].add(source)
+
+  problems = []
+  if unknown_features:
+    problems.append(f"feature(s) outside the controlled vocabulary: "
+                    f"{sorted(unknown_features)} — add them to FEATURE_VOCAB in "
+                    f"csms.py, or use the existing name")
+  if unknown_slugs:
+    problems.append(f"slug(s) with no product row in {VENDORS_PATH}: "
+                    f"{sorted(unknown_slugs)}")
+  if unsourced:
+    problems.append(f"row(s) without a source_url: {sorted(unsourced)} — an "
+                    f"unsourced feature is not a feature")
+  if problems:
+    raise SystemExit(f"{path}: " + "; ".join(problems) + ".")
+
+  # Sorted here and nowhere else: this is the one owner of source order, and
+  # _sourced links the label to the first URL, so the order is visible output.
+  return {slug: {feature: sorted(urls) for feature, urls in features.items()}
+          for slug, features in claims.items()}
 
 
 def _key(company, product):
@@ -425,19 +579,24 @@ def _key(company, product):
   return (company_key(company), clean(product).lower())
 
 
-def new_entry(product, company, company_link="", country=""):
+def new_entry(product, company, company_link=""):
   """Blank merged-product record — the one place the entry shape is defined.
 
   `certified` is not stored: a product is certified exactly when it holds a
-  certificate, so the list is the single source of truth.
+  certificate, so the list is the single source of truth. Neither is the country:
+  it lives in the two CSVs, and no table renders it.
+
+  The two feature sets are never merged. `features_certified` is what an OCA
+  certificate proves; `features_claimed` (name -> source URLs) is what the vendor
+  documents. Collapsing them would make a marketing page read like a certificate.
   """
   return {
     "product": clean(product),
     "company": clean(company),
     "company_link": company_link,
-    "country": country,
     "versions": set(),
-    "features": set(),
+    "features_certified": set(),
+    "features_claimed": {},
     "certificates": [],
   }
 
@@ -449,18 +608,17 @@ def group_certificates(certs):
     product = canonical_product(row["company"], row["product_designation"])
     key = _key(row["company"], product)
     entry = products.setdefault(
-      key, new_entry(product, row["company"], row["company_link"], row["country"]))
+      key, new_entry(product, row["company"], row["company_link"]))
 
     # Spelling variants merged: keep the fullest name, and any participant link
-    # or country, whichever certificate happens to carry them.
+    # whichever certificate happens to carry it.
     if len(row["company"]) > len(entry["company"]):
       entry["company"] = row["company"]
     entry["company_link"] = entry["company_link"] or row["company_link"]
-    entry["country"] = entry["country"] or row["country"]
 
     version = row["protocol_version"].replace("OCPP", "").strip()
     entry["versions"].add(version)
-    entry["features"].update(
+    entry["features_certified"].update(
       derive_features(row["certificate_type"], row["protocol_version"])[0])
     # Keep every certificate: merging designations must not hide one.
     entry["certificates"].append({
@@ -475,12 +633,16 @@ def group_certificates(certs):
 
 
 def enrich_from_github(entry, repo, headers):
-  """Fill release metadata for an open-source entry from the GitHub API.
+  """Confirm a curated repository exists, and take its canonical URL.
 
-  Curated values always win, so every write here is a setdefault. A failed repo
-  lookup aborts: Website, First release and Latest version exist only in this
-  response for most open-source rows, and letting a rate-limit render them as
-  "—" would publish a transient error as "no source we can cite".
+  The repository is the evidence behind `Source available`, and it is what that
+  cell links to. A failed lookup aborts rather than rendering the row as if no
+  source had been found: that would publish a rate-limit as a fact.
+
+  This used to also read the release list for First release / Latest version.
+  Those columns are gone; the release call is not made any more, and the CSV
+  columns that held them (`first_release`, `latest_version`, `changelog`) are
+  curated like every other value — never derived here.
   """
   obj = pipeline.get_repo_data(repo, headers)
   if not obj:
@@ -491,25 +653,7 @@ def enrich_from_github(entry, repo, headers):
   # commercial offering (SteVe -> powerfill.io), which would make the row read as
   # if the open-source project and the paid product were the same thing.
   entry["repo_url"] = obj.get("html_url") or f"https://github.com/{repo}"
-  entry["open_source"] = True
-  entry.setdefault("first_release", (obj.get("created_at") or "")[:10])
-
-  # The release list rather than /releases/latest: the latter 404s on repos with
-  # no release, which is common here and only produces noise. Take the newest
-  # stable one — "Latest version" unqualified reads as shipped, so advertising a
-  # beta or an alpha there would overstate what the project has released.
-  releases = pipeline.github_request_cached(
-    f"{pipeline.BASE_URL}/repos/{repo}/releases?per_page=10", headers=headers)
-  releases = releases if isinstance(releases, list) else []
-  stable = next((r for r in releases if not r.get("draft") and not r.get("prerelease")), None)
-  if releases:
-    # The releases page is the de facto changelog for a GitHub-hosted project.
-    entry.setdefault("changelog", f"https://github.com/{repo}/releases")
-  if stable and stable.get("tag_name"):
-    entry.setdefault("latest_version", stable["tag_name"])
-    entry.setdefault("latest_version_date", (stable.get("published_at") or "")[:10])
-  # No stable release: the last push is the closest honest proxy.
-  entry.setdefault("latest_version_date", (obj.get("pushed_at") or "")[:10])
+  entry["source_available"] = True
 
 
 def _overlay(entry, row, fields, fill_only=False):
@@ -527,9 +671,6 @@ def _overlay(entry, row, fields, fill_only=False):
     value = clean(row.get(field))
     if value:
       entry[field] = value
-  country = clean(row.get("hq_country"))
-  if country:
-    entry["country"] = country
 
 
 def _apply_product_row(products, row, headers):
@@ -555,36 +696,43 @@ def _apply_product_row(products, row, headers):
 
   entry["versions"].update(
     v.strip() for v in clean(row.get("ocpp_claimed")).split(",") if v.strip())
-  entry["features"].update(
-    f.strip() for f in clean(row.get("features_claimed")).split(",") if f.strip())
   _overlay(entry, row, OVERLAY_FIELDS)
 
-  if clean(row.get("open_source")).lower() in ("y", "yes", "true", "1"):
-    entry["open_source"] = True
+  if clean(row.get("source_available")).lower() in ("y", "yes", "true", "1"):
+    entry["source_available"] = True
   repo = clean(row.get("repo"))
   if repo:
     enrich_from_github(entry, repo, headers)
 
+  return entry
 
-def merge(certs, vendors, headers):
-  """Union the OCA registry with the curated CSV into one row per product.
+
+def merge(certs, vendors, headers, claims=None):
+  """Union the OCA registry with the curated CSVs into one row per product.
 
   Product rows run first and company rows second, so a company-level row reaches
   every product regardless of where it sits in the file — with a single pass its
   effect depended on row order, which is invisible in a file people append to.
+  Curated features come last: they attach by slug, which only exists once the
+  product rows have been applied.
   """
   products = group_certificates(certs)
-
-  # A curated row naming a company but no product carries company-level facts.
-  def is_company_row(row):
-    return bool(clean(row.get("oca_company")) and not clean(row.get("oca_product")))
-
   company_rows = [r for r in vendors if is_company_row(r)]
 
-  for row in vendors:
-    if not is_company_row(row) and clean(row.get("product")):
-      _apply_product_row(products, row, headers)
+  # The entry key is (company, product), either of which a curated row may
+  # rename, so the slug is carried here rather than stored on the entry.
+  by_slug = {clean(row.get("slug")): _apply_product_row(products, row, headers)
+             for row in vendors if is_product_row(row)}
 
+  # read_features validated every slug against the same is_product_row
+  # predicate, so each one has an entry waiting for it.
+  for slug, features in (claims or {}).items():
+    by_slug[slug]["features_claimed"] = features
+
+  # Every entry of the vendor, not just its certified ones: COMPANY_FIELDS are
+  # facts about the company (website, founding year, HQ…), so withholding them
+  # from a product that happens to hold no certificate would render "unknown"
+  # for something the dataset knows. `fill_only` keeps it to filling gaps.
   by_company = defaultdict(list)
   for (company, _), entry in products.items():
     by_company[company].append(entry)
@@ -602,11 +750,18 @@ def merge(certs, vendors, headers):
 
 # --- Markdown ----------------------------------------------------------------
 
+# The directory answers "which of these could I run, and does it speak what I
+# need?". Everything else a reader might want — HQ, founding year, pricing,
+# licence, release history, ISO 15118, Eichrecht — stays in csms.csv, which is
+# the dataset; a sixteen-column table was unreadable and still incomplete.
 TABLE_HEADERS = [
-  "Product", "Company", "HQ", "OCA-certified", "Open-source", "OCPP", "Features",
-  "OCPI", "API", "Pricing", "Founded", "First release", "Latest version", "Status",
-  "Website", "Certificates",
+  "Product", "Company", "OCPP", "OCA certificates", "Source available",
+  "OCPI", "API", "Deployment", "Status",
 ]
+
+# The feature annex, generated into its own file: 240 products times two
+# evidence classes does not belong in a column of the directory.
+FEATURE_TABLE_HEADERS = ["Product", "Company", "Certified (OCA)", "Vendor-documented"]
 
 
 def _link(label, url):
@@ -614,12 +769,12 @@ def _link(label, url):
   return f"[{label}]({url})" if url else (label or "")
 
 
-def _host(url):
-  """Shorten a URL to a readable label: the domain, or owner/repo for GitHub."""
-  bare = re.sub(r"^https?://(www\.)?", "", url or "").rstrip("/")
-  if bare.startswith("github.com/"):
-    return "/".join(bare.split("/")[1:3])
-  return bare.split("/")[0]
+def _display_name(entry):
+  """What the product is called in both tables, falling back to the vendor.
+
+  A handful of registry entries carry a company but no usable designation.
+  """
+  return entry["product"] or entry["company"]
 
 
 def md_table(headers, rows):
@@ -636,62 +791,97 @@ def _version_key(version):
   return tuple(int(p) if p.isdigit() else 0 for p in version.split("."))
 
 
-def render_row(entry):
-  """Build one table row from a merged product entry."""
-  site = entry.get("website") or entry.get("repo_url") or ""
-  website = _link(_host(site), site)
+def _sourced(label, sources):
+  """Link a label to its first source, keeping any further ones reachable."""
+  return " ".join([_link(label, sources[0])]
+                  + [f"[{i}]({url})" for i, url in enumerate(sources[1:], start=2)])
 
-  # "Y" only means a public API is documented; blank stays "unknown", never "no".
+
+def _cert_label(cert):
+  """`1.6 Full (v2.3)` — OCPP version, certificate type, certified software."""
+  label = f"{cert['version']} {cert['type']}".strip()
+  return label + (f" ({cert['software']})" if cert["software"] else "")
+
+
+def render_row(entry):
+  """Build one directory row from a merged product entry."""
+  site = entry.get("website") or entry.get("repo_url") or ""
+
+  # `api` records that an API exists; `api_docs` that its documentation is
+  # public. Documented-but-login-gated is therefore an unlinked "Y", and an
+  # empty cell stays "not verified", never "no API".
   api = _link(entry.get("api") or ("Y" if entry.get("api_docs") else ""),
               entry.get("api_docs"))
-  pricing = _link(entry.get("pricing", ""), entry.get("pricing_url"))
 
   versions = ", ".join(sorted(entry["versions"], key=_version_key))
-  features = " · ".join(FEATURE_SHORT.get(f, f) for f in sort_features(entry["features"]))
 
-  def _cert_label(cert):
-    label = f"{cert['version']} {cert['type']}".strip()
-    return label + (f" ({cert['software']})" if cert["software"] else "")
+  # Never "N": we check whether a repository exists, not whether one is absent.
+  source_available = _link("Y", entry.get("repo_url")) if entry.get("source_available") else ""
+
+  # OCPI is either stated on the product row or documented as a feature; the
+  # feature carries a URL, so prefer it as the link target.
+  ocpi_sources = entry["features_claimed"].get(OCPI_FEATURE)
+  ocpi = _sourced(entry.get("ocpi") or "Y", ocpi_sources) if ocpi_sources \
+      else entry.get("ocpi", "")
 
   certificates = " · ".join(
     _link(_cert_label(c), c["url"])
     for c in sorted(entry["certificates"],
                     key=lambda c: (_version_key(c["version"]), c["date"], c["type"])))
 
-  # The version doubles as the changelog link — no column of its own needed.
-  # With a changelog but no known version, the link still carries the useful bit.
-  version_text = " ".join(x for x in (entry.get("latest_version", ""),
-                                      entry.get("latest_version_date", "")) if x)
-  latest = _link(version_text or ("Changelog" if entry.get("changelog") else ""),
-                 entry.get("changelog"))
-
   return [
-    entry["product"] or entry["company"],
+    # The product name carries the link to the vendor's own site, or to the
+    # repository for a source-available project — one column, not two.
+    _link(_display_name(entry), site),
     # The registry gives an OCA participant page for most certified vendors; it
     # lists their certificates and postal address, so it earns the company link.
     _link(entry["company"], entry.get("company_link")),
-    entry.get("country", ""),
-    "Y" if entry["certificates"] else "N",
-    "Y" if entry.get("open_source") else "N",
     versions,
-    features,
-    entry.get("ocpi", ""),
-    api,
-    pricing,
-    entry.get("company_founded", ""),
-    entry.get("first_release", ""),
-    latest,
-    entry.get("status", ""),
-    website,
     certificates,
+    source_available,
+    ocpi,
+    api,
+    entry.get("deployment", ""),
+    entry.get("status", ""),
   ]
 
 
+def render_feature_row(entry):
+  """Build one annex row, keeping the two kinds of evidence in their own column."""
+  certified = " · ".join(FEATURE_VOCAB[f] for f in sort_features(entry["features_certified"]))
+  claimed = " · ".join(
+    _sourced(FEATURE_VOCAB[f], entry["features_claimed"][f])
+    for f in sort_features(entry["features_claimed"]))
+
+  return [
+    _display_name(entry),
+    entry["company"],
+    certified,
+    claimed,
+  ]
+
+
+def sort_entries(products):
+  """Order products for display, deterministically.
+
+  Two vendors ship a product under the same name, so the display name alone is
+  not a total order — without the company tiebreak their order would follow dict
+  insertion, and a re-render could reshuffle rows nothing had changed.
+  """
+  return sorted(products.values(),
+                key=lambda e: (_display_name(e).lower(), e["company"].lower()))
+
+
 def cmd_render(args):
-  """Merge the certificate mirror with the curated CSV and inject the table."""
+  """Merge the mirror with the curated CSVs and inject both generated tables."""
   certs = read_csv(args.certs)
   if not certs:
     raise SystemExit(f"{args.certs} is empty or missing — run `python csms.py fetch` first.")
+
+  gaps = vocabulary_gaps()
+  if gaps:
+    raise SystemExit(f"Certificate rules emit {gaps}, which FEATURE_VOCAB does not "
+                     f"define — add them to the vocabulary in csms.py.")
 
   # Check before any network work: an unknown token means the mapping is stale,
   # and rendering would quietly publish a product with fewer features than it has.
@@ -701,17 +891,28 @@ def cmd_render(args):
                      f"CERT_LETTERS in csms.py rather than rendering empty features.")
 
   vendors = read_csv(args.vendors, fields=VENDOR_FIELDS)
-  products = merge(certs, vendors, pipeline.auth_headers(args.token))
+  claims = read_features(args.features, product_slugs(vendors, args.vendors))
+  products = merge(certs, vendors, pipeline.auth_headers(args.token), claims)
 
-  entries = sorted(products.values(), key=lambda e: (e["product"] or e["company"]).lower())
-  body = "\n".join(md_table(TABLE_HEADERS, [render_row(e) for e in entries]))
-  pipeline._inject_between_markers(args.md, body, CSMS_MARKER_BEGIN, CSMS_MARKER_END)
+  entries = sort_entries(products)
+
+  # Both bodies first, then both writes: the two files are one view of one
+  # dataset, and a failure while rendering the annex must not leave a fresh
+  # directory next to a stale annex.
+  directory = "\n".join(md_table(TABLE_HEADERS, [render_row(e) for e in entries]))
+  annex = "\n".join(
+    md_table(FEATURE_TABLE_HEADERS, [render_feature_row(e) for e in entries]))
+  pipeline._inject_between_markers(args.md, directory,
+                                   CSMS_MARKER_BEGIN, CSMS_MARKER_END)
+  pipeline._inject_between_markers(args.features_md, annex,
+                                   FEATURES_MARKER_BEGIN, FEATURES_MARKER_END)
 
   certified = sum(1 for e in entries if e["certificates"])
-  oss = sum(1 for e in entries if e.get("open_source"))
-  both = sum(1 for e in entries if e["certificates"] and e.get("open_source"))
-  print(f"✅ {len(entries)} products · {certified} OCA-certified · {oss} open-source · "
-        f"{both} both -> {args.md}")
+  source = sum(1 for e in entries if e.get("source_available"))
+  documented = sum(1 for e in entries if e["features_claimed"])
+  print(f"✅ {len(entries)} products · {certified} OCA-certified · {source} source-available "
+        f"-> {args.md}")
+  print(f"✅ {documented} products with vendor-documented features -> {args.features_md}")
 
 
 # --- CLI ---------------------------------------------------------------------
@@ -730,10 +931,13 @@ def main():
                        help="Allow the mirror to contain fewer rows than before.")
   p_fetch.set_defaults(func=cmd_fetch)
 
-  p_render = sub.add_parser("render", help="Render the merged CSMS table into csms.md.")
+  p_render = sub.add_parser("render", help="Render the CSMS directory and feature annex.")
   p_render.add_argument("--certs", default=CERTS_PATH, help="Certificate CSV path.")
-  p_render.add_argument("--vendors", default=VENDORS_PATH, help="Curated CSV path.")
-  p_render.add_argument("--md", default=CSMS_MD_PATH, help="Markdown file to inject into.")
+  p_render.add_argument("--vendors", default=VENDORS_PATH, help="Curated product CSV path.")
+  p_render.add_argument("--features", default=FEATURES_PATH, help="Curated feature CSV path.")
+  p_render.add_argument("--md", default=CSMS_MD_PATH, help="Directory Markdown file.")
+  p_render.add_argument("--features-md", default=FEATURES_MD_PATH,
+                        help="Feature annex Markdown file.")
   p_render.add_argument("--token", help="GitHub personal access token (optional).")
   p_render.set_defaults(func=cmd_render)
 
