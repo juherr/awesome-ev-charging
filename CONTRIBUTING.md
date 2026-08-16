@@ -184,7 +184,8 @@ product row states about one product always wins.
 founding year, first release, latest version, pricing, ISO 15118, Eichrecht,
 licence, deployment model, notes. Fill them when you can cite them; they are part
 of the dataset even when no column shows them. `changelog` holds the product's
-release-notes URL, and source-available entries get their GitHub releases page
+release-notes URL; nothing derives it, so curate it yourself when you want one
+recorded — a source-available entry does not get its GitHub releases page
 automatically.
 
 Then:

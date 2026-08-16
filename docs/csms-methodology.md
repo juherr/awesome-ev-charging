@@ -112,8 +112,9 @@ single-letter codes are expanded using the legend from the registry's own
 | `U` | Advanced User Interface |
 | `I` | ISO 15118 Support |
 
-`Core` and `Security` map to themselves. `Subset` and `Family` are scope
-qualifiers, not feature sets, and contribute nothing. A product holding several
+`Core` maps to itself and `Security` to Advanced Security — the same feature the
+`S` letter yields. `Subset` and `Family` are scope qualifiers, not feature sets,
+and contribute nothing. A product holding several
 certificates gets the union of their features.
 
 An unknown token fails the render rather than producing an empty cell, so a new

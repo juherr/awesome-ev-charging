@@ -40,10 +40,13 @@ pipeline; this skill is the executable "how" for the refresh case.
 
 ## The cache decision (do this first — it's the whole point)
 
-Every GitHub read goes through a filesystem cache in `cache_github/` with a
-**24h TTL** (`CACHE_TTL` in `pipeline.py`). This is the step a naive re-run gets
-wrong: if the cache is fresh, `ingest` reads it and the metadata **does not
-change** — you'd just re-derive identical docs.
+Nearly every GitHub read goes through a filesystem cache in `cache_github/` with
+a **24h TTL** (`CACHE_TTL` in `pipeline.py`). This is the step a naive re-run
+gets wrong: if the cache is fresh, `ingest` reads it and the metadata **does not
+change** — you'd just re-derive identical docs. Two reads bypass the cache and
+hit the API on every run (`get_starred_repos_for_user`, and the search
+pagination), so a fresh cache makes the run cheap and the rendered signals
+stable — it does not guarantee a byte-identical ingest.
 
 So decide based on **why** you're refreshing:
 
@@ -66,9 +69,12 @@ So decide based on **why** you're refreshing:
   its own, no need to clear.
 
 - **You only need to re-derive the docs** from CSVs you (or a prior run) already
-  produced — e.g. after hand-editing `classifications.csv`, or tweaking render
-  logic — then **do not touch the cache** and you can often skip straight to
-  render (Step 3).
+  produced — e.g. after tweaking render logic — then **do not touch the cache**
+  and you can skip straight to render (Step 3). Hand-editing
+  `classifications.csv` is *not* one of those cases: `render` reads
+  `repos.enriched.csv`, not the classification cache, so keep the cache and
+  re-run `mise run enrich` (incremental, so it's cheap) to carry the edit
+  through, then render.
 
 **Don't clear a fresh cache reflexively.** Clearing forces ~900 API calls and a
 longer run; only do it when you actually want newer-than-cache data. When in
@@ -96,8 +102,9 @@ mise run enrich
   `pushed_at`, so only repos whose upstream changed since the last run pay the
   LLM cost. A metadata refresh therefore re-classifies **few** repos, not all.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
-  any hand-pinned `classifications.csv` cells. `--refresh` is only for retrying a
-  specific repo whose classification came back empty from a transient failure.
+  any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
+  it: the only reason to accept a full re-classification is to clear an empty
+  classification a transient failure left behind.
 - This iterates all repos fetching READMEs and can take a few minutes. Run it in
   the background and wait for it to finish rather than polling tightly.
 
@@ -149,8 +156,9 @@ Fill in `N` from the diff. If the refresh also pulled in `pipeline.py` changes
 Conventions to honor:
 
 - **Conventional Commits**, in **English**.
-- **No AI/Codex attribution** — do not add a `Co-Authored-By: Codex` trailer
-  or any Codex reference. Standing preference for this user.
+- **No AI attribution** — no `Co-Authored-By:` trailer naming an assistant, and
+  no mention of one in the body, whichever assistant you are. Standing
+  preference for this user.
 
 ### 6. Push only if authorized
 
@@ -166,4 +174,4 @@ confirmation.
   hand-pinned classifications.
 - ✅ Only commit `classifications.csv`, `README.md`,
   `legacy-projects.md` (+ `pipeline.py` if you changed a constant).
-- ✅ No Codex/AI references in commit messages.
+- ✅ No AI/assistant references in commit messages.

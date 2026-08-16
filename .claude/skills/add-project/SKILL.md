@@ -154,10 +154,12 @@ git --no-pager diff --stat
 Commit only the meaningful files. **Generated artifacts `repos.csv`,
 `repos.enriched.csv`, `cache_github/`, `list.txt` are git-ignored — never commit
 them.** Split into two commits so the issue's actual source change is traceable
-and the data refresh is separate:
+and the data refresh is separate. The first commit only exists when you actually
+edited `pipeline.py` — a repo discovered through `TOPICS`, a `STARRED_LISTS`
+entry or a README link needs no source change, so go straight to the second:
 
 ```bash
-# 1) the source change for the issue
+# 1) the source change for the issue — skip if pipeline.py is unchanged
 git add pipeline.py
 git commit -m "feat(data): add <repo> to ADDITIONAL_REPOS
 

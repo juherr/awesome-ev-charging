@@ -154,10 +154,12 @@ git --no-pager diff --stat
 Commit only the meaningful files. **Generated artifacts `repos.csv`,
 `repos.enriched.csv`, `cache_github/`, `list.txt` are git-ignored — never commit
 them.** Split into two commits so the issue's actual source change is traceable
-and the data refresh is separate:
+and the data refresh is separate. The first commit only exists when you actually
+edited `pipeline.py` — a repo discovered through `TOPICS`, a `STARRED_LISTS`
+entry or a README link needs no source change, so go straight to the second:
 
 ```bash
-# 1) the source change for the issue
+# 1) the source change for the issue — skip if pipeline.py is unchanged
 git add pipeline.py
 git commit -m "feat(data): add <repo> to ADDITIONAL_REPOS
 
@@ -176,9 +178,9 @@ repos whose upstream pushed_at changed since the last enrichment."
 Conventions to honor:
 
 - **Conventional Commits**, in **English**.
-- **No AI/Codex attribution** in commit messages — do not add a
-  `Co-Authored-By: Codex` trailer or any Codex reference. This is a standing
-  preference for this user.
+- **No AI attribution** in commit messages — no `Co-Authored-By:` trailer
+  naming an assistant, and no mention of one in the body, whichever assistant
+  you are. This is a standing preference for this user.
 - If the change is only the code override path (no data refresh), one `feat`
   commit on `pipeline.py` + `README.md` is enough.
 
@@ -201,4 +203,4 @@ outward-facing actions need confirmation.
 - ✅ Only commit `classifications.csv`, `README.md`,
   `legacy-projects.md`, and (if changed) `pipeline.py`.
 - ✅ Never pass `--refresh` when you want to keep hand-pinned classifications.
-- ✅ No Codex/AI references in commit messages.
+- ✅ No AI/assistant references in commit messages.
