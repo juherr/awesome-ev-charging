@@ -1,6 +1,18 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+Guidance for any coding agent working in this repository. **This file is the
+shared source of truth** — everything an agent needs to work here is below,
+regardless of which harness it runs in.
+
+Harness-specific files complement it and must not restate it:
+
+| File | Scope |
+| --- | --- |
+| `AGENTS.md` | Everything shared. Start here |
+| `CLAUDE.md` | Claude Code specifics only — it imports this file |
+
+Keep new project knowledge in this file. If a fact holds for every agent, it
+belongs here even when you discovered it in one harness.
 
 ## What this repository is
 
@@ -20,7 +32,9 @@ auto-creates/activates a `.venv` — no manual `source .venv/bin/activate`. Run
 
 ```bash
 mise install          # install the pinned Python
-mise run install      # (alias: mise run i) uv pip install -r requirements.txt into .venv
+mise run install      # (alias: mise run i) runtime deps into .venv
+mise run install-dev  # runtime + pytest; `install` alone keeps the CI data job lean
+mise run test         # (alias: mise run t) pytest
 
 mise run ingest       # Stage 1 -> repos.csv   (wires --token via `gh auth token`)
 mise run enrich       # Stage 2 -> repos.enriched.csv
@@ -58,9 +72,9 @@ A two-stage pipeline connected by a **CSV boundary** — ingestion (deterministi
 `collect_candidates` merges four **discovery** sources by `full_name` — topic search (`search_topic_repo_names` across `TOPICS`), manual additions (`ADDITIONAL_REPOS`), GitHub links in the curated README (`readme_repo_names`), and curated GitHub Stars lists (`get_starred_list_repos` for each `(owner, slug)` in `STARRED_LISTS`, e.g. `juherr/ev`, `mateogreil/ev-mobility`). Stars lists are GraphQL-only and require a token, so ingest skips them (with a warning) when unauthenticated. Separately, the **full** star sets of `STARRED_USERS` (`get_starred_repos_for_user`) are read only as a **promotion signal** (`starred_by`), not as a discovery source. `build_repo_record` is the single record builder for **all** sources — it reads every field from the full `/repos` object, so `pushed_at` (hence the `dormant`/`days_since_push` signals) is present for every repo, not just manual ones. Signals in the CSV: `dormant` (no push ≥ `DORMANT_DAYS` OR archived), `stars`, `forks`, `open_issues`, `topic_matches`, `promoted`, `archived`, `is_fork`, plus `source` (the `+`-joined provenance, e.g. `readme+starred-list+topic`).
 
 **Stage 2 — `enrich` → `repos.enriched.csv`** (`enrich`, `classify_with_*`):
-Reads the CSV, fetches each README (cached), and appends a `categories` column. Classification runs through a **pluggable LLM-CLI backend** selected by `--classifier` (registry `CLASSIFIERS`, default `Codex`):
+Reads the CSV, fetches each README (cached), and appends a `categories` column. Classification runs through a **pluggable LLM-CLI backend** selected by `--classifier` (registry `CLASSIFIERS`, default `claude`):
 
-- `Codex` — `classify_with_claude` shells out to `Codex -p --agent repo-classifier --strict-mcp-config --output-format text` (agent defined in `.Codex/agents/repo-classifier.md`);
+- `claude` — `classify_with_claude` shells out to `claude -p --agent repo-classifier --strict-mcp-config --output-format text` (agent defined in `.claude/agents/repo-classifier.md`);
 - `codex` — `classify_with_codex` runs `codex exec --sandbox read-only --ephemeral`, carrying the role/output contract in-prompt (`CLASSIFIER_INSTRUCTIONS`) since it has no agent file;
 - `copilot` — `classify_with_copilot` runs `copilot -p --allow-all-tools --silent` in an empty temp cwd, also using `CLASSIFIER_INSTRUCTIONS`. The GitHub Copilot CLI is natively authenticated inside a Copilot coding-agent environment. Elsewhere it reads a token from `COPILOT_GITHUB_TOKEN` → `GH_TOKEN` → `GITHUB_TOKEN` (in that precedence; classic `ghp_` PATs are ignored). **In GitHub Actions** (since 2026-07-02) no secret is needed: grant the job the `copilot-requests: write` permission and it authenticates with the built-in `GITHUB_TOKEN` — see `.github/workflows/refresh-metadata.yml`. **In any other CI runner** it needs a fine-grained PAT owned by a personal account with the **Copilot Requests** *account* permission (token Permissions → Account tab).
 
@@ -101,7 +115,7 @@ appear in `csms.md` / `csms-features.md` that cannot be reconstructed from
 
 `canonical_product(company, designation)` decides product identity before grouping: it strips a trailing dotted version (`eBAB Server v1.6` / `v1.6.1` → one product; a dot is required so `MON-CSMS-V10` survives) and applies `PRODUCT_ALIASES`, a hand-maintained table for platforms the registry renamed between certificates (Driivz, NEC, KEPCO KDN, Elvo, I-Charge Solutions). `company_key` does the same job on the vendor side, dropping punctuation and parentheticals so `Shenzhen Infypower Co. Ltd` / `Co., Ltd` and `Instituto Tecnológico de la Energía` with and without `(ITE)` group as one company; legal suffixes are deliberately kept. Together they collapse 11 duplicates. `canonical_product` is applied to curated `oca_product` values too, so a contributor may cite either the raw OCA designation or the merged name. Only merge when the certificates clearly describe one platform — vendors do ship several CSMS, and some registry entries are hardware model numbers misfiled under the CSMS product type.
 
-`merge` unions the three: certificates grouped by `(company, canonical product)` lowercased become certified entries; curated product rows matching via `oca_company`/`oca_product` are overlaid onto them; the rest are appended as non-certified; then curated features attach by `slug` (which `_apply_product_row` stores on the entry, since the entry key is `(company, product)` and a curated row may rename either). So **certification and source availability are derived, never typed**, and `csms.csv` only needs rows that add information — not the ~193 certified products. A curated row that collides with a certified key merges into it rather than replacing it. `sort_entries` orders by `(display name, company)` — the company tiebreak is what keeps two homonymous products from reshuffling between renders.
+`merge` unions the three: certificates grouped by `(company, canonical product)` lowercased become certified entries; curated product rows matching via `oca_company`/`oca_product` are overlaid onto them; the rest are appended as non-certified; then curated features attach by `slug` (carried in `merge`'s `by_slug` map rather than stored on the entry, since the entry key is `(company, product)` and a curated row may rename either). So **certification and source availability are derived, never typed**, and `csms.csv` only needs rows that add information — not the ~193 certified products. A curated row that collides with a certified key merges into it rather than replacing it. `sort_entries` orders by `(display name, company)` — the company tiebreak is what keeps two homonymous products from reshuffling between renders.
 
 **Two kinds of feature evidence, never merged.** `entry["features_certified"]` (a set) is what an OCA certificate proves; `entry["features_claimed"]` (name → source URLs) is what the vendor documents. `csms-features.md` renders them in separate columns, and a feature legitimately appears in both — the reverse promotion never happens.
 
@@ -119,10 +133,28 @@ Two traps this design exists to avoid: a commercial product built on an open-sou
 
 Scope for non-certified rows: companies publishing a **named, OCPP-based management platform**. CPO networks, roaming hubs and unnamed vendor portals are out — `docs/csms-methodology.md` states this so the omissions read as a choice.
 
+## Agent configuration
+
+Each harness keeps its own copy of the same two things, and they drift silently
+if only one is edited:
+
+| Path | Used by | Holds |
+| --- | --- | --- |
+| `.claude/agents/repo-classifier.md` | Claude Code, and `enrich --classifier claude` | The classifier role + output contract |
+| `.codex/agents/repo-classifier.toml` | Codex | The same contract, in TOML |
+| `CLASSIFIER_INSTRUCTIONS` in `pipeline.py` | `codex` and `copilot` backends | The same contract, in-prompt |
+| `.claude/skills/` | Claude Code (`/add-project`, `/refresh-metadata`) | The two maintenance workflows |
+| `.agents/skills/` | Any other harness | Harness-neutral copies of the same two |
+
+Change the classifier's role or output shape in one place and you must change
+it in the other three — `parse_classification` parses one format for all of
+them.
+
 ## Conventions
 
 - `repos.csv` / `repos.enriched.csv` are generated artifacts (git-ignored). `classifications.csv` is the durable, committed LLM cache. `cache_github/` is regenerable API-response cache — treat it as disposable, not source.
 - The `## Tools and Resources` project listing is **generated** — do not edit it by hand in `README.md`. To add/remove a repo there: it must be discoverable by `ingest` (via a `TOPICS` match, a curated stars-list entry in `STARRED_LISTS`, an `ADDITIONAL_REPOS` entry, or a GitHub link elsewhere in `README.md`), then `enrich` and `render --readme README.md`. Use `EXCLUDED_REPOS` to drop one. Promotion tier (which decides `Selection` vs `To refine`) is driven by the star lists / contributor status, not by manual ordering.
+- **No AI attribution in commit messages.** No `Co-Authored-By:` trailer naming an assistant, and no mention of one in the body. Standing rule from the repo owner.
 - **An empty cell means unknown, never "no".** This holds across both deliverables and is the reason curated values require a citable source: absence records what we could not verify, not a property of the thing. Do not "complete" a table by inferring a negative.
 
 ## Stage 3 — `render` → README (Selection) + legacy-projects.md

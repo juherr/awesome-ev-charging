@@ -28,7 +28,7 @@ category to pin, no issue to close. If the goal is to add or remove one specific
 repo, use `add-project` instead — it handles the discovery + reconciliation
 steps this skill deliberately skips.
 
-Read `CLAUDE.md` in the repo root for the authoritative "why" behind the
+Read `AGENTS.md` in the repo root for the authoritative "why" behind the
 pipeline; this skill is the executable "how" for the refresh case.
 
 ## Preconditions

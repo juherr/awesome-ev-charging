@@ -21,7 +21,7 @@ The published project listing (`## Tools and Resources` in `README.md`, between
 pipeline inputs and re-render. This skill walks the full, correct sequence so a
 new entry lands in the right section with a clean commit history.
 
-Read `CONTRIBUTING.md` and `CLAUDE.md` in the repo root for the authoritative
+Read `CONTRIBUTING.md` and `AGENTS.md` in the repo root for the authoritative
 "why" behind each step; this skill is the executable "how".
 
 **Scope check.** This skill is for adding (or removing) a *specific* repo. If the
