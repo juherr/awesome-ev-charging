@@ -42,6 +42,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The job refreshes the published listing, which lives on main —
+          # workflow_dispatch can be fired from any branch, and taking that
+          # branch's tree would fold its unrelated changes into the refresh PR.
+          ref: main
           # Full history: the "Fast-forward onto the current main" step below
           # needs a real merge base, which a shallow clone cannot give it.
           fetch-depth: 0
@@ -104,15 +108,6 @@ jobs:
           echo "::warning::CSMS refresh failed — leaving the committed catalogue untouched."
           git checkout -- csms-certificates.csv csms.md csms-features.md
 
-      # Guardrail: a Copilot failure can return an empty category for a repo.
-      # Don't let that regression reach a PR. The comparison is per repo, not by
-      # count: a newly discovered repo with no README arrives without a category
-      # and never had one to lose, so it only warns.
-      - name: Guard against classification regressions
-        run: |
-          git show HEAD:classifications.csv \
-            | mise exec -- python pipeline.py check-classifications --base -
-
       # The PR branch is cut from the *local* main — the tree checked out when
       # the job started, up to half an hour earlier — and pushed with the
       # built-in GITHUB_TOKEN, which GitHub refuses to let create or update
@@ -136,6 +131,22 @@ jobs:
           else
             git merge --ff-only origin/main
           fi
+
+      # Guardrail: a Copilot failure can return an empty category for a repo.
+      # Don't let that regression reach a PR. The comparison is per repo, not by
+      # count: a newly discovered repo with no README arrives without a category
+      # and never had one to lose, so it only warns.
+      #
+      # It runs *after* the fast-forward above, not before: the baseline is
+      # `git show HEAD:classifications.csv`, so it has to read the base the PR
+      # will actually be opened against. Judging the run against a main that
+      # has since moved is how a regression slips through — and if main gained
+      # classifications while this run was working, dropping them is exactly
+      # the regression this guard exists to catch.
+      - name: Guard against classification regressions
+        run: |
+          git show HEAD:classifications.csv \
+            | mise exec -- python pipeline.py check-classifications --base -
 
       - name: Open / update the refresh PR
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
