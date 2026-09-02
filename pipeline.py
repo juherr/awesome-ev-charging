@@ -692,14 +692,18 @@ def classify_with_copilot(row, readme):
   Uses the GitHub Copilot CLI, which is natively authenticated inside a GitHub
   Copilot coding-agent environment (no extra API secret). Runs in an empty temp
   cwd so the agent's tools have no repo files in reach; the prompt is
-  self-contained and instructs the model not to use any tools.
+  self-contained and instructs the model not to use any tools, and the tool
+  allowlist is empty so it cannot use one anyway.
   """
   if not has_classifiable_signal(row, readme):
     return "", []
   prompt = f"{CLASSIFIER_INSTRUCTIONS}\n\n{build_classifier_prompt(row, readme)}"
   cmd = [
     "copilot", "-p", prompt,
-    "--allow-all-tools",   # required to run non-interactively
+    # The prompt embeds a repository's own description, topics and README —
+    # untrusted text. An empty allowlist leaves the model no tool to be talked
+    # into using, and with nothing to approve the run stays non-interactive.
+    "--available-tools=",
     "--no-ask-user",       # never block waiting for interactive input
     "--silent",            # print only the agent's answer on stdout
     "--no-color",
@@ -781,9 +785,11 @@ def check_classifications(args):
   after = load_classifications(args.cache)
 
   lost, arrived_empty = classification_regressions(before, after)
+  # Why the category is empty is not knowable from the cache alone — it holds no
+  # signal data — so the warning states only the fact. The enrich log is where
+  # the reason is.
   for full_name in arrived_empty:
-    print(f"::warning::{full_name} entered the listing with no category "
-          "(no README, description or topics to classify).")
+    print(f"::warning::{full_name} entered the listing without a category.")
   for full_name in lost:
     print(f"::error::{full_name} lost the category it had.")
   if lost:
