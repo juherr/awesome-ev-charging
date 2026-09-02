@@ -34,6 +34,8 @@ auto-creates/activates a `.venv` — no manual `source .venv/bin/activate`. Run
 mise install          # install the pinned Python
 mise run install      # (alias: mise run i) runtime deps into .venv
 mise run install-dev  # runtime + pytest; `install` alone keeps the CI data job lean
+#   A fresh .venv has no pytest — run this before `mise run test`, or the suite
+#   fails with "No module named pytest" and it looks like a broken environment.
 mise run test         # (alias: mise run t) pytest
 
 mise run ingest       # Stage 1 -> repos.csv   (wires --token via `gh auth token`)
@@ -94,6 +96,16 @@ Each backend returns `(description, categories)` on success, `("", [])` when the
 Enrichment is **incremental**: it loads the committed `classifications.csv` and reuses a repo's categories while nothing the classifier reads has changed, so re-runs only pay the LLM cost for new or updated repos. The reuse key is `pushed_at` **plus** `classifier_signature` — a hash of the GitHub description, the topics and the README as truncated for the prompt, stored in the `signals` column. `pushed_at` alone was not enough: it only moves on a commit, so a description or topic list edited in the repository settings kept a stale classification indefinitely — and for a repo with no README those two are the *only* inputs. A cache entry written before the column existed carries no signature and is still reused (re-classifying all ~500 repos in one run would not fit the workflow's 30-minute timeout); every entry is stamped as it is rewritten, reused ones included, so the check is live for every repo from the next run on. A failed classification leaves that repo's cache entry unchanged, so the next run retries it on its own; `--refresh` ignores the cache and re-classifies every repo.
 
 **Guarding the classification cache.** `python pipeline.py check-classifications --base -` (reading the baseline `classifications.csv` on stdin) is the monthly workflow's gate before it opens a PR. It compares **per repo, not by count**: a repo that *had* a category and comes back without one is a regression and exits non-zero; a newly discovered repo that arrives without one never had a category to lose, and only warns. Counting empty rows conflated the two and blocked the refresh every time a README-less repo entered the listing.
+
+**Triaging a failed refresh run.** `gh run view <id> --log-failed` shows the tail of the failing step, which for this workflow is the guard reporting a symptom — the cause is in the `enrich` step, hundreds of lines earlier. `gh` does not resolve step names in `--log` output (every line reads `UNKNOWN STEP`), so filter on the message, not the columns:
+
+```bash
+gh run view <id> --log > /tmp/awesome-ev-charging-<id>.log
+grep -E "\-> \(none\)" /tmp/awesome-ev-charging-<id>.log   # repos that came back uncategorised
+grep -E "readme|classifier (failed|error)" /tmp/awesome-ev-charging-<id>.log
+```
+
+A `⚠️ GitHub request failed: 404 …/readme` immediately above a `(none)` means the repo has no README, which is a fact about the repo; a `⚠️ classifier failed` means the CLI broke, which is a fact about the run.
 
 Curation knobs are module-level constants: `TOPICS`, `STARRED_USERS`, `STARRED_LISTS`, `EXCLUDED_REPOS`, `ADDITIONAL_REPOS`, `CATEGORY_TREE`, `CATEGORY_OVERRIDES`, `REPO_OVERRIDES`, `DORMANT_DAYS`, `CLASSIFIER_AGENT`/`CLASSIFIER_MODEL`/`CLASSIFIER_COPILOT_MODEL`.
 
