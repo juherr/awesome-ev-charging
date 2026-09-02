@@ -1,11 +1,11 @@
 min_version = "2024.9.5"
 
 [tools]
-python = "3.11.11"
+python = "3.11.16"
 # The install tasks below shell out to `uv`, and the venv has no pip to fall back
 # on. Declaring it here is what makes them work on a bare runner — CI had only
 # ever passed because a developer's machine happened to have uv on PATH.
-uv = "0.12.5"
+uv = "0.12.8"
 
 [env]
 # Auto-create and activate a project virtualenv — no manual `source .venv/bin/activate`.

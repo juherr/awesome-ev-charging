@@ -26,7 +26,7 @@ The repo also vendors protocol specifications as static assets under `ocpp/`, `o
 
 ## Commands
 
-The project is managed with **mise** (`mise.toml`): it pins Python 3.11.11 and
+The project is managed with **mise** (`mise.toml`): it pins Python 3.11.16 and
 auto-creates/activates a `.venv` — no manual `source .venv/bin/activate`. Run
 `mise trust` once after cloning.
 
