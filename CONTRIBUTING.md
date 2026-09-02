@@ -58,7 +58,7 @@ committed are `classifications.csv`, `README.md`, `legacy-projects.md`,
 
 ### Setup
 
-The project is managed with [mise](https://mise.jdx.dev/) (pins Python 3.11.11 and
+The project is managed with [mise](https://mise.jdx.dev/) (pins Python 3.11.16 and
 auto-creates a `.venv`):
 
 ```bash
