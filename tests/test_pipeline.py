@@ -22,9 +22,10 @@ def repo(full_name="acme/charger", **overrides):
     return row
 
 
-def cached(full_name, categories, pushed_at="2026-01-01T00:00:00Z", description=""):
-    return {"full_name": full_name, "pushed_at": pushed_at,
-            "categories": categories, "description": description}
+def cached(full_name, categories, pushed_at="2026-01-01T00:00:00Z", description="",
+           signals=""):
+    return {"full_name": full_name, "pushed_at": pushed_at, "categories": categories,
+            "description": description, "signals": signals}
 
 
 def run_enrich(tmp_path, rows, classify, cache=(), **overrides):
@@ -224,6 +225,64 @@ def test_a_hard_failure_on_an_unknown_repo_yields_no_category(tmp_path):
 def test_an_unchanged_repo_is_reused_without_calling_the_backend(tmp_path):
     def explode(row, readme):
         raise AssertionError("a cache hit must not reach the backend")
-    enriched, _ = run_enrich(tmp_path, [repo()], explode,
-                             cache=[cached("acme/charger", "OCPP > Server")])
+    entry = repo(description="An OCPP server", topics="ocpp")
+    enriched, _ = run_enrich(
+        tmp_path, [entry], explode,
+        cache=[cached("acme/charger", "OCPP > Server",
+                      signals=pipeline.classifier_signature(entry, ""))])
     assert enriched[0]["categories"] == "OCPP > Server"
+
+
+# --- What invalidates a cached classification ---------------------------------
+
+def test_an_edited_github_description_forces_a_reclassification(tmp_path):
+    """`pushed_at` only moves on a commit, so it cannot catch a settings edit.
+
+    The description is a classifier input — the only one, for a repo with no
+    README — so a stale classification would otherwise survive indefinitely.
+    """
+    stale = cached("acme/charger", "OCPP > Server",
+                   signals=pipeline.classifier_signature(
+                       repo(description="An OCPP server"), ""))
+    enriched, _ = run_enrich(
+        tmp_path, [repo(description="An OCPI client")],
+        lambda row, readme: ("An OCPI client.", [("OCPI", "Client")]),
+        cache=[stale])
+    assert enriched[0]["categories"] == "OCPI > Client"
+
+
+def test_edited_topics_force_a_reclassification(tmp_path):
+    stale = cached("acme/charger", "OCPP > Server",
+                   signals=pipeline.classifier_signature(repo(topics="ocpp"), ""))
+    enriched, _ = run_enrich(
+        tmp_path, [repo(topics="ocpp|ocpi")],
+        lambda row, readme: ("An OCPI client.", [("OCPI", "Client")]),
+        cache=[stale])
+    assert enriched[0]["categories"] == "OCPI > Client"
+
+
+def test_an_edited_readme_forces_a_reclassification(tmp_path, monkeypatch):
+    monkeypatch.setattr(pipeline, "fetch_readme_content", lambda *a, **k: "# Now an OCPI client")
+    stale = cached("acme/charger", "OCPP > Server",
+                   signals=pipeline.classifier_signature(repo(), "# An OCPP server"))
+    enriched, _ = run_enrich(
+        tmp_path, [repo()],
+        lambda row, readme: ("An OCPI client.", [("OCPI", "Client")]),
+        cache=[stale])
+    assert enriched[0]["categories"] == "OCPI > Client"
+
+
+def test_an_entry_predating_the_signals_column_is_still_reused(tmp_path):
+    """Re-classifying the whole listing at once would blow the workflow timeout."""
+    def explode(row, readme):
+        raise AssertionError("a legacy cache entry must not reach the backend")
+    enriched, cache = run_enrich(tmp_path, [repo(description="An OCPP server")], explode,
+                                 cache=[cached("acme/charger", "OCPP > Server")])
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["signals"], "a reused entry is stamped for the next run"
+
+
+def test_readme_text_the_model_never_sees_does_not_invalidate(tmp_path):
+    padding = "x" * pipeline.README_PROMPT_CHARS
+    assert (pipeline.classifier_signature(repo(), padding + "trailing")
+            == pipeline.classifier_signature(repo(), padding + "different"))

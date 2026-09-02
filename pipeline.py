@@ -540,6 +540,9 @@ CATEGORY_TREE_TEXT = "\n".join(
 )
 
 
+README_PROMPT_CHARS = 4000  # how much of a README the classifier is shown
+
+
 def has_classifiable_signal(row, readme):
   """True when there is anything for the classifier to read.
 
@@ -560,7 +563,7 @@ def build_classifier_prompt(row, readme):
   topic_hint = f"\nGitHub topics: {topics.replace('|', ', ')}" if topics else ""
   # Say the README is absent rather than trailing an empty section: the model
   # must classify from the description and topics, not assume a truncated prompt.
-  readme_block = (f"README:\n{readme[:4000]}" if (readme or "").strip()
+  readme_block = (f"README:\n{readme[:README_PROMPT_CHARS]}" if (readme or "").strip()
                   else "README: (this repository has no README)")
   return (
     f"Taxonomy:\n{CATEGORY_TREE_TEXT}\n"
@@ -568,6 +571,23 @@ def build_classifier_prompt(row, readme):
     f"Repository description: {row.get('description') or '(none)'}\n\n"
     f"{readme_block}"
   )
+
+
+def classifier_signature(row, readme):
+  """Fingerprint of everything the classifier is shown, for cache invalidation.
+
+  `pushed_at` only moves on a commit, so it catches an edited README but not an
+  edited GitHub description or topic list — both changed through the repository
+  settings, and both real classifier inputs (the *only* ones for a repo with no
+  README). Truncated exactly like the prompt, so content the model never sees
+  cannot invalidate a classification.
+  """
+  payload = "\n".join([
+    (row.get("description") or "").strip(),
+    (row.get("topics") or "").strip(),
+    (readme or "")[:README_PROMPT_CHARS].strip(),
+  ])
+  return hashlib.md5(payload.encode("utf-8")).hexdigest()[:12]
 
 
 def extract_versions(text, keyword, known):
@@ -732,7 +752,21 @@ CLASSIFIERS = {
 }
 
 
-CLASSIFICATION_FIELDS = ["full_name", "pushed_at", "categories", "description"]
+CLASSIFICATION_FIELDS = ["full_name", "pushed_at", "categories", "description", "signals"]
+
+
+def signature_matches(prev, signature):
+  """True when a cached entry was built from the classifier inputs we have now.
+
+  Entries written before the `signals` column existed carry none; treat those as
+  matching. Re-classifying the whole listing in one run would not fit the
+  monthly workflow's timeout, and every entry is stamped as it is rewritten —
+  reused ones included — so the check is live for every repo from the next run
+  on. The cost is a one-run blind spot for metadata edited before the column
+  existed.
+  """
+  cached = (prev.get("signals") or "").strip()
+  return not cached or cached == signature
 
 
 def load_classifications(path):
@@ -834,9 +868,13 @@ def enrich(args):
       readme = fetch_readme_content(row["full_name"], headers)
       row["ocpp_versions"] = extract_versions(readme, "ocpp", OCPP_VERSIONS)
       row["ocpi_versions"] = extract_versions(readme, "ocpi", OCPI_VERSIONS)
+      # Computed before `description` is overwritten below with the synthesized
+      # one: the fingerprint must cover the GitHub description the model read.
+      signature = classifier_signature(row, readme)
       prev = reuse.get(row["full_name"])
       cacheable = True
-      if prev and prev.get("pushed_at") == row["pushed_at"]:
+      if (prev and prev.get("pushed_at") == row["pushed_at"]
+          and signature_matches(prev, signature)):
         row["categories"] = prev.get("categories", "")
         description = prev.get("description", "")
         reused += 1
@@ -865,6 +903,7 @@ def enrich(args):
         cache[row["full_name"]] = {
           "full_name": row["full_name"], "pushed_at": row["pushed_at"],
           "categories": row["categories"], "description": row["description"],
+          "signals": signature,
         }
       writer.writerow(row)
       f.flush()
