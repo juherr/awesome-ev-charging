@@ -47,6 +47,9 @@ python pipeline.py enrich --in repos.csv --out repos.enriched.csv --token <GITHU
 python pipeline.py render --readme README.md   # Stage 3 -> injects the curated
 #   Selection between the markers in README.md and writes the secondary
 #   legacy-projects.md (dormant + to-refine). Omit --readme to only write the latter.
+
+git show HEAD:classifications.csv | python pipeline.py check-classifications --base -
+#   CI guard, see "Guarding the classification cache" below.
 ```
 
 `--token` is optional; without it GitHub's unauthenticated rate limits apply.
@@ -57,9 +60,13 @@ python pipeline.py render --readme README.md   # Stage 3 -> injects the curated
 product/company identity, merge precedence, table rendering, the curated-CSV
 validations and render determinism. It needs no network — the one GitHub call
 `merge` can make is monkeypatched — and it also validates the committed CSVs, so
-a bad curated row fails there as well as at render time. `pipeline.py` has no
-tests; its pure functions can be exercised by importing `pipeline` and calling
-`build_repo_record` / `days_since_push` / `parse_categories` directly.
+a bad curated row fails there as well as at render time. `tests/test_pipeline.py`
+covers `pipeline.py`'s classification layer — the CI guard, the "is there
+anything to classify" rule, the backends' failure contract and what `enrich`
+writes to the durable cache — with the backend and the README fetch stubbed, so
+it needs no network and spawns no LLM CLI. The rest of `pipeline.py` is
+untested; its pure functions can be exercised by importing `pipeline` and
+calling `build_repo_record` / `days_since_push` / `parse_categories` directly.
 
 Markdown is linted by `npx markdownlint-cli2` (config in
 `.markdownlint-cli2.jsonc`); `README.md` additionally by `npx awesome-lint`.
@@ -80,7 +87,13 @@ Reads the CSV, fetches each README (cached), and appends a `categories` column. 
 
 All backends emit the same `Description:` / `Categories:` text; `CATEGORY_TREE` is passed in the prompt (single source of truth) and output is parsed by `parse_classification` / `parse_categories` (`- Main > Sub` lines).
 
+A backend is only skipped when there is **nothing to classify at all** (`has_classifiable_signal`): no README *and* no GitHub description *and* no topics. A repo can legitimately ship no README, and the prompt already carries the other two — bailing on a missing README alone left such repos permanently uncategorised.
+
+Each backend returns `(description, categories)` on success, `("", [])` when there was no signal, and **`None` when the CLI itself failed** (non-zero exit, timeout, crash). `enrich` keeps the two apart: an empty result is cached (the emptiness *is* the answer, and caching it stops every run from re-asking), while a `None` leaves the cache entry untouched — so the next run retries instead of freezing the emptiness until the repo is pushed again — and reuses the stale categories for this run's output, so a classifier outage cannot blank the rendered listing.
+
 Enrichment is **incremental**: it loads the previous `repos.enriched.csv` and reuses a repo's categories when its `pushed_at` is unchanged (README unchanged ⇒ classification stable), so re-runs only pay the LLM cost for new or updated repos. The reuse key is `pushed_at` alone; `--refresh` forces a full re-classification (e.g. to retry a repo whose classification came back empty from a transient failure).
+
+**Guarding the classification cache.** `python pipeline.py check-classifications --base -` (reading the baseline `classifications.csv` on stdin) is the monthly workflow's gate before it opens a PR. It compares **per repo, not by count**: a repo that *had* a category and comes back without one is a regression and exits non-zero; a newly discovered repo that arrives without one never had a category to lose, and only warns. Counting empty rows conflated the two and blocked the refresh every time a README-less repo entered the listing.
 
 Curation knobs are module-level constants: `TOPICS`, `STARRED_USERS`, `STARRED_LISTS`, `EXCLUDED_REPOS`, `ADDITIONAL_REPOS`, `CATEGORY_TREE`, `CATEGORY_OVERRIDES`, `REPO_OVERRIDES`, `DORMANT_DAYS`, `CLASSIFIER_AGENT`/`CLASSIFIER_MODEL`/`CLASSIFIER_COPILOT_MODEL`.
 

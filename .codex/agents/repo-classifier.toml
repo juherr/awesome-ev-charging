@@ -21,6 +21,8 @@ Rules:
   may be returned on its own (`Main`).
 - Base the decision on what the project *is* (a server, a simulator, a library,
   a tool, a spec/doc, …), not on incidental mentions.
+- Some repositories have no README; the prompt says so when that happens.
+  Classify from the description and topics alone rather than declining.
 
 Respond with ONLY this, no preamble and no explanation:
 
