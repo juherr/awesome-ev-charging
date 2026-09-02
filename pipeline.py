@@ -580,13 +580,30 @@ def build_classifier_prompt(row, readme):
 def classifier_signature(row, readme):
   """Fingerprint of everything the classifier is shown, for cache invalidation.
 
-  `pushed_at` only moves on a commit, so it catches an edited README but not an
-  edited GitHub description or topic list — both changed through the repository
-  settings, and both real classifier inputs (the *only* ones for a repo with no
-  README). Truncated exactly like the prompt, so content the model never sees
-  cannot invalidate a classification.
+  It replaced `pushed_at`, which failed in both directions: that date only moves
+  on a commit, so it missed a GitHub description or topic list edited through
+  the repository settings (both real classifier inputs — the *only* ones for a
+  repo with no README), and it moved on every commit, so a code-only push paid
+  for an answer that could not have changed.
+
+  The question is hashed alongside the repo: the taxonomy and the role/output
+  contract are as much a part of the prompt as the README, and since a push no
+  longer invalidates anything, nothing else would ever re-ask. Editing either
+  therefore re-classifies the whole listing, which is the point — that is when
+  every cached answer is genuinely stale. The contract lives in four places
+  (see AGENTS.md) that must change together, so hashing the in-repo copy tracks
+  it for the backends that read it from an agent file too.
+
+  Deliberately absent: the backend and its model. Those are who answers, not
+  what was asked — keying on them would make local `claude` runs and CI
+  `copilot` runs thrash each other's cache. `--refresh` re-asks on purpose.
+
+  The README is truncated exactly like the prompt, so content the model never
+  sees cannot invalidate a classification.
   """
   payload = "\n".join([
+    CLASSIFIER_INSTRUCTIONS,
+    CATEGORY_TREE_TEXT,
     (row.get("description") or "").strip(),
     (row.get("topics") or "").strip(),
     (readme or "")[:README_PROMPT_CHARS].strip(),
@@ -922,6 +939,19 @@ def enrich(args):
   print(f"\n✅ Wrote {len(rows)} enriched repositories to {args.out}")
   print(f"   classified: {classified} — reused: {reused} — failed: {failed}"
         f" — cache: {args.cache} ({len(cache)} entries)")
+
+  # Every repo the backend was asked about came back a hard failure. Each one
+  # kept its cached category, so nothing downstream looks wrong — the guard
+  # compares categories and sees none lost, and the run would open a PR
+  # claiming a refresh that never happened. That is what a retired model id or
+  # an unauthenticated CLI looks like: identical failure on every repo. One
+  # flaky repo among several is not this, and stays a warning.
+  if failed and not classified:
+    print(f"❌ Every classification attempt failed ({failed}). The backend is "
+          f"unusable, not the repositories — check that "
+          f"CLASSIFIER_COPILOT_MODEL ({CLASSIFIER_COPILOT_MODEL or 'auto'}) is "
+          f"still offered and that the CLI is authenticated.")
+    sys.exit(1)
 
 
 # --- Rendering ---------------------------------------------------------------

@@ -38,7 +38,11 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # A normal run classifies a handful of repos and finishes in minutes. The
+    # budget is sized for the rare run that classifies all ~530: editing the
+    # taxonomy or the classifier contract invalidates every cache entry at
+    # once, and at ~7s a call that is an hour of Copilot.
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
