@@ -100,9 +100,11 @@ Enrichment is **incremental**: it loads the committed `classifications.csv` and 
 **Triaging a failed refresh run.** `gh run view <id> --log-failed` shows the tail of the failing step, which for this workflow is the guard reporting a symptom — the cause is in the `enrich` step, hundreds of lines earlier. `gh` does not resolve step names in `--log` output (every line reads `UNKNOWN STEP`), so filter on the message, not the columns:
 
 ```bash
-gh run view <id> --log > /tmp/awesome-ev-charging-<id>.log
-grep -E "\-> \(none\)" /tmp/awesome-ev-charging-<id>.log   # repos that came back uncategorised
-grep -E "readme|classifier (failed|error)" /tmp/awesome-ev-charging-<id>.log
+run_id=33500786084                    # the failing run
+log="/tmp/awesome-ev-charging-$run_id.log"
+gh run view "$run_id" --log > "$log"
+grep -E "\-> \(none\)" "$log"                       # repos that came back uncategorised
+grep -E "readme|classifier (failed|error)" "$log"
 ```
 
 A `⚠️ GitHub request failed: 404 …/readme` immediately above a `(none)` means the repo has no README, which is a fact about the repo; a `⚠️ classifier failed` means the CLI broke, which is a fact about the run.
