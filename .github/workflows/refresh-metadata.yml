@@ -46,6 +46,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The job refreshes the published listing, which lives on main —
+          # workflow_dispatch can be fired from any branch, and taking that
+          # branch's tree would fold its unrelated changes into the refresh PR.
+          ref: main
+          # Full history: the "Fast-forward onto the current main" step below
+          # needs a real merge base, which a shallow clone cannot give it.
+          fetch-depth: 0
 
       - name: Set up mise (Python 3.11 + venv)
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
@@ -105,10 +113,41 @@ jobs:
           echo "::warning::CSMS refresh failed — leaving the committed catalogue untouched."
           git checkout -- csms-certificates.csv csms.md csms-features.md
 
+      # The PR branch is cut from the *local* main — the tree checked out when
+      # the job started, up to half an hour earlier — and pushed with the
+      # built-in GITHUB_TOKEN, which GitHub refuses to let create or update
+      # anything under .github/workflows/. So if a workflow edit lands on main
+      # while this run is classifying, the branch carries the older copy,
+      # GitHub reads that as an App modifying a workflow, and rejects the push
+      # after the whole Copilot run has already been paid for (that is what
+      # killed run 33614981892). Fast-forward onto the current main first,
+      # setting the generated files aside across the merge.
+      - name: Fast-forward onto the current main
+        run: |
+          git fetch origin main
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "Local base already matches origin/main."
+            exit 0
+          fi
+          echo "::warning::main moved while this run was working — fast-forwarding onto it."
+          if git stash push --message refresh-artifacts | grep -q "Saved working directory"; then
+            git merge --ff-only origin/main
+            git stash pop
+          else
+            git merge --ff-only origin/main
+          fi
+
       # Guardrail: a Copilot failure can return an empty category for a repo.
       # Don't let that regression reach a PR. The comparison is per repo, not by
       # count: a newly discovered repo with no README arrives without a category
       # and never had one to lose, so it only warns.
+      #
+      # It runs *after* the fast-forward above, not before: the baseline is
+      # `git show HEAD:classifications.csv`, so it has to read the base the PR
+      # will actually be opened against. Judging the run against a main that
+      # has since moved is how a regression slips through — and if main gained
+      # classifications while this run was working, dropping them is exactly
+      # the regression this guard exists to catch.
       - name: Guard against classification regressions
         run: |
           git show HEAD:classifications.csv \
