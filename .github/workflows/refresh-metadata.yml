@@ -100,19 +100,14 @@ jobs:
           echo "::warning::CSMS refresh failed — leaving the committed catalogue untouched."
           git checkout -- csms-certificates.csv csms.md csms-features.md
 
-      # Guardrail: a transient Copilot failure can return an empty category for a
-      # repo. Don't let that regression reach a PR — fail if the number of
-      # empty-category rows grew versus the committed classifications.csv.
+      # Guardrail: a Copilot failure can return an empty category for a repo.
+      # Don't let that regression reach a PR. The comparison is per repo, not by
+      # count: a newly discovered repo with no README arrives without a category
+      # and never had one to lose, so it only warns.
       - name: Guard against classification regressions
         run: |
-          before=$(git show HEAD:classifications.csv \
-            | mise exec -- python -c "import sys,csv; print(sum(1 for r in csv.DictReader(sys.stdin) if not r['categories'].strip()))")
-          after=$(mise exec -- python -c "import csv; print(sum(1 for r in csv.DictReader(open('classifications.csv')) if not r['categories'].strip()))")
-          echo "empty-category rows — before: $before, after: $after"
-          if [ "$after" -gt "$before" ]; then
-            echo "::error::Classification regressed: $((after - before)) repo(s) newly lost their category. Not opening a PR."
-            exit 1
-          fi
+          git show HEAD:classifications.csv \
+            | mise exec -- python pipeline.py check-classifications --base -
 
       - name: Open / update the refresh PR
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1

@@ -2,8 +2,10 @@ name: tests
 
 # The CSMS catalogue enforces invariants that only hold if something checks
 # them: a controlled feature vocabulary, a source URL behind every curated
-# feature, and a deterministic render. The suite needs no network and no
-# secret — it validates the committed CSVs and renders from in-memory fixtures.
+# feature, and a deterministic render. The suite also covers pipeline.py's
+# classification layer — the refresh guard and what enrich caches. It needs no
+# network and no secret: it validates the committed CSVs, renders from in-memory
+# fixtures, and stubs the classifier backends.
 on:
   push:
     branches: [main]
