@@ -2,8 +2,9 @@ name: Monthly metadata refresh
 
 # Re-runs the awesome-ev-charging pipeline (ingest -> enrich -> render) once a
 # month and opens a PR with the regenerated listing. Enrichment is incremental:
-# it reuses classifications.csv (committed) keyed by pushed_at, so only repos
-# whose upstream changed since the last run are re-classified via Copilot.
+# it reuses classifications.csv (committed) keyed by a hash of what the
+# classifier is shown (description, topics, truncated README), so only repos
+# whose prompt actually changed are re-classified via Copilot.
 # The same run also re-mirrors the Open Charge Alliance CSMS certificate
 # registry (csms.py fetch -> render), which needs no LLM and no secret.
 #
@@ -37,7 +38,11 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # A normal run classifies a handful of repos and finishes in minutes. The
+    # budget is sized for the rare run that classifies all ~530: editing the
+    # taxonomy or the classifier contract invalidates every cache entry at
+    # once, and at ~7s a call that is an hour of Copilot.
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -136,9 +141,9 @@ jobs:
             Automated monthly metadata refresh (`ingest → enrich → render`), plus a
             refresh of the OCA CSMS certificate mirror (`csms fetch → render`).
 
-            Only repos whose upstream `pushed_at` changed since the last run were
-            re-classified (Copilot); the rest were reused from
-            `classifications.csv`. Review the diff — broad reshuffling between the
+            Only repos whose classifier inputs (description, topics, README)
+            changed since the last run were re-classified (Copilot); the rest
+            were reused from `classifications.csv`. Review the diff — broad reshuffling between the
             Selection / Dormant / To refine blocks is expected as stars and
             dormancy shift, not a bug.
           labels: automated, data-refresh

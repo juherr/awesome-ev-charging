@@ -166,9 +166,13 @@ REPO_OVERRIDES = {
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
 CLASSIFIER_AGENT = "repo-classifier"
 CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
-# Optional model for the `enrich --classifier copilot` backend; empty = copilot's
-# default (auto). Override via the constant if a specific model is desired.
-CLASSIFIER_COPILOT_MODEL = ""
+# Model for the `enrich --classifier copilot` backend. Copilot bills per token,
+# and `auto` resolved to a frontier model: ~0.037 $ per repo, of which ~90% was
+# re-writing the CLI's own ~17k-token system prompt into the model's cache at
+# the frontier rate. Reading a README and emitting one sentence plus a category
+# line does not need that class of model, and a lightweight one bills the same
+# fixed overhead ~10x cheaper. Empty falls back to copilot's default (auto).
+CLASSIFIER_COPILOT_MODEL = "gpt-5.6-luna"
 
 # The Claude backend gets role + output format from the agent file; the codex
 # and copilot backends have no agent definition, so they carry the same contract
@@ -576,13 +580,30 @@ def build_classifier_prompt(row, readme):
 def classifier_signature(row, readme):
   """Fingerprint of everything the classifier is shown, for cache invalidation.
 
-  `pushed_at` only moves on a commit, so it catches an edited README but not an
-  edited GitHub description or topic list — both changed through the repository
-  settings, and both real classifier inputs (the *only* ones for a repo with no
-  README). Truncated exactly like the prompt, so content the model never sees
-  cannot invalidate a classification.
+  It replaced `pushed_at`, which failed in both directions: that date only moves
+  on a commit, so it missed a GitHub description or topic list edited through
+  the repository settings (both real classifier inputs — the *only* ones for a
+  repo with no README), and it moved on every commit, so a code-only push paid
+  for an answer that could not have changed.
+
+  The question is hashed alongside the repo: the taxonomy and the role/output
+  contract are as much a part of the prompt as the README, and since a push no
+  longer invalidates anything, nothing else would ever re-ask. Editing either
+  therefore re-classifies the whole listing, which is the point — that is when
+  every cached answer is genuinely stale. The contract lives in four places
+  (see AGENTS.md) that must change together, so hashing the in-repo copy tracks
+  it for the backends that read it from an agent file too.
+
+  Deliberately absent: the backend and its model. Those are who answers, not
+  what was asked — keying on them would make local `claude` runs and CI
+  `copilot` runs thrash each other's cache. `--refresh` re-asks on purpose.
+
+  The README is truncated exactly like the prompt, so content the model never
+  sees cannot invalidate a classification.
   """
   payload = "\n".join([
+    CLASSIFIER_INSTRUCTIONS,
+    CATEGORY_TREE_TEXT,
     (row.get("description") or "").strip(),
     (row.get("topics") or "").strip(),
     (readme or "")[:README_PROMPT_CHARS].strip(),
@@ -723,7 +744,13 @@ def classify_with_copilot(row, readme):
     # The prompt embeds a repository's own description, topics and README —
     # untrusted text. An empty allowlist leaves the model no tool to be talked
     # into using, and with nothing to approve the run stays non-interactive.
+    # It does not shrink the prompt, though — the tool definitions ship in the
+    # system prompt either way, which is what the next flag is for.
     "--available-tools=",
+    # Drops the built-in GitHub MCP server: ~1.4k of the ~17.8k tokens every
+    # invocation pays for, plus its startup. The prompt is self-contained, so
+    # no tool has anything to contribute.
+    "--disable-builtin-mcps",
     "--no-ask-user",       # never block waiting for interactive input
     "--silent",            # print only the agent's answer on stdout
     "--no-color",
@@ -847,9 +874,9 @@ def enrich(args):
     rows = rows[:args.limit]
 
   # Durable committed cache: reuse a repo's classification (categories +
-  # synthesized description) while its pushed_at is unchanged. Merge-write it so
-  # entries for repos not in this run (e.g. under --limit) are preserved.
-  # `--refresh` re-runs the model for every repo.
+  # synthesized description) while its classifier_signature is unchanged. Merge-
+  # write it so entries for repos not in this run (e.g. under --limit) are
+  # preserved. `--refresh` re-runs the model for every repo.
   cache = load_classifications(args.cache)
   reuse = {} if args.refresh else cache
 
@@ -873,8 +900,7 @@ def enrich(args):
       signature = classifier_signature(row, readme)
       prev = reuse.get(row["full_name"])
       cacheable = True
-      if (prev and prev.get("pushed_at") == row["pushed_at"]
-          and signature_matches(prev, signature)):
+      if prev and signature_matches(prev, signature):
         row["categories"] = prev.get("categories", "")
         description = prev.get("description", "")
         reused += 1
@@ -913,6 +939,19 @@ def enrich(args):
   print(f"\n✅ Wrote {len(rows)} enriched repositories to {args.out}")
   print(f"   classified: {classified} — reused: {reused} — failed: {failed}"
         f" — cache: {args.cache} ({len(cache)} entries)")
+
+  # Every repo the backend was asked about came back a hard failure. Each one
+  # kept its cached category, so nothing downstream looks wrong — the guard
+  # compares categories and sees none lost, and the run would open a PR
+  # claiming a refresh that never happened. That is what a retired model id or
+  # an unauthenticated CLI looks like: identical failure on every repo. One
+  # flaky repo among several is not this, and stays a warning.
+  if failed and not classified:
+    print(f"❌ Every classification attempt failed ({failed}). The backend is "
+          f"unusable, not the repositories — check that "
+          f"CLASSIFIER_COPILOT_MODEL ({CLASSIFIER_COPILOT_MODEL or 'auto'}) is "
+          f"still offered and that the CLI is authenticated.")
+    sys.exit(1)
 
 
 # --- Rendering ---------------------------------------------------------------

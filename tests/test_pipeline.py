@@ -28,8 +28,13 @@ def cached(full_name, categories, pushed_at="2026-01-01T00:00:00Z", description=
             "description": description, "signals": signals}
 
 
-def run_enrich(tmp_path, rows, classify, cache=(), **overrides):
-    """Run `enrich` with a stubbed backend; return (enriched rows, written cache)."""
+def run_enrich(tmp_path, rows, classify, cache=(), expect_exit=False, **overrides):
+    """Run `enrich` with a stubbed backend; return (enriched rows, written cache).
+
+    `expect_exit` asserts the run bailed out. What it wrote is still read back:
+    the CSV and the cache are flushed as each row is finalized, so a run that
+    stops at the end has already published everything it decided.
+    """
     infile = tmp_path / "repos.csv"
     with open(infile, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=pipeline.CSV_FIELDS)
@@ -48,7 +53,11 @@ def run_enrich(tmp_path, rows, classify, cache=(), **overrides):
 
     pipeline.CLASSIFIERS["stub"] = classify
     try:
-        pipeline.enrich(args)
+        if expect_exit:
+            with pytest.raises(SystemExit):
+                pipeline.enrich(args)
+        else:
+            pipeline.enrich(args)
     finally:
         del pipeline.CLASSIFIERS["stub"]
 
@@ -174,6 +183,45 @@ def test_no_signal_yields_an_empty_classification_without_calling_the_cli(monkey
     assert backend(repo(), "") == ("", [])
 
 
+# --- The Copilot command line -------------------------------------------------
+
+def capture_copilot_cmd(monkeypatch):
+    """Run the copilot backend against a stubbed CLI; return the argv it built."""
+    seen = {}
+
+    def fake_run(cmd, **kwargs):
+        seen["cmd"] = cmd
+        return types.SimpleNamespace(
+            returncode=0, stdout="Description: An OCPP server.\nCategories:\n- OCPP > Server",
+            stderr="")
+
+    monkeypatch.setattr(pipeline.subprocess, "run", fake_run)
+    pipeline.classify_with_copilot(repo(description="An OCPP server"), "# Acme")
+    return seen["cmd"]
+
+
+def test_the_copilot_backend_disables_the_builtin_mcp_servers(monkeypatch):
+    """The GitHub MCP server's tool definitions ride in the system prompt.
+
+    Measured at ~1.4k tokens of the ~17.8k every invocation pays for, and the
+    prompt is self-contained — no tool has anything to add.
+    """
+    assert "--disable-builtin-mcps" in capture_copilot_cmd(monkeypatch)
+
+
+def test_the_copilot_backend_pins_the_configured_model(monkeypatch):
+    """`auto` resolved to a frontier model, which bills ~10x a lightweight one
+    for a one-sentence-plus-categories answer."""
+    monkeypatch.setattr(pipeline, "CLASSIFIER_COPILOT_MODEL", "gpt-5.6-luna")
+    cmd = capture_copilot_cmd(monkeypatch)
+    assert cmd[cmd.index("--model") + 1] == "gpt-5.6-luna"
+
+
+def test_the_copilot_backend_omits_the_model_flag_when_unpinned(monkeypatch):
+    monkeypatch.setattr(pipeline, "CLASSIFIER_COPILOT_MODEL", "")
+    assert "--model" not in capture_copilot_cmd(monkeypatch)
+
+
 # --- enrich: what reaches the durable cache -----------------------------------
 
 def test_a_classified_repo_lands_in_the_cache(tmp_path):
@@ -198,26 +246,27 @@ def test_an_empty_classification_is_cached(tmp_path):
 def test_a_hard_failure_leaves_the_cache_untouched(tmp_path):
     """So the next run retries, instead of freezing the emptiness until the
     repo is pushed again."""
-    previous = cached("acme/charger", "OCPP > Server",
-                      pushed_at="2025-01-01T00:00:00Z", description="An OCPP server.")
+    previous = cached("acme/charger", "OCPP > Server", pushed_at="2025-01-01T00:00:00Z",
+                      description="An OCPP server.", signals="a-stale-signature")
     enriched, cache = run_enrich(tmp_path, [repo()], lambda row, readme: None,
-                                 cache=[previous])
+                                 cache=[previous], expect_exit=True)
     assert cache["acme/charger"]["pushed_at"] == "2025-01-01T00:00:00Z"
     assert cache["acme/charger"]["categories"] == "OCPP > Server"
 
 
 def test_a_hard_failure_keeps_the_stale_category_in_the_listing(tmp_path):
     """A classifier outage must not blank the rendered listing."""
-    previous = cached("acme/charger", "OCPP > Server",
-                      pushed_at="2025-01-01T00:00:00Z", description="An OCPP server.")
+    previous = cached("acme/charger", "OCPP > Server", pushed_at="2025-01-01T00:00:00Z",
+                      description="An OCPP server.", signals="a-stale-signature")
     enriched, _ = run_enrich(tmp_path, [repo()], lambda row, readme: None,
-                             cache=[previous])
+                             cache=[previous], expect_exit=True)
     assert enriched[0]["categories"] == "OCPP > Server"
     assert enriched[0]["description"] == "An OCPP server."
 
 
 def test_a_hard_failure_on_an_unknown_repo_yields_no_category(tmp_path):
-    enriched, cache = run_enrich(tmp_path, [repo()], lambda row, readme: None)
+    enriched, cache = run_enrich(tmp_path, [repo()], lambda row, readme: None,
+                                 expect_exit=True)
     assert enriched[0]["categories"] == ""
     assert "acme/charger" not in cache
 
@@ -280,6 +329,111 @@ def test_an_entry_predating_the_signals_column_is_still_reused(tmp_path):
                                  cache=[cached("acme/charger", "OCPP > Server")])
     assert enriched[0]["categories"] == "OCPP > Server"
     assert cache["acme/charger"]["signals"], "a reused entry is stamped for the next run"
+
+
+def test_a_commit_that_changes_no_classifier_input_reuses_the_cache(tmp_path):
+    """A push is not a reason to re-ask: the signature covers every model input.
+
+    Most commits touch code, not the README — and `pushed_at` moves on all of
+    them. Keying reuse on it too spent an LLM call per active repo per run for
+    an answer that could not have changed.
+    """
+    def explode(row, readme):
+        raise AssertionError("an unchanged prompt must not reach the backend")
+    entry = repo(description="An OCPP server", topics="ocpp")
+    enriched, _ = run_enrich(
+        tmp_path, [entry], explode,
+        cache=[cached("acme/charger", "OCPP > Server", pushed_at="2020-01-01T00:00:00Z",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert enriched[0]["categories"] == "OCPP > Server"
+
+
+def test_a_reused_entry_records_the_current_pushed_at(tmp_path):
+    """The column stays a truthful record of the repo, even though reuse no
+    longer keys on it."""
+    entry = repo(description="An OCPP server")
+    _, cache = run_enrich(
+        tmp_path, [entry], lambda row, readme: None,
+        cache=[cached("acme/charger", "OCPP > Server", pushed_at="2020-01-01T00:00:00Z",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert cache["acme/charger"]["pushed_at"] == "2026-01-01T00:00:00Z"
+
+
+def test_a_taxonomy_change_invalidates_every_classification():
+    """The taxonomy is in the prompt, so it is part of what the model was asked.
+
+    Keying reuse on the repo's own text alone froze every cached category
+    against a taxonomy that had since moved — and nothing re-asked, because a
+    push no longer invalidates either.
+    """
+    before = pipeline.classifier_signature(repo(description="An OCPP server"), "")
+    pipeline.CATEGORY_TREE_TEXT += "\n- Roaming: Hubs"
+    try:
+        after = pipeline.classifier_signature(repo(description="An OCPP server"), "")
+    finally:
+        pipeline.CATEGORY_TREE_TEXT = pipeline.CATEGORY_TREE_TEXT.rsplit("\n", 1)[0]
+    assert before != after
+
+
+def test_a_contract_change_invalidates_every_classification(monkeypatch):
+    """The role and output contract is duplicated across four places on purpose
+    (see AGENTS.md); hashing the in-repo copy tracks it for every backend."""
+    before = pipeline.classifier_signature(repo(description="An OCPP server"), "")
+    monkeypatch.setattr(pipeline, "CLASSIFIER_INSTRUCTIONS",
+                        pipeline.CLASSIFIER_INSTRUCTIONS + "\nAlso name the licence.")
+    assert pipeline.classifier_signature(repo(description="An OCPP server"), "") != before
+
+
+def test_the_chosen_model_does_not_invalidate_the_cache(monkeypatch):
+    """Deliberate: the model is who answers, not what was asked.
+
+    Local runs default to the `claude` backend and CI uses `copilot`; keying on
+    the backend would make the two thrash each other's cache, and a model swap
+    would force a paid re-classification of the whole listing. `--refresh` is
+    the way to ask for that on purpose.
+    """
+    before = pipeline.classifier_signature(repo(description="An OCPP server"), "")
+    monkeypatch.setattr(pipeline, "CLASSIFIER_COPILOT_MODEL", "some-other-model")
+    assert pipeline.classifier_signature(repo(description="An OCPP server"), "") == before
+
+
+# --- enrich: a dead backend must not pass for a refresh -----------------------
+
+def test_a_total_classifier_outage_fails_the_run(tmp_path):
+    """Stale categories are kept so the listing cannot blank — but the run must
+    not then report success and open a PR claiming a refresh happened.
+
+    A retired model id or an unauthenticated CLI fails every repo identically,
+    and every one of them keeps its cached category, so the regression guard
+    downstream sees nothing wrong.
+    """
+    run_enrich(tmp_path, [repo(description="An OCPP server")],
+               lambda row, readme: None, expect_exit=True)
+
+
+def test_a_partial_classifier_outage_does_not_fail_the_run(tmp_path):
+    """One flaky repo is not an outage; its cache entry is left for a retry."""
+    def flaky(row, readme):
+        return None if row["full_name"] == "acme/flaky" else ("A server.", [("OCPP", "Server")])
+    enriched, _ = run_enrich(
+        tmp_path,
+        [repo("acme/flaky", description="An OCPP server"),
+         repo("acme/fine", description="An OCPP server")],
+        flaky)
+    assert [r["categories"] for r in enriched] == ["", "OCPP > Server"]
+
+
+def test_a_run_that_classified_nothing_at_all_does_not_fail(tmp_path):
+    """The steady state now that reuse keys on the prompt: no attempts, no
+    verdict to draw about the backend."""
+    def explode(row, readme):
+        raise AssertionError("a cache hit must not reach the backend")
+    entry = repo(description="An OCPP server")
+    enriched, _ = run_enrich(
+        tmp_path, [entry], explode,
+        cache=[cached("acme/charger", "OCPP > Server",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert enriched[0]["categories"] == "OCPP > Server"
 
 
 def test_readme_text_the_model_never_sees_does_not_invalidate(tmp_path):
