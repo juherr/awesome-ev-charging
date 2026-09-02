@@ -166,9 +166,13 @@ REPO_OVERRIDES = {
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
 CLASSIFIER_AGENT = "repo-classifier"
 CLASSIFIER_MODEL = "claude-haiku-4-5-20251001"
-# Optional model for the `enrich --classifier copilot` backend; empty = copilot's
-# default (auto). Override via the constant if a specific model is desired.
-CLASSIFIER_COPILOT_MODEL = ""
+# Model for the `enrich --classifier copilot` backend. Copilot bills per token,
+# and `auto` resolved to a frontier model: ~0.037 $ per repo, of which ~90% was
+# re-writing the CLI's own ~17k-token system prompt into the model's cache at
+# the frontier rate. Reading a README and emitting one sentence plus a category
+# line does not need that class of model, and a lightweight one bills the same
+# fixed overhead ~10x cheaper. Empty falls back to copilot's default (auto).
+CLASSIFIER_COPILOT_MODEL = "gpt-5.6-luna"
 
 # The Claude backend gets role + output format from the agent file; the codex
 # and copilot backends have no agent definition, so they carry the same contract
@@ -723,7 +727,13 @@ def classify_with_copilot(row, readme):
     # The prompt embeds a repository's own description, topics and README —
     # untrusted text. An empty allowlist leaves the model no tool to be talked
     # into using, and with nothing to approve the run stays non-interactive.
+    # It does not shrink the prompt, though — the tool definitions ship in the
+    # system prompt either way, which is what the next flag is for.
     "--available-tools=",
+    # Drops the built-in GitHub MCP server: ~1.4k of the ~17.8k tokens every
+    # invocation pays for, plus its startup. The prompt is self-contained, so
+    # no tool has anything to contribute.
+    "--disable-builtin-mcps",
     "--no-ask-user",       # never block waiting for interactive input
     "--silent",            # print only the agent's answer on stdout
     "--no-color",
@@ -847,9 +857,9 @@ def enrich(args):
     rows = rows[:args.limit]
 
   # Durable committed cache: reuse a repo's classification (categories +
-  # synthesized description) while its pushed_at is unchanged. Merge-write it so
-  # entries for repos not in this run (e.g. under --limit) are preserved.
-  # `--refresh` re-runs the model for every repo.
+  # synthesized description) while its classifier_signature is unchanged. Merge-
+  # write it so entries for repos not in this run (e.g. under --limit) are
+  # preserved. `--refresh` re-runs the model for every repo.
   cache = load_classifications(args.cache)
   reuse = {} if args.refresh else cache
 
@@ -873,8 +883,7 @@ def enrich(args):
       signature = classifier_signature(row, readme)
       prev = reuse.get(row["full_name"])
       cacheable = True
-      if (prev and prev.get("pushed_at") == row["pushed_at"]
-          and signature_matches(prev, signature)):
+      if prev and signature_matches(prev, signature):
         row["categories"] = prev.get("categories", "")
         description = prev.get("description", "")
         reused += 1
