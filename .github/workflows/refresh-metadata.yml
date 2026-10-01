@@ -156,8 +156,13 @@ jobs:
       - name: Open / update the refresh PR
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          # Built-in GITHUB_TOKEN — scopes the PR to this repo. PRs opened with
-          # it don't trigger further workflows, which avoids CI loops here.
+          # Built-in GITHUB_TOKEN — scopes the PR to this repo. GitHub does not
+          # run the PR's checks unattended when this token opened or updated
+          # it: the pull_request runs are created in an approval-required state
+          # (shown as `action_required`, no job executed) until someone with
+          # write access clicks "Approve workflows to run" in the merge box, or
+          # pushes to the branch. That is what prevents CI loops; a PAT or a
+          # GitHub App token would let the checks run on their own.
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: chore/monthly-metadata-refresh
           # git-ignored artifacts (repos.csv, repos.enriched.csv, cache_github/)
@@ -185,5 +190,10 @@ jobs:
             were reused from `classifications.csv`. Review the diff — broad reshuffling between the
             Selection / Dormant / To refine blocks is expected as stars and
             dormancy shift, not a bug.
+
+            The checks on this PR wait for approval: it was opened with the
+            built-in `GITHUB_TOKEN`, so GitHub creates its workflow runs as
+            `action_required`. Click **Approve workflows to run** in the merge
+            box before reviewing.
           labels: automated, data-refresh
           delete-branch: true
