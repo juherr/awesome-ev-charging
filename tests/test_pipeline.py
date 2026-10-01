@@ -282,6 +282,36 @@ def test_an_unchanged_repo_is_reused_without_calling_the_backend(tmp_path):
     assert enriched[0]["categories"] == "OCPP > Server"
 
 
+def test_a_case_only_rename_reuses_the_cached_classification(tmp_path):
+    """GitHub names are case-insensitive, and ingest dedups them that way.
+
+    A cache keyed case-sensitively paid for a fresh classification when an owner
+    only recased its name (`EcoG-io` -> `ecog-io`), and kept the old entry
+    forever as a stale duplicate.
+    """
+    def explode(row, readme):
+        raise AssertionError("a recased repo is the same repo")
+    entry = repo("ecog-io/iso15118", description="ISO 15118 stack")
+    enriched, cache = run_enrich(
+        tmp_path, [entry], explode,
+        cache=[cached("EcoG-io/iso15118", "iso15118 > Misc",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert enriched[0]["categories"] == "iso15118 > Misc"
+    assert list(cache) == ["ecog-io/iso15118"]
+
+
+def test_a_case_duplicate_left_by_an_earlier_run_is_dropped(tmp_path):
+    """The run's own spelling wins: it is the entry the current name maps to."""
+    entry = repo("ecog-io/iso15118", description="ISO 15118 stack")
+    _, cache = run_enrich(
+        tmp_path, [entry], lambda row, readme: None,
+        cache=[cached("EcoG-io/iso15118", "iso15118 > Misc"),
+               cached("ecog-io/iso15118", "iso15118 > Plug&Charge",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert list(cache) == ["ecog-io/iso15118"]
+    assert cache["ecog-io/iso15118"]["categories"] == "iso15118 > Plug&Charge"
+
+
 # --- What invalidates a cached classification ---------------------------------
 
 def test_an_edited_github_description_forces_a_reclassification(tmp_path):

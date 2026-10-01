@@ -879,6 +879,13 @@ def enrich(args):
   # preserved. `--refresh` re-runs the model for every repo.
   cache = load_classifications(args.cache)
   reuse = {} if args.refresh else cache
+  # GitHub names are case-insensitive and ingest dedups them that way, so an
+  # owner recasing its name (`EcoG-io` -> `ecog-io`) is the same repo. Matching
+  # the cache case-sensitively paid for a fresh classification and kept the old
+  # spelling forever as a stale duplicate.
+  spellings = {}
+  for full_name in cache:
+    spellings.setdefault(full_name.lower(), []).append(full_name)
 
   classify = CLASSIFIERS[args.classifier]
   print(f"🏷️  Classifying {len(rows)} repositories via the '{args.classifier}' backend...")
@@ -890,6 +897,10 @@ def enrich(args):
     writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"])
     writer.writeheader()
     for i, row in enumerate(rows, 1):
+      # Fold other spellings onto the run's; an entry already under it wins.
+      for old in spellings.get(row["full_name"].lower(), []):
+        if old != row["full_name"] and old in cache:
+          cache.setdefault(row["full_name"], dict(cache.pop(old), full_name=row["full_name"]))
       # README is fetched for every repo (cached, so cheap) to extract supported
       # protocol versions; only the model call is skipped on a cache hit.
       readme = fetch_readme_content(row["full_name"], headers)
