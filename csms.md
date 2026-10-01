@@ -250,7 +250,6 @@ when that documentation is public and unlinked when it sits behind a login.
 | [OCPP Manager](https://github.com/davbauer/ocpp-manager) | davbauer | 1.6 | — | [Y](https://github.com/davbauer/ocpp-manager) | — | — | self-hosted | active |
 | [ocpp-cs](https://github.com/apostoldevel/ocpp-cs) | apostoldevel | 1.6 | — | [Y](https://github.com/apostoldevel/ocpp-cs) | — | — | self-hosted | active |
 | [ocpp-csms](https://github.com/gregszalay/ocpp-csms) | gregszalay | 2.0.1 | — | [Y](https://github.com/gregszalay/ocpp-csms) | — | — | self-hosted | active |
-| [ocpp-csms-backend](https://github.com/slachiewicz/ocpp-csms-backend) | slachiewicz | 1.6 | — | [Y](https://github.com/slachiewicz/ocpp-csms-backend) | — | — | self-hosted | active |
 | [OCPP.Core](https://github.com/dallmann-consulting/OCPP.Core) | Dallmann Consulting | 1.6, 2.0 | — | [Y](https://github.com/dallmann-consulting/OCPP.Core) | — | — | self-hosted | active |
 | [One EMS](https://www.liteon.com) | [LITE-ON SINGAPORE Pte. Ltd.](https://openchargealliance.org/participants/lite-on-technology-corporation/) | 2.0.1 | [2.0.1 Core + C + I (2.1)](https://openchargealliance.org/wp-content/uploads/2026/02/Certificate_OCA.0201.0135.CSMS_Liteon.pdf) | — | — | — | — | — |
 | [Open e-Mobility](https://github.com/sap-labs-france/ev-server) | SAP Labs France | 1.6 | — | [Y](https://github.com/sap-labs-france/ev-server) | — | — | self-hosted | active |
