@@ -223,15 +223,19 @@ def github_request_cached(url, headers=None, ttl=CACHE_TTL, missing=None):
   ext = ".json" if "raw" not in (headers or {}).get("Accept", "") else ".txt"
   cache_path = os.path.join(CACHE_DIR, key + ext)
 
+  # newline="" on both sides: the cache must hand back the exact text it was
+  # given. A README's line endings are part of what classifier_signature hashes,
+  # and translating CRLF on read made a cached README fingerprint differently
+  # from a fetched one.
   if os.path.exists(cache_path) and (time.time() - os.path.getmtime(cache_path) < ttl):
-    with open(cache_path, "r", encoding="utf-8") as f:
+    with open(cache_path, "r", encoding="utf-8", newline="") as f:
       return json.load(f) if ext == ".json" else f.read()
 
   try:
     r = requests.get(url, headers=headers or {})
     r.raise_for_status()
     content = r.text
-    with open(cache_path, "w", encoding="utf-8") as f:
+    with open(cache_path, "w", encoding="utf-8", newline="") as f:
       f.write(content)
     return json.loads(content) if ext == ".json" else content
   except Exception as e:

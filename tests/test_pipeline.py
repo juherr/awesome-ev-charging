@@ -340,6 +340,22 @@ def test_fetch_readme_content_tells_absent_from_unreadable(tmp_path, monkeypatch
     assert real_fetch_readme_content("acme/charger", {}) == expected
 
 
+def test_a_cached_readme_is_byte_identical_to_the_fetched_one(tmp_path, monkeypatch):
+    """The signature hashes the README, so the disk cache must not rewrite it.
+
+    Reading the cache back with universal newlines turned a CRLF README into an
+    LF one: CI, which always starts from an empty cache, stamped the network
+    form, and any run reading the cache paid to re-classify those repos.
+    """
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(pipeline.requests, "get",
+                        lambda *a, **k: FakeResponse(200, "# Title\r\n\r\nOCPP 1.6\r\n"))
+    fetched = real_fetch_readme_content("acme/charger", {})
+    monkeypatch.setattr(pipeline.requests, "get",
+                        lambda *a, **k: pytest.fail("the second read must hit the cache"))
+    assert real_fetch_readme_content("acme/charger", {}) == fetched
+
+
 def test_an_unreadable_readme_never_reaches_the_backend(tmp_path, monkeypatch):
     """Classifying without the README would pay for an answer to a different
     question — and cache an empty category for a repo whose README is its
