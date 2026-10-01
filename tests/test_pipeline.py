@@ -12,6 +12,9 @@ import pytest
 
 import pipeline
 
+# The autouse `no_network` fixture stubs this; its own tests need the real one.
+real_fetch_readme_content = pipeline.fetch_readme_content
+
 
 # --- Fixtures -----------------------------------------------------------------
 
@@ -310,6 +313,56 @@ def test_a_case_duplicate_left_by_an_earlier_run_is_dropped(tmp_path):
                       signals=pipeline.classifier_signature(entry, ""))])
     assert list(cache) == ["ecog-io/iso15118"]
     assert cache["ecog-io/iso15118"]["categories"] == "iso15118 > Plug&Charge"
+
+
+# --- enrich: a README that could not be read is not an absent README -----------
+
+class FakeResponse:
+    def __init__(self, status_code, text=""):
+        self.status_code = status_code
+        self.text = text
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise pipeline.requests.HTTPError(f"{self.status_code} Error", response=self)
+
+
+@pytest.mark.parametrize("status, expected", [
+    (200, "# An OCPP server"),
+    (404, ""),     # the repo ships no README: a fact about the repo
+    (403, None),   # rate-limited: a fact about the run
+    (502, None),
+])
+def test_fetch_readme_content_tells_absent_from_unreadable(tmp_path, monkeypatch, status, expected):
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(pipeline.requests, "get",
+                        lambda *a, **k: FakeResponse(status, "# An OCPP server"))
+    assert real_fetch_readme_content("acme/charger", {}) == expected
+
+
+def test_an_unreadable_readme_never_reaches_the_backend(tmp_path, monkeypatch):
+    """Classifying without the README would pay for an answer to a different
+    question — and cache an empty category for a repo whose README is its
+    only signal."""
+    def explode(row, readme):
+        raise AssertionError("an unreadable README must not reach the backend")
+    monkeypatch.setattr(pipeline, "fetch_readme_content", lambda *a, **k: None)
+    previous = cached("acme/charger", "OCPP > Server", description="An OCPP server.",
+                      signals="a-signature-with-the-readme")
+    enriched, cache = run_enrich(tmp_path, [repo()], explode, cache=[previous],
+                                 expect_exit=True)
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["signals"] == "a-signature-with-the-readme", \
+        "the entry is left untouched, so the next run retries"
+
+
+def test_an_unreadable_readme_on_an_unknown_repo_is_not_cached(tmp_path, monkeypatch):
+    monkeypatch.setattr(pipeline, "fetch_readme_content", lambda *a, **k: None)
+    enriched, cache = run_enrich(tmp_path, [repo(description="An OCPP server")],
+                                 lambda row, readme: ("A server.", [("OCPP", "Server")]),
+                                 expect_exit=True)
+    assert enriched[0]["categories"] == ""
+    assert "acme/charger" not in cache
 
 
 # --- What invalidates a cached classification ---------------------------------

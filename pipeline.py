@@ -212,11 +212,12 @@ CSV_FIELDS = [
 
 # --- GitHub HTTP with on-disk cache ------------------------------------------
 
-def github_request_cached(url, headers=None, ttl=CACHE_TTL):
+def github_request_cached(url, headers=None, ttl=CACHE_TTL, missing=None):
   """Fetch a GitHub API URL, caching the raw response on disk.
 
   Returns the JSON-decoded body (or raw text when Accept requests raw), or
-  None on error.
+  None on error. A 404 returns `missing` instead, for callers to whom "there is
+  none" is an answer while any other failure is not.
   """
   key = hashlib.md5(url.encode()).hexdigest()
   ext = ".json" if "raw" not in (headers or {}).get("Accept", "") else ".txt"
@@ -235,6 +236,8 @@ def github_request_cached(url, headers=None, ttl=CACHE_TTL):
     return json.loads(content) if ext == ".json" else content
   except Exception as e:
     print(f"⚠️ GitHub request failed: {e}")
+    if getattr(getattr(e, "response", None), "status_code", None) == 404:
+      return missing
     return None
 
 
@@ -249,11 +252,15 @@ def get_repo_data(full_name, headers):
 
 
 def fetch_readme_content(repo_full_name, headers):
-  """Fetch the raw Markdown README of a repository (cached)."""
+  """Fetch the raw Markdown README of a repository (cached).
+
+  Returns "" when the repository has no README (a 404, a fact about the repo)
+  and None when it could not be read (rate limit, 5xx: a fact about the run).
+  """
   url = f"{BASE_URL}/repos/{repo_full_name}/readme"
   headers = dict(headers or {})
   headers["Accept"] = "application/vnd.github.v3.raw"
-  return github_request_cached(url, headers)
+  return github_request_cached(url, headers, missing="")
 
 
 def paginate(url, headers, params=None, cap=None, throttle=0):
@@ -892,7 +899,7 @@ def enrich(args):
 
   # Stream each row to disk as it is finalized (with a flush) so a long batch is
   # crash-safe and resumable: a re-run reuses everything already in the cache.
-  reused = classified = failed = 0
+  reused = classified = failed = unreadable = 0
   with open(args.out, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"])
     writer.writeheader()
@@ -911,7 +918,19 @@ def enrich(args):
       signature = classifier_signature(row, readme)
       prev = reuse.get(row["full_name"])
       cacheable = True
-      if prev and signature_matches(prev, signature):
+      if readme is None:
+        # The README exists but could not be read (rate limit, 5xx). Treating
+        # that as "no README" changed the signature, paid for an answer to a
+        # different question, and cached an empty category for a repo whose
+        # README is its only signal. Keep the cache entry as it is so the next
+        # run retries, exactly like a backend failure.
+        stale = cache.get(row["full_name"], {})
+        row["categories"] = stale.get("categories", "")
+        description = stale.get("description", "")
+        cacheable = False
+        unreadable += 1
+        tag = "⚠️  README unreadable"
+      elif prev and signature_matches(prev, signature):
         row["categories"] = prev.get("categories", "")
         description = prev.get("description", "")
         reused += 1
@@ -949,7 +968,7 @@ def enrich(args):
   save_classifications(args.cache, cache)
   print(f"\n✅ Wrote {len(rows)} enriched repositories to {args.out}")
   print(f"   classified: {classified} — reused: {reused} — failed: {failed}"
-        f" — cache: {args.cache} ({len(cache)} entries)")
+        f" — README unreadable: {unreadable} — cache: {args.cache} ({len(cache)} entries)")
 
   # Every repo the backend was asked about came back a hard failure. Each one
   # kept its cached category, so nothing downstream looks wrong — the guard
@@ -962,6 +981,12 @@ def enrich(args):
           f"unusable, not the repositories — check that "
           f"CLASSIFIER_COPILOT_MODEL ({CLASSIFIER_COPILOT_MODEL or 'auto'}) is "
           f"still offered and that the CLI is authenticated.")
+    sys.exit(1)
+  # Same reasoning on the input side: not one README could be read, so nothing
+  # was reused or classified and the listing is last month's.
+  if unreadable and not (reused or classified):
+    print(f"❌ No README could be read ({unreadable}). GitHub refused the run, "
+          f"not the repositories — check the token and the rate limit.")
     sys.exit(1)
 
 
