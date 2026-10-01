@@ -430,6 +430,34 @@ def test_an_entry_predating_the_signals_column_is_still_reused(tmp_path):
     assert cache["acme/charger"]["signals"], "a reused entry is stamped for the next run"
 
 
+@pytest.mark.parametrize("signals", ["", "matching"])
+def test_an_empty_category_is_not_reused_when_there_is_something_to_classify(tmp_path, signals):
+    """An empty answer is only ever the answer when there is nothing to read.
+
+    Earlier runs cached empty categories for repos that did have a description
+    or topics (the missing-README bail-out, an unparseable reply). The
+    pre-`signals` reuse rule kept them, the first stamping run fingerprinted
+    them, and from then on they were frozen until the repo changed.
+    """
+    entry = repo(description="A lightweight OCPP 1.6J central system", topics="ocpp")
+    stamp = pipeline.classifier_signature(entry, "") if signals else ""
+    enriched, cache = run_enrich(
+        tmp_path, [entry], lambda row, readme: ("An OCPP server.", [("OCPP", "Server")]),
+        cache=[cached("acme/charger", "", signals=stamp)])
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["categories"] == "OCPP > Server"
+
+
+def test_an_empty_category_with_nothing_to_classify_is_still_reused(tmp_path):
+    def explode(row, readme):
+        raise AssertionError("re-asking a repo with nothing to read is pointless")
+    entry = repo()
+    enriched, _ = run_enrich(
+        tmp_path, [entry], explode,
+        cache=[cached("acme/charger", "", signals=pipeline.classifier_signature(entry, ""))])
+    assert enriched[0]["categories"] == ""
+
+
 def test_a_commit_that_changes_no_classifier_input_reuses_the_cache(tmp_path):
     """A push is not a reason to re-ask: the signature covers every model input.
 

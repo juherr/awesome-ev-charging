@@ -944,7 +944,13 @@ def enrich(args):
         cacheable = False
         unreadable += 1
         tag = "⚠️  README unreadable"
-      elif prev and signature_matches(prev, signature):
+      elif (prev and signature_matches(prev, signature)
+            and ((prev.get("categories") or "").strip()
+                 or not has_classifiable_signal(row, readme))):
+        # An empty category is only ever the answer when there is nothing to
+        # read. Older runs cached empties for repos that had a description or
+        # topics (the missing-README bail-out, an unparseable reply); reusing
+        # those froze them for good once the first run stamped a signature.
         row["categories"] = prev.get("categories", "")
         description = prev.get("description", "")
         reused += 1
