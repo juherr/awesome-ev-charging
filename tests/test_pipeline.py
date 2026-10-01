@@ -523,3 +523,30 @@ def test_readme_text_the_model_never_sees_does_not_invalidate(tmp_path):
     padding = "x" * pipeline.README_PROMPT_CHARS
     assert (pipeline.classifier_signature(repo(), padding + "trailing")
             == pipeline.classifier_signature(repo(), padding + "different"))
+
+
+# --- Protocol versions read from the README -----------------------------------
+
+@pytest.mark.parametrize("text, expected", [
+    ("Supports OCPP 1.6", "1.6"),
+    ("OCPP 1.6-J and OCPP 2.0.1 over WebSocket", "1.6,2.0.1"),
+    # A list after one keyword used to stop at its first item.
+    ("OCPP 1.2 and 1.5 are supported", "1.2,1.5"),
+    ("speaks OCPP 2.0.1 / 2.1 (WebSocket) and OCPP 1.2 / 1.5 / 1.6S (SOAP)",
+     "1.2,1.5,1.6,2.0.1,2.1"),
+    ("supports OCPP 1.6J, 2.0.1, and 2.1.", "1.6,2.0.1,2.1"),
+    ("OCPP 1.6 or 2.0.1", "1.6,2.0.1"),
+    # Not versions: a wildcard, a power rating, an unknown number.
+    ("OCPP 1.6 and 2.x", "1.6"),
+    ("OCPP 1.6 and 22 kW chargers", "1.6"),
+    ("OCPP 1.6 and 3.11", "1.6"),
+    ("written in Python 3.11 with OCPP", ""),
+])
+def test_extract_ocpp_versions(text, expected):
+    assert pipeline.extract_versions(text, "ocpp", pipeline.OCPP_VERSIONS) == expected
+
+
+def test_extract_ocpi_versions_from_a_list():
+    assert pipeline.extract_versions(
+        "Implements OCPI 2.1.1 / 2.2.1 and 2.3.0", "ocpi", pipeline.OCPI_VERSIONS
+    ) == "2.1.1,2.2.1,2.3.0"
