@@ -212,29 +212,36 @@ CSV_FIELDS = [
 
 # --- GitHub HTTP with on-disk cache ------------------------------------------
 
-def github_request_cached(url, headers=None, ttl=CACHE_TTL):
+def github_request_cached(url, headers=None, ttl=CACHE_TTL, missing=None):
   """Fetch a GitHub API URL, caching the raw response on disk.
 
   Returns the JSON-decoded body (or raw text when Accept requests raw), or
-  None on error.
+  None on error. A 404 returns `missing` instead, for callers to whom "there is
+  none" is an answer while any other failure is not.
   """
   key = hashlib.md5(url.encode()).hexdigest()
   ext = ".json" if "raw" not in (headers or {}).get("Accept", "") else ".txt"
   cache_path = os.path.join(CACHE_DIR, key + ext)
 
+  # newline="" on both sides: the cache must hand back the exact text it was
+  # given. A README's line endings are part of what classifier_signature hashes,
+  # and translating CRLF on read made a cached README fingerprint differently
+  # from a fetched one.
   if os.path.exists(cache_path) and (time.time() - os.path.getmtime(cache_path) < ttl):
-    with open(cache_path, "r", encoding="utf-8") as f:
+    with open(cache_path, "r", encoding="utf-8", newline="") as f:
       return json.load(f) if ext == ".json" else f.read()
 
   try:
     r = requests.get(url, headers=headers or {})
     r.raise_for_status()
     content = r.text
-    with open(cache_path, "w", encoding="utf-8") as f:
+    with open(cache_path, "w", encoding="utf-8", newline="") as f:
       f.write(content)
     return json.loads(content) if ext == ".json" else content
   except Exception as e:
     print(f"⚠️ GitHub request failed: {e}")
+    if getattr(getattr(e, "response", None), "status_code", None) == 404:
+      return missing
     return None
 
 
@@ -249,11 +256,15 @@ def get_repo_data(full_name, headers):
 
 
 def fetch_readme_content(repo_full_name, headers):
-  """Fetch the raw Markdown README of a repository (cached)."""
+  """Fetch the raw Markdown README of a repository (cached).
+
+  Returns "" when the repository has no README (a 404, a fact about the repo)
+  and None when it could not be read (rate limit, 5xx: a fact about the run).
+  """
   url = f"{BASE_URL}/repos/{repo_full_name}/readme"
   headers = dict(headers or {})
   headers["Accept"] = "application/vnd.github.v3.raw"
-  return github_request_cached(url, headers)
+  return github_request_cached(url, headers, missing="")
 
 
 def paginate(url, headers, params=None, cap=None, throttle=0):
@@ -612,12 +623,22 @@ def classifier_signature(row, readme):
 
 
 def extract_versions(text, keyword, known):
-  """Find supported protocol versions mentioned near `keyword` in a README."""
+  """Find supported protocol versions mentioned near `keyword` in a README.
+
+  A version may be followed by a list — "OCPP 1.2 and 1.5", "OCPP 2.0.1 / 2.1",
+  "OCPP 1.6J, 2.0.1, and 2.1" — whose items count too; matching only the first
+  one under-reported what a project supports. Only `known` versions are kept,
+  so a power rating or a language version in the same sentence is ignored.
+  """
+  version = r"v?\.?\s*\d+\.\d+(?:\.\d+)?(?:-?[js]\b)?"
+  separator = r"(?:\s*(?:,|/|&|\band\b|\bor\b))+\s*"
+  pattern = (rf"{keyword}[\s\-_/:]*[js]?[\s\-_/:]*{version}"
+             rf"(?:{separator}(?:{keyword}[\s\-_/:]*)?{version})*")
   found = set()
-  pattern = rf"{keyword}[\s\-_/:]*[js]?[\s\-_/:]*v?\.?\s*(\d+\.\d+(?:\.\d+)?)"
   for m in re.finditer(pattern, text or "", re.I):
-    if m.group(1) in known:
-      found.add(m.group(1))
+    for v in re.findall(r"\d+\.\d+(?:\.\d+)?", m.group(0)):
+      if v in known:
+        found.add(v)
   return ",".join(sorted(found, key=lambda v: [int(x) for x in v.split(".")]))
 
 
@@ -879,17 +900,28 @@ def enrich(args):
   # preserved. `--refresh` re-runs the model for every repo.
   cache = load_classifications(args.cache)
   reuse = {} if args.refresh else cache
+  # GitHub names are case-insensitive and ingest dedups them that way, so an
+  # owner recasing its name (`EcoG-io` -> `ecog-io`) is the same repo. Matching
+  # the cache case-sensitively paid for a fresh classification and kept the old
+  # spelling forever as a stale duplicate.
+  spellings = {}
+  for full_name in cache:
+    spellings.setdefault(full_name.lower(), []).append(full_name)
 
   classify = CLASSIFIERS[args.classifier]
   print(f"🏷️  Classifying {len(rows)} repositories via the '{args.classifier}' backend...")
 
   # Stream each row to disk as it is finalized (with a flush) so a long batch is
   # crash-safe and resumable: a re-run reuses everything already in the cache.
-  reused = classified = failed = 0
+  reused = classified = failed = unreadable = 0
   with open(args.out, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"])
     writer.writeheader()
     for i, row in enumerate(rows, 1):
+      # Fold other spellings onto the run's; an entry already under it wins.
+      for old in spellings.get(row["full_name"].lower(), []):
+        if old != row["full_name"] and old in cache:
+          cache.setdefault(row["full_name"], dict(cache.pop(old), full_name=row["full_name"]))
       # README is fetched for every repo (cached, so cheap) to extract supported
       # protocol versions; only the model call is skipped on a cache hit.
       readme = fetch_readme_content(row["full_name"], headers)
@@ -900,7 +932,25 @@ def enrich(args):
       signature = classifier_signature(row, readme)
       prev = reuse.get(row["full_name"])
       cacheable = True
-      if prev and signature_matches(prev, signature):
+      if readme is None:
+        # The README exists but could not be read (rate limit, 5xx). Treating
+        # that as "no README" changed the signature, paid for an answer to a
+        # different question, and cached an empty category for a repo whose
+        # README is its only signal. Keep the cache entry as it is so the next
+        # run retries, exactly like a backend failure.
+        stale = cache.get(row["full_name"], {})
+        row["categories"] = stale.get("categories", "")
+        description = stale.get("description", "")
+        cacheable = False
+        unreadable += 1
+        tag = "⚠️  README unreadable"
+      elif (prev and signature_matches(prev, signature)
+            and ((prev.get("categories") or "").strip()
+                 or not has_classifiable_signal(row, readme))):
+        # An empty category is only ever the answer when there is nothing to
+        # read. Older runs cached empties for repos that had a description or
+        # topics (the missing-README bail-out, an unparseable reply); reusing
+        # those froze them for good once the first run stamped a signature.
         row["categories"] = prev.get("categories", "")
         description = prev.get("description", "")
         reused += 1
@@ -938,7 +988,7 @@ def enrich(args):
   save_classifications(args.cache, cache)
   print(f"\n✅ Wrote {len(rows)} enriched repositories to {args.out}")
   print(f"   classified: {classified} — reused: {reused} — failed: {failed}"
-        f" — cache: {args.cache} ({len(cache)} entries)")
+        f" — README unreadable: {unreadable} — cache: {args.cache} ({len(cache)} entries)")
 
   # Every repo the backend was asked about came back a hard failure. Each one
   # kept its cached category, so nothing downstream looks wrong — the guard
@@ -951,6 +1001,17 @@ def enrich(args):
           f"unusable, not the repositories — check that "
           f"CLASSIFIER_COPILOT_MODEL ({CLASSIFIER_COPILOT_MODEL or 'auto'}) is "
           f"still offered and that the CLI is authenticated.")
+    sys.exit(1)
+  # An unreadable README fails the run even when it is the only one. Its
+  # category is kept from the cache, but the protocol versions are read from
+  # the README alone and cached nowhere, so carrying on would render that
+  # repo without them: a transient GitHub failure published as empty
+  # metadata. The cache is already saved, so a rerun only pays for what is
+  # left. A 404 is not this — no README is a fact about the repo.
+  if unreadable:
+    print(f"❌ {unreadable} README(s) could not be read (rate limit or GitHub "
+          f"error) — refusing to publish their protocol versions as empty. "
+          f"Re-run once GitHub answers.")
     sys.exit(1)
 
 

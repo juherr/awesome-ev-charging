@@ -12,6 +12,9 @@ import pytest
 
 import pipeline
 
+# The autouse `no_network` fixture stubs this; its own tests need the real one.
+real_fetch_readme_content = pipeline.fetch_readme_content
+
 
 # --- Fixtures -----------------------------------------------------------------
 
@@ -282,6 +285,137 @@ def test_an_unchanged_repo_is_reused_without_calling_the_backend(tmp_path):
     assert enriched[0]["categories"] == "OCPP > Server"
 
 
+def test_a_case_only_rename_reuses_the_cached_classification(tmp_path):
+    """GitHub names are case-insensitive, and ingest dedups them that way.
+
+    A cache keyed case-sensitively paid for a fresh classification when an owner
+    only recased its name (`EcoG-io` -> `ecog-io`), and kept the old entry
+    forever as a stale duplicate.
+    """
+    def explode(row, readme):
+        raise AssertionError("a recased repo is the same repo")
+    entry = repo("ecog-io/iso15118", description="ISO 15118 stack")
+    enriched, cache = run_enrich(
+        tmp_path, [entry], explode,
+        cache=[cached("EcoG-io/iso15118", "iso15118 > Misc",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert enriched[0]["categories"] == "iso15118 > Misc"
+    assert list(cache) == ["ecog-io/iso15118"]
+
+
+def test_a_case_duplicate_left_by_an_earlier_run_is_dropped(tmp_path):
+    """The run's own spelling wins: it is the entry the current name maps to."""
+    entry = repo("ecog-io/iso15118", description="ISO 15118 stack")
+    _, cache = run_enrich(
+        tmp_path, [entry], lambda row, readme: None,
+        cache=[cached("EcoG-io/iso15118", "iso15118 > Misc"),
+               cached("ecog-io/iso15118", "iso15118 > Plug&Charge",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert list(cache) == ["ecog-io/iso15118"]
+    assert cache["ecog-io/iso15118"]["categories"] == "iso15118 > Plug&Charge"
+
+
+# --- enrich: a README that could not be read is not an absent README -----------
+
+class FakeResponse:
+    def __init__(self, status_code, text=""):
+        self.status_code = status_code
+        self.text = text
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise pipeline.requests.HTTPError(f"{self.status_code} Error", response=self)
+
+
+@pytest.mark.parametrize("status, expected", [
+    (200, "# An OCPP server"),
+    (404, ""),     # the repo ships no README: a fact about the repo
+    (403, None),   # rate-limited: a fact about the run
+    (502, None),
+])
+def test_fetch_readme_content_tells_absent_from_unreadable(tmp_path, monkeypatch, status, expected):
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(pipeline.requests, "get",
+                        lambda *a, **k: FakeResponse(status, "# An OCPP server"))
+    assert real_fetch_readme_content("acme/charger", {}) == expected
+
+
+def test_a_cached_readme_is_byte_identical_to_the_fetched_one(tmp_path, monkeypatch):
+    """The signature hashes the README, so the disk cache must not rewrite it.
+
+    Reading the cache back with universal newlines turned a CRLF README into an
+    LF one: CI, which always starts from an empty cache, stamped the network
+    form, and any run reading the cache paid to re-classify those repos.
+    """
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(pipeline.requests, "get",
+                        lambda *a, **k: FakeResponse(200, "# Title\r\n\r\nOCPP 1.6\r\n"))
+    fetched = real_fetch_readme_content("acme/charger", {})
+    monkeypatch.setattr(pipeline.requests, "get",
+                        lambda *a, **k: pytest.fail("the second read must hit the cache"))
+    assert real_fetch_readme_content("acme/charger", {}) == fetched
+
+
+def test_an_unreadable_readme_never_reaches_the_backend(tmp_path, monkeypatch):
+    """Classifying without the README would pay for an answer to a different
+    question — and cache an empty category for a repo whose README is its
+    only signal."""
+    def explode(row, readme):
+        raise AssertionError("an unreadable README must not reach the backend")
+    monkeypatch.setattr(pipeline, "fetch_readme_content", lambda *a, **k: None)
+    previous = cached("acme/charger", "OCPP > Server", description="An OCPP server.",
+                      signals="a-signature-with-the-readme")
+    enriched, cache = run_enrich(tmp_path, [repo()], explode, cache=[previous],
+                                 expect_exit=True)
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["signals"] == "a-signature-with-the-readme", \
+        "the entry is left untouched, so the next run retries"
+
+
+def stub_readmes(monkeypatch, readmes):
+    monkeypatch.setattr(pipeline, "fetch_readme_content",
+                        lambda full_name, headers: readmes[full_name])
+
+
+def test_one_unreadable_readme_fails_a_run_that_read_the_others(tmp_path, monkeypatch):
+    """Protocol versions come from the README alone and are not cached.
+
+    A run that carried on would publish the unreadable repo without its
+    versions — a transient GitHub failure rendered as empty metadata.
+    """
+    stub_readmes(monkeypatch, {"acme/fine": "Supports OCPP 1.6", "acme/flaky": None})
+    previous = cached("acme/flaky", "OCPP > Server", signals="a-signature-with-the-readme")
+    enriched, cache = run_enrich(
+        tmp_path,
+        [repo("acme/fine", description="An OCPP server"),
+         repo("acme/flaky", description="An OCPP server")],
+        lambda row, readme: ("A server.", [("OCPP", "Server")]),
+        cache=[previous], expect_exit=True)
+    assert enriched[0]["ocpp_versions"] == "1.6"
+    assert cache["acme/fine"]["categories"] == "OCPP > Server"
+    assert cache["acme/flaky"]["signals"] == "a-signature-with-the-readme"
+
+
+def test_a_repo_without_a_readme_does_not_fail_the_run(tmp_path, monkeypatch):
+    """A 404 is a fact about the repo: empty versions are the truth there."""
+    stub_readmes(monkeypatch, {"acme/fine": "Supports OCPP 1.6", "acme/bare": ""})
+    enriched, _ = run_enrich(
+        tmp_path,
+        [repo("acme/fine", description="An OCPP server"),
+         repo("acme/bare", description="An OCPP server")],
+        lambda row, readme: ("A server.", [("OCPP", "Server")]))
+    assert [r["ocpp_versions"] for r in enriched] == ["1.6", ""]
+
+
+def test_an_unreadable_readme_on_an_unknown_repo_is_not_cached(tmp_path, monkeypatch):
+    monkeypatch.setattr(pipeline, "fetch_readme_content", lambda *a, **k: None)
+    enriched, cache = run_enrich(tmp_path, [repo(description="An OCPP server")],
+                                 lambda row, readme: ("A server.", [("OCPP", "Server")]),
+                                 expect_exit=True)
+    assert enriched[0]["categories"] == ""
+    assert "acme/charger" not in cache
+
+
 # --- What invalidates a cached classification ---------------------------------
 
 def test_an_edited_github_description_forces_a_reclassification(tmp_path):
@@ -329,6 +463,34 @@ def test_an_entry_predating_the_signals_column_is_still_reused(tmp_path):
                                  cache=[cached("acme/charger", "OCPP > Server")])
     assert enriched[0]["categories"] == "OCPP > Server"
     assert cache["acme/charger"]["signals"], "a reused entry is stamped for the next run"
+
+
+@pytest.mark.parametrize("signals", ["", "matching"])
+def test_an_empty_category_is_not_reused_when_there_is_something_to_classify(tmp_path, signals):
+    """An empty answer is only ever the answer when there is nothing to read.
+
+    Earlier runs cached empty categories for repos that did have a description
+    or topics (the missing-README bail-out, an unparseable reply). The
+    pre-`signals` reuse rule kept them, the first stamping run fingerprinted
+    them, and from then on they were frozen until the repo changed.
+    """
+    entry = repo(description="A lightweight OCPP 1.6J central system", topics="ocpp")
+    stamp = pipeline.classifier_signature(entry, "") if signals else ""
+    enriched, cache = run_enrich(
+        tmp_path, [entry], lambda row, readme: ("An OCPP server.", [("OCPP", "Server")]),
+        cache=[cached("acme/charger", "", signals=stamp)])
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["categories"] == "OCPP > Server"
+
+
+def test_an_empty_category_with_nothing_to_classify_is_still_reused(tmp_path):
+    def explode(row, readme):
+        raise AssertionError("re-asking a repo with nothing to read is pointless")
+    entry = repo()
+    enriched, _ = run_enrich(
+        tmp_path, [entry], explode,
+        cache=[cached("acme/charger", "", signals=pipeline.classifier_signature(entry, ""))])
+    assert enriched[0]["categories"] == ""
 
 
 def test_a_commit_that_changes_no_classifier_input_reuses_the_cache(tmp_path):
@@ -440,3 +602,30 @@ def test_readme_text_the_model_never_sees_does_not_invalidate(tmp_path):
     padding = "x" * pipeline.README_PROMPT_CHARS
     assert (pipeline.classifier_signature(repo(), padding + "trailing")
             == pipeline.classifier_signature(repo(), padding + "different"))
+
+
+# --- Protocol versions read from the README -----------------------------------
+
+@pytest.mark.parametrize("text, expected", [
+    ("Supports OCPP 1.6", "1.6"),
+    ("OCPP 1.6-J and OCPP 2.0.1 over WebSocket", "1.6,2.0.1"),
+    # A list after one keyword used to stop at its first item.
+    ("OCPP 1.2 and 1.5 are supported", "1.2,1.5"),
+    ("speaks OCPP 2.0.1 / 2.1 (WebSocket) and OCPP 1.2 / 1.5 / 1.6S (SOAP)",
+     "1.2,1.5,1.6,2.0.1,2.1"),
+    ("supports OCPP 1.6J, 2.0.1, and 2.1.", "1.6,2.0.1,2.1"),
+    ("OCPP 1.6 or 2.0.1", "1.6,2.0.1"),
+    # Not versions: a wildcard, a power rating, an unknown number.
+    ("OCPP 1.6 and 2.x", "1.6"),
+    ("OCPP 1.6 and 22 kW chargers", "1.6"),
+    ("OCPP 1.6 and 3.11", "1.6"),
+    ("written in Python 3.11 with OCPP", ""),
+])
+def test_extract_ocpp_versions(text, expected):
+    assert pipeline.extract_versions(text, "ocpp", pipeline.OCPP_VERSIONS) == expected
+
+
+def test_extract_ocpi_versions_from_a_list():
+    assert pipeline.extract_versions(
+        "Implements OCPI 2.1.1 / 2.2.1 and 2.3.0", "ocpi", pipeline.OCPI_VERSIONS
+    ) == "2.1.1,2.2.1,2.3.0"
