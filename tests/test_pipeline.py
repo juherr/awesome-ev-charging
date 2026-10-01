@@ -372,6 +372,41 @@ def test_an_unreadable_readme_never_reaches_the_backend(tmp_path, monkeypatch):
         "the entry is left untouched, so the next run retries"
 
 
+def stub_readmes(monkeypatch, readmes):
+    monkeypatch.setattr(pipeline, "fetch_readme_content",
+                        lambda full_name, headers: readmes[full_name])
+
+
+def test_one_unreadable_readme_fails_a_run_that_read_the_others(tmp_path, monkeypatch):
+    """Protocol versions come from the README alone and are not cached.
+
+    A run that carried on would publish the unreadable repo without its
+    versions — a transient GitHub failure rendered as empty metadata.
+    """
+    stub_readmes(monkeypatch, {"acme/fine": "Supports OCPP 1.6", "acme/flaky": None})
+    previous = cached("acme/flaky", "OCPP > Server", signals="a-signature-with-the-readme")
+    enriched, cache = run_enrich(
+        tmp_path,
+        [repo("acme/fine", description="An OCPP server"),
+         repo("acme/flaky", description="An OCPP server")],
+        lambda row, readme: ("A server.", [("OCPP", "Server")]),
+        cache=[previous], expect_exit=True)
+    assert enriched[0]["ocpp_versions"] == "1.6"
+    assert cache["acme/fine"]["categories"] == "OCPP > Server"
+    assert cache["acme/flaky"]["signals"] == "a-signature-with-the-readme"
+
+
+def test_a_repo_without_a_readme_does_not_fail_the_run(tmp_path, monkeypatch):
+    """A 404 is a fact about the repo: empty versions are the truth there."""
+    stub_readmes(monkeypatch, {"acme/fine": "Supports OCPP 1.6", "acme/bare": ""})
+    enriched, _ = run_enrich(
+        tmp_path,
+        [repo("acme/fine", description="An OCPP server"),
+         repo("acme/bare", description="An OCPP server")],
+        lambda row, readme: ("A server.", [("OCPP", "Server")]))
+    assert [r["ocpp_versions"] for r in enriched] == ["1.6", ""]
+
+
 def test_an_unreadable_readme_on_an_unknown_repo_is_not_cached(tmp_path, monkeypatch):
     monkeypatch.setattr(pipeline, "fetch_readme_content", lambda *a, **k: None)
     enriched, cache = run_enrich(tmp_path, [repo(description="An OCPP server")],

@@ -1002,11 +1002,16 @@ def enrich(args):
           f"CLASSIFIER_COPILOT_MODEL ({CLASSIFIER_COPILOT_MODEL or 'auto'}) is "
           f"still offered and that the CLI is authenticated.")
     sys.exit(1)
-  # Same reasoning on the input side: not one README could be read, so nothing
-  # was reused or classified and the listing is last month's.
-  if unreadable and not (reused or classified):
-    print(f"❌ No README could be read ({unreadable}). GitHub refused the run, "
-          f"not the repositories — check the token and the rate limit.")
+  # An unreadable README fails the run even when it is the only one. Its
+  # category is kept from the cache, but the protocol versions are read from
+  # the README alone and cached nowhere, so carrying on would render that
+  # repo without them: a transient GitHub failure published as empty
+  # metadata. The cache is already saved, so a rerun only pays for what is
+  # left. A 404 is not this — no README is a fact about the repo.
+  if unreadable:
+    print(f"❌ {unreadable} README(s) could not be read (rate limit or GitHub "
+          f"error) — refusing to publish their protocol versions as empty. "
+          f"Re-run once GitHub answers.")
     sys.exit(1)
 
 
