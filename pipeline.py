@@ -626,12 +626,12 @@ def extract_versions(text, keyword, known):
   """Find supported protocol versions mentioned near `keyword` in a README.
 
   A version may be followed by a list — "OCPP 1.2 and 1.5", "OCPP 2.0.1 / 2.1",
-  "OCPP 1.6J, 2.0.1, and 2.1" — whose items count too; matching only the first
-  one under-reported what a project supports. Only `known` versions are kept,
+  "OCPP 1.6J, 2.0.1, and 2.1", "OCPP 1.6 + 2.0.1" — whose items count too;
+  matching only the first one under-reported what a project supports. Only `known` versions are kept,
   so a power rating or a language version in the same sentence is ignored.
   """
   version = r"v?\.?\s*\d+\.\d+(?:\.\d+)?(?:-?[js]\b)?"
-  separator = r"(?:\s*(?:,|/|&|\band\b|\bor\b))+\s*"
+  separator = r"(?:\s*(?:,|/|&|\+|\band\b|\bor\b))+\s*"
   pattern = (rf"{keyword}[\s\-_/:]*[js]?[\s\-_/:]*{version}"
              rf"(?:{separator}(?:{keyword}[\s\-_/:]*)?{version})*")
   found = set()
