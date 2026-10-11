@@ -494,7 +494,7 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 #### Maps & route planning
 
 - [openchargemap/ocm-system](https://github.com/openchargemap/ocm-system) - Open Charge Map is a global public registry and mapping service for electric vehicle charging locations with crowdsourced data and an open API (C# · ⭐ 151).
-- [GeiserX/Pumperly](https://github.com/GeiserX/Pumperly) - Open-source route planner and map showing fuel and EV charging stations with real-time prices from 22 countries and optimal refueling-stop planning (TypeScript · ⭐ 41).
+- [GeiserX/Pumperly](https://github.com/GeiserX/Pumperly) - An open-source route planner combining live fuel prices from 22 countries and EV charging station data with detour-aware corridor filtering (TypeScript · ⭐ 41).
 
 #### Mobile app
 

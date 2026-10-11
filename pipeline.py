@@ -237,6 +237,9 @@ CATEGORY_OVERRIDES = {
   "remontsuri/ev-qa-framework": "Other > Battery",
   "izivia/ocpp-toolkit": "OCPP > Libraries",  # a Kotlin library, not a simulator
   "juherr/evolve": "OCPP > Server",  # OCPP server; classifier returned empty categories
+  # A Home Assistant integration, restored by hand in #57; the #59 re-run filed it
+  # under its feature (charging optimisation) instead.
+  "henrikekblad/spotnav-home-assistant": "Other > Home automation",
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
@@ -258,6 +261,11 @@ REPO_OVERRIDES = {
   "tandemdrive/ocpi-tariffs": {
     "html_url": "https://codeberg.org/tandemdrive/ocpi-tariffs",
     "dormant": "false",
+  },
+  # The maintainer's own wording (#57). A hand edit of classifications.csv is
+  # overwritten by the next re-classification; this survives it.
+  "geiserx/pumperly": {
+    "description": "An open-source route planner combining live fuel prices from 22 countries and EV charging station data with detour-aware corridor filtering.",
   },
 }
 
