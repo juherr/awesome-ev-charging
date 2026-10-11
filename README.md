@@ -319,6 +319,7 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 #### Misc
 
 - [lbbrhzn/ocpp](https://github.com/lbbrhzn/ocpp) - Home Assistant integration for OCPP 1.6j/2.0.1/2.1 compatible electric vehicle chargers (Python · ⭐ 402).
+- [EVerest/EVerest](https://github.com/EVerest/EVerest) - EVerest is a modular open-source framework for building EV charging infrastructure with support for OCPP 1.6/2.0/2.1 and ISO 15118 protocols (OCPP 1.6, 2.0.1, 2.1 · C++ · ⭐ 277).
 - [ChargePi/ChargePi-go](https://github.com/ChargePi/ChargePi-go) - ChargePi is an open-source, modular Linux-based charge point framework implementing OCPP 1.6 with management UI and API (OCPP 1.6, 2.0.1, 2.1 · Go · ⭐ 52).
 - [alexeimoisseev/ocpp.md](https://github.com/alexeimoisseev/ocpp.md) - A structured OCPP (2.1, 2.0.1, 1.6J) knowledge base with message schemas, data types, sequence diagrams, and smart-charging guides designed for AI agent integration in EV charging development (OCPP 1.6, 2.0.1, 2.1 · Python · ⭐ 31).
 - [vampirebyte/rabbitmq-web-ocpp](https://github.com/vampirebyte/rabbitmq-web-ocpp) - RabbitMQ 4.x plugin that terminates OCPP 1.6J and 2.x WebSocket connections from EV charging stations and translates each frame into AMQP messages, so backends can consume them as queue workers (Erlang · ⭐ 19).
@@ -460,8 +461,6 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 
 #### Developer tools & libraries
 
-- [EVerest/EVerest](https://github.com/EVerest/EVerest) - EVerest is a modular open-source framework for building EV charging infrastructure with support for OCPP 1.6/2.0/2.1 and ISO 15118 protocols (C++ · ⭐ 277).
-- [zephyrproject-rtos/zephyr](https://github.com/zephyrproject-rtos/zephyr) - Zephyr is a scalable, security-focused real-time operating system for resource-constrained embedded and IoT devices, supporting multiple hardware architectures including ARM, x86, ARC, Xtensa, RISC-V, SPARC, and MIPS (C · ⭐ 16749).
 - [enbility/eebus-go](https://github.com/enbility/eebus-go) - A Go library implementing the EEBUS protocol (SHIP 1.0.1 and SPINE 1.3.0) for energy management and building automation use cases (Go · ⭐ 123).
 - [nader0913/ocpp-rag](https://github.com/nader0913/ocpp-rag) - MCP server offering semantic search across 3,500+ indexed chunks of OCPP 1.6, OCPP 2.0.1, and ISO 15118 specification documents for AI assistants and developers (Python · ⭐ 61).
 - [road-labs/ocmf-js](https://github.com/road-labs/ocmf-js) - A TypeScript/JavaScript library for implementing the Open Charge Metering Format (OCMF) specification with cryptographic signing and verification of charging meter data (TypeScript · ⭐ 3).
@@ -471,6 +470,7 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 
 #### EVSE firmware
 
+- [zephyrproject-rtos/zephyr](https://github.com/zephyrproject-rtos/zephyr) - Zephyr is a scalable, security-focused real-time operating system for resource-constrained embedded and IoT devices, supporting multiple hardware architectures including ARM, x86, ARC, Xtensa, RISC-V, SPARC, and MIPS (C · ⭐ 16749).
 - [OpenEVSE/openevse_esp32_firmware](https://github.com/OpenEVSE/openevse_esp32_firmware) - WiFi gateway firmware for OpenEVSE v6 controllers using ESP32, providing a web UI for local network charging control, energy management, and integration with external systems including OCPP, MQTT, and Emoncms (C · ⭐ 277).
 - [SmartEVSE/SmartEVSE-3](https://github.com/SmartEVSE/SmartEVSE-3) - Open source EVSE (Electric Vehicle Supply Equipment) firmware with smart power management, load balancing across multiple units, and OCPP 1.6j support (C · ⭐ 234).
 - [dzurikmiroslav/esp32-evse](https://github.com/dzurikmiroslav/esp32-evse) - J1772-compliant EVSE firmware for ESP32 microcontrollers with REST API, Modbus support, and web-based management interface (C · ⭐ 148).

@@ -274,7 +274,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 - [ChargeMap/autocharge-vehicles-database](https://github.com/ChargeMap/autocharge-vehicles-database) (⭐ 1 · 💤 2025-02-18)
 
-## To refine (253 projects)
+## To refine (250 projects)
 
 ### OCPP
 
@@ -676,15 +676,3 @@ Projects kept out of the main [README](README.md) list — which only features a
 - [ishandutta2007/Awesome-EV-Charging-Management](https://github.com/ishandutta2007/Awesome-EV-Charging-Management) - A curated awesome list of open-source and commercial EV charging management systems, protocols (OCPP, OCPI, ISO 15118), and infrastructure tools (⭐ 0).
 - [ishandutta2007/Awesome-Electric-Vehicle-Charging-Management](https://github.com/ishandutta2007/Awesome-Electric-Vehicle-Charging-Management) - A curated awesome list cataloging Electric Vehicle charging management platforms, Charging Station Management Systems, and open-source tools covering OCPP, OCPI, and related protocols (⭐ 0).
 - [api-evangelist/meshcrafts](https://github.com/api-evangelist/meshcrafts) - Third-party API profile and specifications documentation for Meshcrafts/CURRENT, a charge point management system provider, maintained by API Evangelist (⭐ 0).
-
-#### Company profile
-
-- [Cano2020/Offshore-software-team](https://github.com/Cano2020/Offshore-software-team) - Company profile and services portfolio for Canopus, a software development and data science team with no specific EV charging focus (⭐ 0 · 💤 2021-09-30).
-
-#### E-commerce
-
-- [snaimio/scooterama-ecommerce](https://github.com/snaimio/scooterama-ecommerce) - A front-end e-commerce web shop for electric scooters, built with HTML5, CSS3 and jQuery, featuring product spec comparisons, accessory add-ons and a LocalStorage-persisted shopping cart (CSS · ⭐ 0).
-
-#### Job portal
-
-- [pogopaule/awesome-sustainability-jobs](https://github.com/pogopaule/awesome-sustainability-jobs) - A curated awesome list of sustainability-sector companies with developer job openings, organized by geographic region and industry category (Python · ⭐ 512 · 💤 2025-05-17).

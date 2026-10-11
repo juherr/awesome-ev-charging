@@ -55,6 +55,11 @@ EXCLUDED_REPOS = {
   # A fusion-energy company's API portal; matched only because it tags itself
   # `e-mobility`. Unrelated to EV charging protocols.
   "api-evangelist/tae-technologies",
+  # Off-topic: no EV charging content. Each one forced a subcategory of its own
+  # under the closed "Other" list (#59).
+  "pogopaule/awesome-sustainability-jobs",  # a job board
+  "snaimio/scooterama-ecommerce",           # an e-scooter web shop
+  "Cano2020/Offshore-software-team",        # a company profile
 }
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
 # `render --readme` replaces the text between these HTML comment markers in README:
@@ -240,6 +245,10 @@ CATEGORY_OVERRIDES = {
   # A Home Assistant integration, restored by hand in #57; the #59 re-run filed it
   # under its feature (charging optimisation) instead.
   "henrikekblad/spotnav-home-assistant": "Other > Home automation",
+  # Charger firmware stacks; the #59 re-run filed both as developer tooling,
+  # which also moved EVerest's primary listing out of OCPP.
+  "everest/everest": "OCPP > Misc|iso15118 > Misc|Other > EVSE firmware",
+  "zephyrproject-rtos/zephyr": "Other > EVSE firmware",
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
