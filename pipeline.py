@@ -1006,24 +1006,17 @@ def _has_bare_main(categories):
   return any(chunk.strip() and ">" not in chunk for chunk in categories.split("|"))
 
 
-def classification_downgrades(before, after):
-  """Repos of `after` that fell back to a bare main category.
+def bare_main_categories(cache):
+  """Repos of `cache` with a main category that carries no subcategory.
 
   The classifier contract requires a subcategory under every main, so a bare
-  `Main` is the model drifting, and a re-run once turned classified repos into a
-  bare `Other` (`OCPP > Server|OCPI > Server` -> `Other`). The main often changes
-  with it, so the check is per repo, not per main. An emptied category is
-  `classification_regressions`' business, and a repo that was already bare, or
-  is new, has no subcategory to lose.
+  `Main` breaks it whatever the repo's history: a re-run that turned classified
+  repos into a bare `Other`, a newcomer filed directly under one, or a repo that
+  was already bare. An empty category is `classification_regressions`' business.
   """
-  downgraded = []
-  for full_name, row in after.items():
-    categories = (row.get("categories") or "").strip()
-    prev = ((before.get(full_name) or {}).get("categories") or "").strip()
-    if (categories and _has_bare_main(categories)
-        and ">" in prev and not _has_bare_main(prev)):
-      downgraded.append(full_name)
-  return sorted(downgraded, key=str.lower)
+  return sorted((full_name for full_name, row in cache.items()
+                 if _has_bare_main((row.get("categories") or "").strip())),
+                key=str.lower)
 
 
 def _mains(categories):
@@ -1065,8 +1058,8 @@ def check_classifications(args):
   # and blocking the monthly refresh on model drift would cost more than it saves.
   for full_name, main in protocol_losses(before, after):
     print(f"::warning::{full_name} lost its {main} category.")
-  for full_name in classification_downgrades(before, after):
-    print(f"::warning::{full_name} lost its subcategory (now a bare main category).")
+  for full_name in bare_main_categories(after):
+    print(f"::warning::{full_name} has a main category without a subcategory.")
   for full_name in lost:
     print(f"::error::{full_name} lost the category it had.")
   if lost:

@@ -121,57 +121,38 @@ def test_a_repo_dropped_from_the_run_is_not_a_regression():
     assert pipeline.classification_regressions(before, {}) == ([], [])
 
 
-# --- The CI guard: a category that lost its subcategory ------------------------
+# --- The CI guard: a main category without a subcategory ----------------------
 
-def test_a_repo_that_fell_back_to_a_bare_main_is_a_downgrade():
-    """The #57 drift: a re-run turned classified repos into a bare `Other`.
-
-    The main changed too, so comparing per main would miss it.
-    """
-    before = {"acme/cdk": cached("acme/cdk", "OCPP > Server|OCPI > Server"),
-              "acme/solar": cached("acme/solar", "Other > Home automation")}
-    after = {"acme/cdk": cached("acme/cdk", "Other"),
-             "acme/solar": cached("acme/solar", "Other")}
-    assert pipeline.classification_downgrades(before, after) == ["acme/cdk", "acme/solar"]
+def test_a_repo_that_fell_back_to_a_bare_main_is_reported():
+    """The #57 drift: a re-run turned classified repos into a bare `Other`."""
+    cache = {"acme/cdk": cached("acme/cdk", "Other"),
+             "acme/app": cached("acme/app", "OCPP > Misc|Other")}
+    assert pipeline.bare_main_categories(cache) == ["acme/app", "acme/cdk"]
 
 
-def test_a_bare_main_alongside_a_subcategory_is_a_downgrade_too():
-    before = {"acme/app": cached("acme/app", "Other > Mobile app")}
-    after = {"acme/app": cached("acme/app", "OCPP > Misc|Other")}
-    assert pipeline.classification_downgrades(before, after) == ["acme/app"]
+def test_a_bare_main_is_reported_whatever_the_history():
+    """The contract forbids a bare main outright, so a newcomer filed directly
+    under `Other` and a repo that was already bare break it just the same."""
+    cache = {"acme/new": cached("acme/new", "Other"),
+             "acme/old": cached("acme/old", "OCPP")}
+    assert pipeline.bare_main_categories(cache) == ["acme/new", "acme/old"]
 
 
-def test_a_repo_that_was_already_bare_is_not_a_downgrade():
-    before = {"acme/old": cached("acme/old", "Other")}
-    after = {"acme/old": cached("acme/old", "Other")}
-    assert pipeline.classification_downgrades(before, after) == []
+def test_classified_and_empty_repos_are_not_bare():
+    """An empty category is `classification_regressions`' business."""
+    cache = {"acme/sim": cached("acme/sim", "OCPP > Simulator|Other > Security"),
+             "acme/none": cached("acme/none", "")}
+    assert pipeline.bare_main_categories(cache) == []
 
 
-def test_a_newcomer_with_a_bare_main_is_not_a_downgrade():
-    after = {"acme/new": cached("acme/new", "Other")}
-    assert pipeline.classification_downgrades({}, after) == []
-
-
-def test_a_changed_subcategory_is_not_a_downgrade():
-    before = {"acme/sim": cached("acme/sim", "OCPP > Server")}
-    after = {"acme/sim": cached("acme/sim", "OCPP > Simulator")}
-    assert pipeline.classification_downgrades(before, after) == []
-
-
-def test_an_emptied_category_is_a_regression_not_a_downgrade():
-    before = {"acme/lost": cached("acme/lost", "OCPP > Server")}
-    after = {"acme/lost": cached("acme/lost", "")}
-    assert pipeline.classification_downgrades(before, after) == []
-
-
-def test_the_guard_warns_on_a_downgrade_without_failing(tmp_path, capsys):
+def test_the_guard_warns_on_a_bare_main_without_failing(tmp_path, capsys):
     base = tmp_path / "base.csv"
     cache = tmp_path / "classifications.csv"
-    pipeline.save_classifications(base, {"acme/cdk": cached("acme/cdk", "OCPP > Server")})
-    pipeline.save_classifications(cache, {"acme/cdk": cached("acme/cdk", "Other")})
+    pipeline.save_classifications(base, {})
+    pipeline.save_classifications(cache, {"acme/new": cached("acme/new", "Other")})
     pipeline.check_classifications(types.SimpleNamespace(base=str(base), cache=str(cache)))
     out = capsys.readouterr().out
-    assert "::warning::acme/cdk lost its subcategory" in out
+    assert "::warning::acme/new has a main category without a subcategory" in out
     assert "::error::" not in out
 
 
