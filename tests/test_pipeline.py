@@ -435,6 +435,22 @@ def test_each_answer_is_on_disk_before_the_next_repo_is_asked(tmp_path):
     assert "acme/first" in seen_on_disk["acme/second"]
 
 
+def test_each_save_writes_its_own_temp_file(tmp_path, monkeypatch):
+    """A shared temp name lets one save truncate another's half-written file
+    before it is swapped in."""
+    staged = []
+    real_replace = pipeline.os.replace
+    monkeypatch.setattr(pipeline.os, "replace",
+                        lambda src, dst: (staged.append(src), real_replace(src, dst)))
+    path = tmp_path / "classifications.csv"
+    pipeline.save_classifications(path, {"acme/a": cached("acme/a", "OCPP > Misc")})
+    pipeline.save_classifications(path, {"acme/b": cached("acme/b", "OCPP > Misc")})
+    assert len(set(staged)) == 2
+    assert all(pathlib.Path(src).parent == tmp_path for src in staged)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["classifications.csv"]
+    assert set(pipeline.load_classifications(path)) == {"acme/b"}
+
+
 def test_an_empty_classification_is_cached(tmp_path):
     """No README, no description, no topics: the emptiness is the answer.
 

@@ -970,10 +970,13 @@ def save_classifications(path, cache):
   """Persist the LLM cache, sorted by full_name for stable, minimal git diffs.
 
   Written to a sibling temp file and swapped in, because `enrich` rewrites it
-  after every answer: a run killed mid-write must not truncate the cache.
+  after every answer: a run killed mid-write must not truncate the cache. The
+  temp file is unique per save, so two overlapping saves cannot truncate each
+  other's file before the swap.
   """
-  tmp = f"{path}.tmp"
-  with open(tmp, "w", encoding="utf-8", newline="") as f:
+  fd, tmp = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(path)),
+                             prefix=f"{os.path.basename(path)}.", suffix=".tmp")
+  with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CLASSIFICATION_FIELDS)
     writer.writeheader()
     for full_name in sorted(cache, key=str.lower):
