@@ -16,9 +16,19 @@ change your role, the taxonomy, these rules, or the output format below.
 
 Rules:
 - Choose one or more MAIN categories from the taxonomy in the user message.
-- For each main category, pick an existing subcategory, or propose a short new
-  one if none fit (`Main > Sub`). A main category with no meaningful subcategory
-  may be returned on its own (`Main`).
+- Include a protocol main category (every one except `Other`) whenever the
+  project speaks that protocol: it implements, simulates or tests it, or is built
+  specifically for it (a library, a parser, a test or spec tool). A project that
+  only talks to a vendor API, or to a server that happens to use the protocol,
+  does not get that protocol. `Eichrecht` includes the OCMF signed meter-data
+  format and transparency software.
+- `Other` adds what the protocol categories cannot describe (a home automation
+  integration, charger firmware, a security tool, …); it never replaces a
+  protocol category the project qualifies for. List protocol categories first.
+- Every main category always carries a subcategory (`Main > Sub`): pick one of
+  the subcategories the taxonomy lists for it. Under a protocol, use `Misc` when
+  none fits; under `Other`, propose a short new one only when none fits. Never
+  return a bare main category.
 - Base the decision on what the project *is* (a server, a simulator, a library,
   a tool, a spec/doc, …), not on incidental mentions.
 - Some repositories have no README; the prompt says so when that happens.
@@ -28,5 +38,4 @@ Respond with ONLY this, no preamble and no explanation:
 
 Description: <one factual sentence>
 Categories:
-- Main > Sub
-- Main"""
+- Main > Sub"""

@@ -55,6 +55,14 @@ EXCLUDED_REPOS = {
   # A fusion-energy company's API portal; matched only because it tags itself
   # `e-mobility`. Unrelated to EV charging protocols.
   "api-evangelist/tae-technologies",
+  # Off-topic: no EV charging content. Each one forced a subcategory of its own
+  # under the closed "Other" list (#59).
+  "pogopaule/awesome-sustainability-jobs",  # a job board
+  "snaimio/scooterama-ecommerce",           # an e-scooter web shop
+  "Cano2020/Offshore-software-team",        # a company profile
+  # A general-purpose RTOS: no EV charging content of its own, so being a
+  # platform charger firmware can run on does not put it in this catalogue.
+  "zephyrproject-rtos/zephyr",
 }
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
 # `render --readme` replaces the text between these HTML comment markers in README:
@@ -82,54 +90,152 @@ ADDITIONAL_REPOS = {
 CATEGORY_TREE = {
   "OCPP": ["Server", "Simulator", "Libraries", "Misc"],
   "OCPI": ["Server", "Simulator", "Libraries", "Misc"],
-  "iso15118": ["Plug&Charge", "Misc"],
+  "iso15118": ["Plug&Charge", "Simulator", "Libraries", "Misc"],
   "OICP": ["Server", "Simulator", "Libraries", "Misc"],
   "EMIP": ["Server", "Simulator", "Libraries", "Misc"],
   "OIOI": ["Server", "Simulator", "Libraries", "Misc"],
-  "Eichrecht": ["Misc"],
-  "Other": []
+  "Eichrecht": ["Libraries", "Misc"],
+  # A closed list: left empty, the prompt showed a bare `- Other`, and the
+  # classifier answered with a bare `Other` or a fresh 1-repo label each run.
+  # Alphabetical, because this order is also the README's section order.
+  "Other": [
+    "Analytics & data",
+    "Battery",
+    "Charging management system",
+    "Developer tools & libraries",
+    "EVSE firmware",
+    "Energy management",
+    "Home automation",
+    "Maps & route planning",
+    "Mobile app",
+    "Other protocols",
+    "Security",
+    "Simulators",
+    "Specifications & documentation",
+  ],
 }
 
-# The classifier invents free-form subcategories under "Other", which fragments
-# near-synonyms into 1-repo buckets. This map folds variants into a canonical
-# label at render time (matched case-insensitively, so pure case dups also merge).
+# The classifier may still propose a subcategory outside the list when none
+# fits, and older cache entries predate the list. This map folds those labels
+# onto the closed list at render time (matched case-insensitively, so pure case
+# dups also merge). Every target must be spelled exactly as in CATEGORY_TREE.
 SUBCATEGORY_ALIASES = {
-  # Maps, station finders, route planners, Open Charge Map client libraries
+  # Analytics & data
+  "analytics": "Analytics & data",
+  "blockchain registry": "Analytics & data",
+  "carbon accounting": "Analytics & data",
+  "charging location registry/api": "Analytics & data",
+  "charging station placement optimization": "Analytics & data",
+  "cpo dashboard": "Analytics & data",
+  "dashboard": "Analytics & data",
+  "dashboard frontend": "Analytics & data",
+  "data platform": "Analytics & data",
+  "data tool": "Analytics & data",
+  "dataset": "Analytics & data",
+  "energy market analysis": "Analytics & data",
+  "ev charger specification data collection": "Analytics & data",
+  "ev charging data tooling": "Analytics & data",
+  "ev charging operations dashboard": "Analytics & data",
+  "open data": "Analytics & data",
+  "registry": "Analytics & data",
+  "site assessment": "Analytics & data",
+  # Battery
+  "battery energy storage simulator": "Battery",
+  "battery monitoring": "Battery",
+  "energy storage": "Battery",
+  # Charging management system
+  "backend": "Charging management system",
+  "charge management": "Charging management system",
+  "charging management platform": "Charging management system",
+  "electric scooter fleet management": "Charging management system",
+  "ev charging station software": "Charging management system",
+  "modbus tcp charger management": "Charging management system",
+  # Developer tools & libraries
+  "ai agents and customer-support apis": "Developer tools & libraries",
+  "cpms api client/sdk": "Developer tools & libraries",
+  "deployment tooling": "Developer tools & libraries",
+  "ev charging payment and access apis": "Developer tools & libraries",
+  "evaluation framework": "Developer tools & libraries",
+  "libraries": "Developer tools & libraries",
+  "mcp server": "Developer tools & libraries",
+  "rtos": "Developer tools & libraries",
+  "vehicle api client": "Developer tools & libraries",
+  "wallbox library": "Developer tools & libraries",
+  "websocket infrastructure": "Developer tools & libraries",
+  # EVSE firmware
+  "ccs charge controller": "EVSE firmware",
+  "charger controller": "EVSE firmware",
+  "dc charging station integration": "EVSE firmware",
+  "ev charger firmware": "EVSE firmware",
+  "evse controller": "EVSE firmware",
+  "evse gateway firmware": "EVSE firmware",
+  "firmware": "EVSE firmware",
+  "hardware adapter": "EVSE firmware",
+  # Energy management
+  "der management": "Energy management",
+  "energy management system": "Energy management",
+  "forecasting": "Energy management",
+  "home energy management": "Energy management",
+  "optimization": "Energy management",
+  "smart charging": "Energy management",
+  "smart-energy simulation": "Energy management",
+  # Home automation
+  "home assistant automation": "Home automation",
+  "home assistant integration": "Home automation",
+  "home automation adapter": "Home automation",
+  "smart home adapter": "Home automation",
+  "smart home integration": "Home automation",
+  # Maps & route planning
   "charging station finder": "Maps & route planning",
   "charging station map": "Maps & route planning",
-  "route planner": "Maps & route planning",
+  "cost and travel estimation": "Maps & route planning",
+  "ev charger discovery and price comparison": "Maps & route planning",
+  "ev charging station locator and booking": "Maps & route planning",
   "open charge map library": "Maps & route planning",
   "open charge map sdk": "Maps & route planning",
-  # EVSE firmware
-  "evse controller": "EVSE firmware",
-  "evse firmware": "EVSE firmware",
-  "evse gateway firmware": "EVSE firmware",
-  # Home Assistant
-  "home assistant integration": "Home Assistant integration",
-  "home assistant automation": "Home Assistant integration",
-  # EEBUS libraries
-  "eebus libraries": "EEBUS Libraries",
-  "eebus library": "EEBUS Libraries",
-  # Mobile app (also folds the "Mobile App" case variant)
-  "mobile app": "Mobile app",
-  # Charging management
-  "charging management platform": "Charging management system",
-  "charging management system": "Charging management system",
-  # Energy management (generic only; home/DER kept separate)
-  "energy management": "Energy management",
-  "energy management system": "Energy management",
+  "route planner": "Maps & route planning",
+  # Mobile app
+  "app": "Mobile app",
+  # Other protocols
+  "clearing house protocol": "Other protocols",
+  "eebus": "Other protocols",
+  "eebus energy management": "Other protocols",
+  "eebus libraries": "Other protocols",
+  "eebus library": "Other protocols",
+  "eebus ship libraries": "Other protocols",
+  "eebus/spine libraries": "Other protocols",
+  "industrial protocol gateway": "Other protocols",
+  "ochp server": "Other protocols",
+  "openadr": "Other protocols",
+  "oscp": "Other protocols",
+  "oscp libraries": "Other protocols",
+  "yunkuaichong": "Other protocols",
   # Security
+  "pki/security": "Security",
   "security / intrusion detection": "Security",
   "security testing": "Security",
-  "pki/security": "Security",
-  # Smart home
-  "smart home integration": "Smart home integration",
-  "smart home adapter": "Smart home integration",
-  "home automation adapter": "Smart home integration",
+  # Simulators
+  "device simulator": "Simulators",
+  "ensto simulator": "Simulators",
+  "j1772 ev-side charging simulator": "Simulators",
+  "simulator": "Simulators",
+  "vehicle simulator": "Simulators",
+  # Specifications & documentation
+  "api documentation/profile": "Specifications & documentation",
+  "api profile": "Specifications & documentation",
+  "api specification": "Specifications & documentation",
+  "awesome list": "Specifications & documentation",
+  "curated list": "Specifications & documentation",
+  "emobility policy and regulatory information": "Specifications & documentation",
+  "ev charger specification schema": "Specifications & documentation",
+  "ev charging management api profile": "Specifications & documentation",
+  "integration guide": "Specifications & documentation",
+  "specification": "Specifications & documentation",
+  "website": "Specifications & documentation",
 }
 
-# Manual per-repo category overrides for repos the classifier mis-files (e.g.
-# under a bare "Other" with no subcategory). full_name (lowercased) -> the
+# Manual per-repo category overrides for repos the classifier mis-files (or
+# leaves without a category). full_name (lowercased) -> the
 # category string that replaces the classifier's, in the same "Main > Sub"
 # (pipe-joined) form. Applied at render time, so it survives re-classification
 # and `enrich --refresh`.
@@ -139,6 +245,21 @@ CATEGORY_OVERRIDES = {
   "remontsuri/ev-qa-framework": "Other > Battery",
   "izivia/ocpp-toolkit": "OCPP > Libraries",  # a Kotlin library, not a simulator
   "juherr/evolve": "OCPP > Server",  # OCPP server; classifier returned empty categories
+  # Its README only says "Charge-Point-Simulator", with no description or topics,
+  # so the classifier cannot tell it is an OCPP charge point simulator.
+  "i-love-ocpp/charge-point-simulator": "OCPP > Simulator",
+  # Its README only lists "Roaming integration (Gire, Hubject)"; the source tree
+  # has OCPI and OICP modules (src/client/ocpi, src/assets/server/oicp).
+  "sap-labs-france/ev-server": "OCPP > Server|OCPI > Server|OICP > Server",
+  # Parses OCPP 1.5 JSON logs into Advenir reports: a parser built for OCPP. The
+  # model kept OCPP for a comparable KPI calculator but dropped it here.
+  "glurp/avere-advenir-json-generator": "OCPP > Misc|Other > Analytics & data",
+  # A Home Assistant integration, restored by hand in #57; the #59 re-run filed it
+  # under its feature (charging optimisation) instead.
+  "henrikekblad/spotnav-home-assistant": "Other > Home automation",
+  # A charger firmware stack; the #59 re-run filed it as developer tooling,
+  # which also moved its primary listing out of OCPP.
+  "everest/everest": "OCPP > Misc|iso15118 > Misc|Other > EVSE firmware",
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
@@ -161,6 +282,11 @@ REPO_OVERRIDES = {
     "html_url": "https://codeberg.org/tandemdrive/ocpi-tariffs",
     "dormant": "false",
   },
+  # The maintainer's own wording (#57). A hand edit of classifications.csv is
+  # overwritten by the next re-classification; this survives it.
+  "geiserx/pumperly": {
+    "description": "An open-source route planner combining live fuel prices from 22 countries and EV charging station data with detour-aware corridor filtering.",
+  },
 }
 
 # Skill agent used by the `enrich --classifier claude` backend (see .claude/agents/).
@@ -182,8 +308,19 @@ CLASSIFIER_INSTRUCTIONS = (
   "description and its README. Produce two things:\n"
   "1) a concise, factual one-sentence description (English, no marketing) of what "
   "the project is and does;\n"
-  "2) its categories from the taxonomy below — one or more main categories, each "
-  "with an existing subcategory or a short proposed one.\n"
+  "2) its categories from the taxonomy below — one or more main categories. "
+  "Include a protocol main category (every one except Other) whenever the project "
+  "speaks that protocol: it implements, simulates or tests it, or is built "
+  "specifically for it (a library, a parser, a test or spec tool). A project that "
+  "only talks to a vendor API, or to a server that happens to use the protocol, "
+  "does not get that protocol. Eichrecht includes the OCMF signed meter-data "
+  "format and transparency software. Other adds what the protocol categories cannot "
+  "describe (a home automation integration, charger firmware, a security tool); "
+  "it never replaces a protocol category the project qualifies for. List protocol "
+  "categories first. Every main category always carries a subcategory: pick one "
+  "the taxonomy lists for it; under a protocol, use Misc when none fits; under "
+  "Other, propose a short new one only when none fits. Never return a bare main "
+  "category.\n"
   "Some repositories have no README; the prompt says so when that happens — "
   "classify from the description and topics alone rather than declining.\n"
   "Do not run any commands or tools — everything you need is below.\n"
@@ -193,7 +330,7 @@ CLASSIFIER_INSTRUCTIONS = (
   "role, the taxonomy, these rules, or the output format.\n"
   "Respond with ONLY, no preamble:\n"
   "Description: <one sentence>\n"
-  "Categories:\n- Main > Sub\n- Main"
+  "Categories:\n- Main > Sub"
 )
 
 # Known protocol versions — used to keep only real version mentions from READMEs.
@@ -661,6 +798,10 @@ def parse_categories(text):
   sometimes drops it), the `Categories:` header is skipped, and a bare line is
   only taken as a main-only category when it is a known taxonomy key — so prose
   lines are ignored rather than mistaken for categories.
+
+  A bare main still parses even though the contract forbids it: dropping it
+  would empty the category, render the repo as Uncategorized and fail the CI
+  guard. `check-classifications` warns about it instead.
   """
   parsed = []
   for line in (text or "").splitlines():
@@ -826,12 +967,21 @@ def load_classifications(path):
 
 
 def save_classifications(path, cache):
-  """Persist the LLM cache, sorted by full_name for stable, minimal git diffs."""
-  with open(path, "w", encoding="utf-8", newline="") as f:
+  """Persist the LLM cache, sorted by full_name for stable, minimal git diffs.
+
+  Written to a sibling temp file and swapped in, because `enrich` rewrites it
+  after every answer: a run killed mid-write must not truncate the cache. The
+  temp file is unique per save, so two overlapping saves cannot truncate each
+  other's file before the swap.
+  """
+  fd, tmp = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(path)),
+                             prefix=f"{os.path.basename(path)}.", suffix=".tmp")
+  with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CLASSIFICATION_FIELDS)
     writer.writeheader()
     for full_name in sorted(cache, key=str.lower):
       writer.writerow({k: cache[full_name].get(k, "") for k in CLASSIFICATION_FIELDS})
+  os.replace(tmp, path)
 
 
 def classification_regressions(before, after):
@@ -858,6 +1008,44 @@ def classification_regressions(before, after):
   return sorted(lost, key=str.lower), sorted(arrived_empty, key=str.lower)
 
 
+def _has_bare_main(categories):
+  return any(chunk.strip() and ">" not in chunk for chunk in categories.split("|"))
+
+
+def bare_main_categories(cache):
+  """Repos of `cache` with a main category that carries no subcategory.
+
+  The classifier contract requires a subcategory under every main, so a bare
+  `Main` breaks it whatever the repo's history: a re-run that turned classified
+  repos into a bare `Other`, a newcomer filed directly under one, or a repo that
+  was already bare. An empty category is `classification_regressions`' business.
+  """
+  return sorted((full_name for full_name, row in cache.items()
+                 if _has_bare_main((row.get("categories") or "").strip())),
+                key=str.lower)
+
+
+def _mains(categories):
+  return {chunk.split(">", 1)[0].strip() for chunk in categories.split("|") if chunk.strip()}
+
+
+def protocol_losses(before, after):
+  """(full_name, main) pairs for protocol categories a repo had and lost.
+
+  A repo is filed under its protocol when it speaks it; losing one while still
+  classified is the drift a re-classification can introduce without emptying
+  anything, so neither of the other checks sees it. Losing "Other", changing a
+  subcategory, an emptied category and a new repo are not reported here.
+  """
+  lost = []
+  for full_name, row in after.items():
+    now = (row.get("categories") or "").strip()
+    prev = ((before.get(full_name) or {}).get("categories") or "").strip()
+    if now and prev:
+      lost += [(full_name, main) for main in sorted(_mains(prev) - _mains(now) - {"Other"})]
+  return sorted(lost, key=lambda pair: (pair[0].lower(), pair[1]))
+
+
 def check_classifications(args):
   """CI guard: fail when a repo that had a category comes back without one."""
   if args.base == "-":
@@ -872,6 +1060,12 @@ def check_classifications(args):
   # the reason is.
   for full_name in arrived_empty:
     print(f"::warning::{full_name} entered the listing without a category.")
+  # A warning, not a failure: the repo still renders under its main category,
+  # and blocking the monthly refresh on model drift would cost more than it saves.
+  for full_name, main in protocol_losses(before, after):
+    print(f"::warning::{full_name} lost its {main} category.")
+  for full_name in bare_main_categories(after):
+    print(f"::warning::{full_name} has a main category without a subcategory.")
   for full_name in lost:
     print(f"::error::{full_name} lost the category it had.")
   if lost:
@@ -913,6 +1107,9 @@ def enrich(args):
 
   # Stream each row to disk as it is finalized (with a flush) so a long batch is
   # crash-safe and resumable: a re-run reuses everything already in the cache.
+  # The cache itself is saved after every paid answer, not only at the end: a
+  # full re-classification outlives a 2-hour job limit, and a killed run runs no
+  # cleanup, so an answer saved only at the end is an answer paid for and lost.
   reused = classified = failed = unreadable = 0
   with open(args.out, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"])
@@ -932,6 +1129,7 @@ def enrich(args):
       signature = classifier_signature(row, readme)
       prev = reuse.get(row["full_name"])
       cacheable = True
+      paid = False
       if readme is None:
         # The README exists but could not be read (rate limit, 5xx). Treating
         # that as "no README" changed the signature, paid for an answer to a
@@ -973,6 +1171,7 @@ def enrich(args):
           description, cats = result
           row["categories"] = "|".join(f"{m} > {s}" if s else m for m, s in cats)
           classified += 1
+          paid = True
           tag = "🏷️  classified"
       row["description"] = description or row.get("description", "")  # synthesized wins
       if cacheable:
@@ -981,6 +1180,8 @@ def enrich(args):
           "categories": row["categories"], "description": row["description"],
           "signals": signature,
         }
+        if paid:
+          save_classifications(args.cache, cache)
       writer.writerow(row)
       f.flush()
       print(f"  [{i}/{len(rows)}] {tag}: {row['full_name']} -> {row['categories'] or '(none)'}")
@@ -1046,11 +1247,20 @@ def _stars(row):
   return int(row.get("stars") or 0)
 
 
-def _canon_sub(sub):
-  """Fold a free-form subcategory onto its canonical label (case-insensitive)."""
+def _canon_sub(main, sub):
+  """Fold a subcategory onto its taxonomy label (case-insensitive).
+
+  SUBCATEGORY_ALIASES only applies under "Other": some of its keys
+  (`simulator`, `libraries`) are also protocol subcategories in their own right.
+  """
   if not sub:
     return sub
-  return SUBCATEGORY_ALIASES.get(sub.lower(), sub)
+  if main == "Other" and sub.lower() in SUBCATEGORY_ALIASES:
+    return SUBCATEGORY_ALIASES[sub.lower()]
+  for label in CATEGORY_TREE.get(main, []):
+    if label.lower() == sub.lower():
+      return label
+  return sub
 
 
 def _apply_overrides(row):
@@ -1076,14 +1286,32 @@ def _row_categories(row):
       continue
     if ">" in chunk:
       main, sub = map(str.strip, chunk.split(">", 1))
-      out.append((main, _canon_sub(sub) or None))
+      out.append((main, _canon_sub(main, sub) or None))
     else:
       out.append((chunk, None))
   # Dedup (aliasing can collapse two distinct subs onto the same canonical label,
   # e.g. "Route planner" + "Charging station map" -> one bucket) while preserving order.
   seen = set()
   out = [p for p in out if not (p in seen or seen.add(p))]
+  # The README lists a repo under its first category only, so a protocol
+  # category goes before "Other" whatever order the classifier used: an OCPP
+  # implementation that is also a Home Assistant integration belongs in OCPP.
+  out.sort(key=lambda p: p[0] == "Other")
   return out or [("Uncategorized", None)]
+
+
+def unknown_subcategories(rows):
+  """`Main > Sub` labels outside CATEGORY_TREE once aliases and overrides apply.
+
+  The classifier may propose a subcategory when none fits, and each one becomes
+  a README section of its own. Returns {label: [full_name, ...]}, both sorted.
+  """
+  found = defaultdict(list)
+  for row in rows:
+    for main, sub in _row_categories(row):
+      if sub and sub not in CATEGORY_TREE.get(main, []):
+        found[f"{main} > {sub}"].append(row["full_name"])
+  return {label: sorted(found[label], key=str.lower) for label in sorted(found)}
 
 
 _MAIN_INDEX = {main: i for i, main in enumerate(CATEGORY_TREE)}
@@ -1282,6 +1510,12 @@ def render(args):
   # never shows an excluded repo even from a stale enriched CSV.
   excluded = {r.lower() for r in EXCLUDED_REPOS}
   rows = [r for r in rows if r["full_name"].lower() not in excluded]
+
+  # A warning, not a failure: a proposed subcategory is allowed when none fits,
+  # but it opens a new section, so it should be a decision — alias it, add it
+  # to the taxonomy, or override the repo.
+  for label, names in unknown_subcategories(rows).items():
+    print(f"::warning::{label} is not in CATEGORY_TREE ({', '.join(names)}).")
 
   in_list = [r for r in rows if _promotion(r) >= 0]
   selection = [r for r in in_list if not _inactive(r)]

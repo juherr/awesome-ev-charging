@@ -37,7 +37,9 @@ extract three things:
 
 - **URL / `owner/repo`** — the GitHub repo to add.
 - **Requested category** — as `Main > Sub` (e.g. `OCPP > Misc`). Valid main
-  categories live in `CATEGORY_TREE` in `pipeline.py`; subcategories are free-form.
+  categories and their subcategories live in `CATEGORY_TREE` in `pipeline.py`;
+  every main carries a subcategory. Use a listed one, and a new label only when
+  none fits — for `Other`, check its closed list and `SUBCATEGORY_ALIASES` first.
 - **Description** — a one-line factual summary (the enrich classifier will
   produce its own; the issue's is a sanity check).
 
