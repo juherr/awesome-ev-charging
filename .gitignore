@@ -11,3 +11,6 @@ repos.csv
 repos.enriched.csv
 cache_github/
 list.txt
+
+# Atomic-write temp file of the classification cache
+classifications.csv.tmp

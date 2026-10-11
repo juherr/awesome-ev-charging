@@ -930,12 +930,18 @@ def load_classifications(path):
 
 
 def save_classifications(path, cache):
-  """Persist the LLM cache, sorted by full_name for stable, minimal git diffs."""
-  with open(path, "w", encoding="utf-8", newline="") as f:
+  """Persist the LLM cache, sorted by full_name for stable, minimal git diffs.
+
+  Written to a sibling temp file and swapped in, because `enrich` rewrites it
+  after every answer: a run killed mid-write must not truncate the cache.
+  """
+  tmp = f"{path}.tmp"
+  with open(tmp, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CLASSIFICATION_FIELDS)
     writer.writeheader()
     for full_name in sorted(cache, key=str.lower):
       writer.writerow({k: cache[full_name].get(k, "") for k in CLASSIFICATION_FIELDS})
+  os.replace(tmp, path)
 
 
 def classification_regressions(before, after):
@@ -1045,6 +1051,9 @@ def enrich(args):
 
   # Stream each row to disk as it is finalized (with a flush) so a long batch is
   # crash-safe and resumable: a re-run reuses everything already in the cache.
+  # The cache itself is saved after every paid answer, not only at the end: a
+  # full re-classification outlives a 2-hour job limit, and a killed run runs no
+  # cleanup, so an answer saved only at the end is an answer paid for and lost.
   reused = classified = failed = unreadable = 0
   with open(args.out, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"])
@@ -1064,6 +1073,7 @@ def enrich(args):
       signature = classifier_signature(row, readme)
       prev = reuse.get(row["full_name"])
       cacheable = True
+      paid = False
       if readme is None:
         # The README exists but could not be read (rate limit, 5xx). Treating
         # that as "no README" changed the signature, paid for an answer to a
@@ -1105,6 +1115,7 @@ def enrich(args):
           description, cats = result
           row["categories"] = "|".join(f"{m} > {s}" if s else m for m, s in cats)
           classified += 1
+          paid = True
           tag = "🏷️  classified"
       row["description"] = description or row.get("description", "")  # synthesized wins
       if cacheable:
@@ -1113,6 +1124,8 @@ def enrich(args):
           "categories": row["categories"], "description": row["description"],
           "signals": signature,
         }
+        if paid:
+          save_classifications(args.cache, cache)
       writer.writerow(row)
       f.flush()
       print(f"  [{i}/{len(rows)}] {tag}: {row['full_name']} -> {row['categories'] or '(none)'}")

@@ -360,6 +360,22 @@ def test_a_classified_repo_lands_in_the_cache(tmp_path):
     assert cache["acme/charger"]["description"] == "An OCPP server."
 
 
+def test_each_answer_is_on_disk_before_the_next_repo_is_asked(tmp_path):
+    """A full re-classification outlives a 2-hour job limit, and a killed run
+    runs no `finally`: an answer saved only at the end is an answer paid for
+    and lost."""
+    seen_on_disk = {}
+
+    def classify(row, readme):
+        seen_on_disk[row["full_name"]] = set(
+            pipeline.load_classifications(tmp_path / "classifications.csv"))
+        return "A charger tool.", [("OCPP", "Misc")]
+
+    run_enrich(tmp_path, [repo("acme/first", description="x"),
+                          repo("acme/second", description="y")], classify)
+    assert "acme/first" in seen_on_disk["acme/second"]
+
+
 def test_an_empty_classification_is_cached(tmp_path):
     """No README, no description, no topics: the emptiness is the answer.
 
