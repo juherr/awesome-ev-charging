@@ -331,7 +331,6 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 - [gyzod/ocpp2mqtt](https://github.com/gyzod/ocpp2mqtt) - An OCPP 1.6 to MQTT gateway that bridges charging stations with home automation systems through protocol translation (OCPP 1.6 · Python · ⭐ 11).
 - [powerly-ev/open-ev-charge-android-app](https://github.com/powerly-ev/open-ev-charge-android-app) - Powerly Open EV Charge Android App is a white-label Kotlin mobile app for discovering chargers, managing EV charging sessions, bookings, billing, roaming, and peer-to-peer charger sharing through the Powerly platform (Kotlin · ⭐ 9).
 - [unified-error-codes/csds](https://github.com/unified-error-codes/csds) - UEC Software Stack provides backend, UI, and EVSE-agent components for charging station diagnostics using unified error codes and telemetry retrieved via OCPP (Python · ⭐ 7).
-- [EVtivity/evtivity-mobile-app](https://github.com/EVtivity/evtivity-mobile-app) - Driver-facing white-label mobile app for the EVtivity EV charging platform, built with React Native and Expo for iOS and Android (TypeScript · ⭐ 6).
 - [chargex-consortium/ev-charge-seq-state](https://github.com/chargex-consortium/ev-charge-seq-state) - Open-source UML sequence diagrams and finite-state machine models for SAE J1772, ISO 15118, and OCPP EV charging protocol flows (OCPP 1.6, 2.0.1, 2.1 · ⭐ 6).
 - [ocpp-debugkit/toolkit](https://github.com/ocpp-debugkit/toolkit) - A developer toolkit for debugging and analyzing OCPP charging session traces with trace inspection, failure detection, scenario testing, event replay, and report generation (TypeScript · ⭐ 5).
 - [juherr/open-ocpp-tck](https://github.com/juherr/open-ocpp-tck) - An open-source TypeScript test conformance kit that tests OCPP CSMS implementations by driving a charge-point simulator and asserting captured OCPP-J traffic against OCA certification scenarios (OCPP 1.6, 2.0.1 · TypeScript · ⭐ 5).
@@ -580,6 +579,10 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 #### Maps & route planning
 
 - [GeiserX/Pumperly](https://github.com/GeiserX/Pumperly) - An open-source route planner combining live fuel prices from 22 countries and EV charging station data with detour-aware corridor filtering (TypeScript · ⭐ 41).
+
+#### Mobile app
+
+- [EVtivity/evtivity-mobile-app](https://github.com/EVtivity/evtivity-mobile-app) - Driver-facing white-label mobile app for the EVtivity EV charging platform, built with React Native and Expo for iOS and Android (TypeScript · ⭐ 6).
 
 #### Open Data
 

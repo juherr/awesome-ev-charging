@@ -320,7 +320,6 @@ Projects kept out of the main [README](README.md) list — which only features a
 - [BashTheDog/elecq-ocpp-ha](https://github.com/BashTheDog/elecq-ocpp-ha) - Home Assistant custom integration that runs a local OCPP 2.0.1 WebSocket server to monitor and control Elecq AU101/AE106 EV chargers (OCPP 2.0.1 · Python · ⭐ 3).
 - [eva-sean/oye-proxy](https://github.com/eva-sean/oye-proxy) - OYE OCPP Proxy is a Node.js OCPP proxy that sits between EVSE chargers and a CSMS to monitor, log, inject commands, and optionally provide basic standalone charging control (OCPP 1.6, 2.0.1 · JavaScript · ⭐ 3).
 - [OpenChargingCloud/CSMSApp](https://github.com/OpenChargingCloud/CSMSApp) - Electron-based OCPP Charging Station Management System application for testing and certification of e-mobility protocols, vendor extensions, and third-party charging stations (OCPP 2.1 · TypeScript · ⭐ 2).
-- [EVtivity/evtivity-csms-helm](https://github.com/EVtivity/evtivity-csms-helm) - Helm chart for deploying the EVtivity CSMS on Kubernetes (OCPP 1.6, 2.1 · JavaScript · ⭐ 2).
 - [Cyb0rg42/Charger-OCPP](https://github.com/Cyb0rg42/Charger-OCPP) - A suite of OCPP 1.6-J services comprising a central system for managing charge points, a charge-point simulator, and a proxy for inspecting and routing OCPP traffic (OCPP 1.6 · Python · ⭐ 2).
 - [FlipSoftware/moovolt-mvp](https://github.com/FlipSoftware/moovolt-mvp) - MOOV.OLT is an OCPP-based CSMS with a charge point service for WebSocket communication with physical chargers and a management system for permissions, charging control, and payments over AMQP (TypeScript · ⭐ 2 · 💤 2024-09-19).
 - [adriandotdev/ocpp-central-system](https://github.com/adriandotdev/ocpp-central-system) - Node.js implementation of core OCPP central system commands exposed via REST APIs and WebSocket communication (JavaScript · ⭐ 1 · 💤 2024-12-12).
@@ -335,7 +334,6 @@ Projects kept out of the main [README](README.md) list — which only features a
 - [hupe1980/emob](https://github.com/hupe1980/emob) - An open-source Rust e-mobility operating stack providing a CSMS, roaming services, Eichrecht evidence handling, Plug&Charge validation, and charging-session billing (OCPP 1.6, 2.0.1, 2.1 · Rust · ⭐ 0).
 - [javierojan/askacharge-mcp](https://github.com/javierojan/askacharge-mcp) - A hosted MCP server that lets AI agents monitor and control EV charging networks through a CSMS using OCPP (OCPP 1.6, 2.0.1 · ⭐ 0).
 - [api-evangelist/ev-connect](https://github.com/api-evangelist/ev-connect) - An independent profile documenting EV Connect’s public APIs for its EV charging network and charge-point management platform (⭐ 0).
-- [EVtivity/evtivity-csms-cdk](https://github.com/EVtivity/evtivity-csms-cdk) - AWS CDK infrastructure to deploy the EVtivity CSMS charging station management system on AWS (TypeScript · ⭐ 0).
 - [ZANNABI-LAB/swapve](https://github.com/ZANNABI-LAB/swapve) - SwapVe is a Kotlin/JVM library and reference CSMS implementing OCPP 2.1 battery-swapping functionality, with codec, session, domain-model, and station-simulator components (OCPP 2.0.1, 2.1 · Kotlin · ⭐ 0).
 - [Pyroil/Alfen_manager](https://github.com/Pyroil/Alfen_manager) - A Python service that monitors an Alfen EVE charger over Modbus TCP and controls its charging current through OCPP 1.6 for dynamic load management (OCPP 1.6 · Python · ⭐ 0).
 - [dattaphani899-create/voltgrid](https://github.com/dattaphani899-create/voltgrid) - A full-stack EV Charge Point Operator platform that communicates with charge points via OCPP 1.6 using Node.js and WebSocket, stores data in SQLite, and provides a live dashboard (HTML · ⭐ 0).
@@ -697,6 +695,8 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 #### Deployment tooling
 
+- [EVtivity/evtivity-csms-helm](https://github.com/EVtivity/evtivity-csms-helm) - Helm chart for deploying the EVtivity CSMS on Kubernetes (JavaScript · ⭐ 2).
+- [EVtivity/evtivity-csms-cdk](https://github.com/EVtivity/evtivity-csms-cdk) - AWS CDK infrastructure to deploy the EVtivity CSMS charging station management system on AWS (TypeScript · ⭐ 0).
 - [ChargePi/oecs-helm](https://github.com/ChargePi/oecs-helm) - A collection of independently installable Helm charts for deploying OECS platform services, including the oecs-hub and its database and caching dependencies (Go Template · ⭐ 0).
 
 #### EEBUS Libraries
