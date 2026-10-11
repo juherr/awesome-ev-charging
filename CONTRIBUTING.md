@@ -46,10 +46,12 @@ Descriptions and categories are stored in **`classifications.csv`** — the dura
 | `signals`     | fingerprint of what the classifier read (cache key — leave it alone)      |
 
 - Valid **main** categories come from `CATEGORY_TREE` in `pipeline.py`: `OCPP`,
-  `OCPI`, `iso15118`, `OICP`, `EMIP`, `OIOI`, `Eichrecht`, `Other`. **Sub**categories
-  are free-form.
+  `OCPI`, `iso15118`, `OICP`, `EMIP`, `OIOI`, `Eichrecht`, `Other`. Every main
+  carries a **sub**category, also listed in `CATEGORY_TREE` — `Other` included,
+  which has a closed list (`Home automation`, `EVSE firmware`, `Simulators`, …).
+  Propose a new subcategory only when none fits.
 - A repo can belong to several categories: separate them with `|`, e.g.
-  `Other > Open Charge Map SDK|Other > MCP Server`.
+  `Other > Maps & route planning|Other > Developer tools & libraries`.
 
 **Do not commit** the generated artifacts `repos.csv`, `repos.enriched.csv`,
 `cache_github/`, or `list.txt` — they're git-ignored. The files meant to be

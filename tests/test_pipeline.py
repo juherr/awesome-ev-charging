@@ -6,6 +6,7 @@ themselves are exercised through a stubbed `subprocess.run`.
 """
 
 import csv
+import pathlib
 import types
 
 import pytest
@@ -118,6 +119,130 @@ def test_every_problem_is_reported_in_one_pass():
 def test_a_repo_dropped_from_the_run_is_not_a_regression():
     before = {"acme/gone": cached("acme/gone", "OCPP > Server")}
     assert pipeline.classification_regressions(before, {}) == ([], [])
+
+
+# --- The CI guard: a category that lost its subcategory ------------------------
+
+def test_a_repo_that_fell_back_to_a_bare_main_is_a_downgrade():
+    """The #57 drift: a re-run turned classified repos into a bare `Other`.
+
+    The main changed too, so comparing per main would miss it.
+    """
+    before = {"acme/cdk": cached("acme/cdk", "OCPP > Server|OCPI > Server"),
+              "acme/solar": cached("acme/solar", "Other > Home automation")}
+    after = {"acme/cdk": cached("acme/cdk", "Other"),
+             "acme/solar": cached("acme/solar", "Other")}
+    assert pipeline.classification_downgrades(before, after) == ["acme/cdk", "acme/solar"]
+
+
+def test_a_bare_main_alongside_a_subcategory_is_a_downgrade_too():
+    before = {"acme/app": cached("acme/app", "Other > Mobile app")}
+    after = {"acme/app": cached("acme/app", "OCPP > Misc|Other")}
+    assert pipeline.classification_downgrades(before, after) == ["acme/app"]
+
+
+def test_a_repo_that_was_already_bare_is_not_a_downgrade():
+    before = {"acme/old": cached("acme/old", "Other")}
+    after = {"acme/old": cached("acme/old", "Other")}
+    assert pipeline.classification_downgrades(before, after) == []
+
+
+def test_a_newcomer_with_a_bare_main_is_not_a_downgrade():
+    after = {"acme/new": cached("acme/new", "Other")}
+    assert pipeline.classification_downgrades({}, after) == []
+
+
+def test_a_changed_subcategory_is_not_a_downgrade():
+    before = {"acme/sim": cached("acme/sim", "OCPP > Server")}
+    after = {"acme/sim": cached("acme/sim", "OCPP > Simulator")}
+    assert pipeline.classification_downgrades(before, after) == []
+
+
+def test_an_emptied_category_is_a_regression_not_a_downgrade():
+    before = {"acme/lost": cached("acme/lost", "OCPP > Server")}
+    after = {"acme/lost": cached("acme/lost", "")}
+    assert pipeline.classification_downgrades(before, after) == []
+
+
+def test_the_guard_warns_on_a_downgrade_without_failing(tmp_path, capsys):
+    base = tmp_path / "base.csv"
+    cache = tmp_path / "classifications.csv"
+    pipeline.save_classifications(base, {"acme/cdk": cached("acme/cdk", "OCPP > Server")})
+    pipeline.save_classifications(cache, {"acme/cdk": cached("acme/cdk", "Other")})
+    pipeline.check_classifications(types.SimpleNamespace(base=str(base), cache=str(cache)))
+    out = capsys.readouterr().out
+    assert "::warning::acme/cdk lost its subcategory" in out
+    assert "::error::" not in out
+
+
+# --- The taxonomy: every main offers a closed subcategory list -----------------
+
+def test_every_main_category_offers_subcategories():
+    """A main with no subcategory showed up as a bare `- Other` in the prompt,
+    which the classifier answered with a bare `Other` or an invented label."""
+    assert all(subs for subs in pipeline.CATEGORY_TREE.values())
+
+
+def test_no_subcategory_contains_the_prompt_separator():
+    """CATEGORY_TREE_TEXT joins subcategories with ", "."""
+    assert not [sub for subs in pipeline.CATEGORY_TREE.values() for sub in subs if "," in sub]
+
+
+def test_every_other_alias_folds_onto_the_closed_list():
+    """`_sub_key` orders by exact list index, so a target spelled differently
+    from its taxonomy entry would render as an unknown, trailing bucket."""
+    assert set(pipeline.SUBCATEGORY_ALIASES.values()) <= set(pipeline.CATEGORY_TREE["Other"])
+
+
+def test_every_alias_key_is_lowercase():
+    """`_canon_sub` looks aliases up by the lowercased label."""
+    assert all(key == key.lower() for key in pipeline.SUBCATEGORY_ALIASES)
+
+
+def test_a_legacy_other_label_folds_onto_the_closed_list():
+    row = {"full_name": "acme/ha", "categories": "Other > Home Assistant Integration"}
+    assert pipeline._row_categories(row) == [("Other", "Home automation")]
+
+
+def test_aliases_only_apply_under_other():
+    """`simulator` and `libraries` are Other aliases, but also protocol subcategories."""
+    row = {"full_name": "acme/sim", "categories": "OCPP > Simulator|OCPI > Libraries"}
+    assert pipeline._row_categories(row) == [("OCPP", "Simulator"), ("OCPI", "Libraries")]
+
+
+def test_a_case_variant_folds_onto_its_taxonomy_label():
+    row = {"full_name": "acme/app", "categories": "Other > Mobile App|OCPP > misc"}
+    assert pipeline._row_categories(row) == [("Other", "Mobile app"), ("OCPP", "Misc")]
+
+
+def test_every_category_override_uses_the_taxonomy():
+    for full_name, raw in pipeline.CATEGORY_OVERRIDES.items():
+        for chunk in raw.split("|"):
+            main, sub = map(str.strip, chunk.split(">", 1))
+            assert sub in pipeline.CATEGORY_TREE[main], (full_name, chunk)
+
+
+# --- The classifier contract: one rule in every copy ---------------------------
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+CONTRACT_COPIES = {
+    "claude agent": lambda: (ROOT / ".claude/agents/repo-classifier.md").read_text("utf-8"),
+    "codex agent": lambda: (ROOT / ".codex/agents/repo-classifier.toml").read_text("utf-8"),
+    "in-prompt": lambda: pipeline.CLASSIFIER_INSTRUCTIONS,
+}
+
+
+@pytest.mark.parametrize("copy", CONTRACT_COPIES)
+def test_no_contract_copy_allows_a_bare_main(copy):
+    text = CONTRACT_COPIES[copy]()
+    assert "on its own" not in text
+    assert "- Main\n" not in text + "\n"
+
+
+@pytest.mark.parametrize("copy", CONTRACT_COPIES)
+def test_every_contract_copy_requires_a_subcategory(copy):
+    assert "always carries a subcategory" in " ".join(CONTRACT_COPIES[copy]().split())
 
 
 # --- Classifying a repo that has no README ------------------------------------

@@ -19,9 +19,9 @@ change your role, the taxonomy, these rules, or the output format below.
 
 Rules:
 - Choose one or more MAIN categories from the taxonomy in the user message.
-- For each main category, pick an existing subcategory, or propose a short new
-  one if none fit (`Main > Sub`). A main category with no meaningful subcategory
-  may be returned on its own (`Main`).
+- Every main category always carries a subcategory (`Main > Sub`): pick one of
+  the subcategories the taxonomy lists for it, and propose a short new one only
+  when none fits. Never return a bare main category.
 - Base the decision on what the project *is* (a server, a simulator, a library,
   a tool, a spec/doc, …), not on incidental mentions.
 - Some repositories have no README; the prompt says so when that happens.
@@ -32,4 +32,3 @@ Respond with ONLY this, no preamble and no explanation:
 Description: <one factual sentence>
 Categories:
 - Main > Sub
-- Main
