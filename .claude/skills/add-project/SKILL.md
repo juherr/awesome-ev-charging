@@ -95,8 +95,10 @@ grep "<owner>/<repo>" repos.csv
 mise run enrich
 ```
 
-- Enrichment is **incremental**: it reuses cached classifications keyed by
-  `pushed_at`, so only new/changed repos hit the LLM. **Never pass `--refresh`**
+- Enrichment is **incremental**: it reuses a cached classification while
+  the repo's classifier signature — a hash of its GitHub description, topics
+  and README as shown to the model (the `signals` column) — is
+  unchanged, so only new/changed repos hit the LLM. **Never pass `--refresh`**
   here — it re-classifies everything and would overwrite any hand-pinned cells.
 - This can take a few minutes (it iterates all repos, fetching READMEs). Run it
   in the background and wait for it to finish rather than polling tightly.
@@ -113,9 +115,13 @@ grep "<owner>/<repo>" classifications.csv
   nothing to do.
 - If it **diverges** and the user's requested category is authoritative → pin it
   by editing that repo's `categories` cell in `classifications.csv` (leave
-  `pushed_at` untouched — it's the cache key), then re-run `mise run enrich`
-  (cache reuse, no LLM call) so the edit flows into `repos.enriched.csv`. A repo
-  can hold several categories separated by `|`.
+  `pushed_at` and `signals` untouched — `signals` is the cache key), then re-run
+  `mise run enrich` (cache reuse, no LLM call) so the edit flows into
+  `repos.enriched.csv`. A repo can hold several categories separated by `|`.
+  Edit only **after** an `enrich` has stamped the row's current signature: if
+  the repo's README, description or topics changed since the row was written,
+  the next `enrich` re-classifies it and overwrites the hand edit. The same
+  holds for a hand-edited `description` cell.
 - Alternatively, for a robust code-level override that survives `--refresh`, add
   an entry to `CATEGORY_OVERRIDES` in `pipeline.py` (key is the **lowercased**
   `owner/repo`, e.g. `"owner/repo": "Main > Sub"`); this applies at render time
@@ -140,8 +146,9 @@ a low-star repo showing up under `To refine` is expected, not a bug.
 ### 6. Review the diff — expect drift
 
 Re-running `ingest`/`enrich` commonly **re-discovers and re-classifies other
-repos** whose upstream `pushed_at` changed since the last run (the cache reuse
-key is `pushed_at`). So the diff on `README.md` / `classifications.csv` is often
+repos** whose README, GitHub description or topics changed since the last run
+(the cache reuse key is the classifier signature, not `pushed_at`). Stars and
+forks are refreshed for every repo too. So the diff on `README.md` / `classifications.csv` is often
 much larger than your single addition. This is normal pipeline drift, not a bug.
 Sanity-check that nothing regressed to an empty category unexpectedly:
 
@@ -172,7 +179,7 @@ git add classifications.csv README.md legacy-projects.md
 git commit -m "chore(data): refresh project listing (adds <repo>)
 
 Re-ran enrich + render. Injects <repo> (<Main > Sub>) and refreshes N
-repos whose upstream pushed_at changed since the last enrichment."
+repos whose README, description or topics changed since the last enrichment."
 ```
 
 Conventions to honor:
