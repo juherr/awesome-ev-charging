@@ -40,9 +40,10 @@ Descriptions and categories are stored in **`classifications.csv`** — the dura
 | Column        | Meaning                                                                   |
 | ------------- | ------------------------------------------------------------------------- |
 | `full_name`   | `owner/repo`                                                              |
-| `pushed_at`   | last push timestamp (cache key — leave it alone)                          |
+| `pushed_at`   | last push timestamp (informational — leave it alone)                      |
 | `categories`  | one or more `Main > Sub` entries, pipe-separated (e.g. `Other > Battery`) |
 | `description` | the factual one-sentence description shown in the list                    |
+| `signals`     | fingerprint of what the classifier read (cache key — leave it alone)      |
 
 - Valid **main** categories come from `CATEGORY_TREE` in `pipeline.py`: `OCPP`,
   `OCPI`, `iso15118`, `OICP`, `EMIP`, `OIOI`, `Eichrecht`, `Other`. **Sub**categories
@@ -84,10 +85,26 @@ hand-edited cells — never use it when you want to keep manual edits.
 
 #### Fix a description
 
-1. Edit the `description` cell for that repo's row in `classifications.csv`.
-2. `mise run enrich` — reuses the cache (no LLM call) since `pushed_at` is unchanged.
-3. `python pipeline.py render --readme README.md`
-4. Commit `classifications.csv` and `README.md`.
+1. `mise run ingest` then `mise run enrich`, so the row's `signals` fingerprint
+   matches the repo as it is today. Skip this only if none of the signature's
+   inputs (listed below) changed since the row was written.
+2. Edit the `description` cell for that repo's row in `classifications.csv`.
+3. `mise run enrich` again — it reuses the cache (no LLM call) because the
+   fingerprint still matches, and carries your edit into `repos.enriched.csv`.
+4. `python pipeline.py render --readme README.md`
+5. Commit `classifications.csv` and `README.md`.
+
+The `signals` fingerprint hashes the whole classifier prompt: the repo's GitHub
+description, its topics and the first 4,000 characters of its README
+(`README_PROMPT_CHARS`), plus the taxonomy (`CATEGORY_TREE`) and the classifier
+instructions (`CLASSIFIER_INSTRUCTIONS`) in `pipeline.py`. Editing against a
+stale fingerprint does not stick: the next `enrich` re-classifies the repo and
+overwrites your edit. Likewise, an edit only lasts until one of those inputs
+changes again. A change to the repo's own inputs is usually when the
+description needs revisiting anyway. A change to the taxonomy or the
+instructions re-classifies **every** repo and overwrites every hand edit at
+once. README edits past the 4,000-character cutoff change nothing, because the
+model never sees them.
 
 #### Change or move a category (section)
 
@@ -127,9 +144,11 @@ by manual ordering.
 
 ## How classification works
 
-New repos — and repos whose upstream `pushed_at` has changed — are classified
-automatically by a pluggable LLM-CLI backend, selected with `enrich --classifier`
-(`claude` — the default, using the skill agent
+New repos — and repos whose classifier inputs have changed: the GitHub
+description, the topics or the first 4,000 characters of the README, or, for
+every repo at once, the taxonomy or the classifier instructions — are
+classified automatically by a pluggable LLM-CLI backend, selected with
+`enrich --classifier` (`claude` — the default, using the skill agent
 [`.claude/agents/repo-classifier.md`](.claude/agents/repo-classifier.md); `codex`;
 or `copilot`). It reads the repo's own description and README and produces the
 one-line description plus the `Main > Sub` categories. Editing `classifications.csv`

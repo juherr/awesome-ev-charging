@@ -477,7 +477,6 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 - [open-ev-data/open-ev-data-dataset](https://github.com/open-ev-data/open-ev-data-dataset) - OpenEV Data Dataset is a versioned open dataset of electric vehicle specifications authored as layered JSON and compiled into canonical records for analysis and integration (JavaScript · ⭐ 31).
 - [robeertm/ev-charge-tracker](https://github.com/robeertm/ev-charge-tracker) - A self-hosted Flask application that tracks electric-vehicle charging data, integrates vehicle manufacturer APIs, and provides dashboards, reports, and CO2 estimates using SQLite (Python · ⭐ 12).
 - [gaia-charge/evdb](https://github.com/gaia-charge/evdb) - An open-source database of 530+ electric vehicle specifications and market availability across 45 manufacturers, with JSON Schema validation, SQLite storage, and Streamlit visualization (Python · ⭐ 9).
-- [EVtivity/evtivity-mobile-app](https://github.com/EVtivity/evtivity-mobile-app) - Driver-facing white-label mobile app for the EVtivity EV charging platform, built with React Native and Expo for iOS and Android (TypeScript · ⭐ 6).
 - [scroodge/VoltFlow](https://github.com/scroodge/VoltFlow) - VoltFlow is a mobile-first PWA for tracking EV charging sessions, vehicle telemetry, trips, energy use, maintenance, and related vehicle data (TypeScript · ⭐ 3).
 - [chaser-d/Green_Smart_Grid_Simulator](https://github.com/chaser-d/Green_Smart_Grid_Simulator) - A DuckDB and dbt-based ELT pipeline that ingests, validates, unifies, and aggregates solar, wind, and hydroelectric telemetry into financial reporting marts (HTML · ⭐ 3).
 - [rajvvv/EV-Infra-Planner](https://github.com/rajvvv/EV-Infra-Planner) - A geospatial dashboard that forecasts electric vehicle adoption and estimates charger deployment gaps across major Indian cities (JavaScript · ⭐ 2).
@@ -579,7 +578,11 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 
 #### Maps & route planning
 
-- [GeiserX/Pumperly](https://github.com/GeiserX/Pumperly) - An open-source route planner combining real-time fuel prices and EV charging station data with detour-aware corridor filtering across 36 countries (TypeScript · ⭐ 41).
+- [GeiserX/Pumperly](https://github.com/GeiserX/Pumperly) - An open-source route planner combining live fuel prices from 22 countries and EV charging station data with detour-aware corridor filtering (TypeScript · ⭐ 41).
+
+#### Mobile app
+
+- [EVtivity/evtivity-mobile-app](https://github.com/EVtivity/evtivity-mobile-app) - Driver-facing white-label mobile app for the EVtivity EV charging platform, built with React Native and Expo for iOS and Android (TypeScript · ⭐ 6).
 
 #### Open Data
 

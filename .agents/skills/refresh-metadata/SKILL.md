@@ -98,9 +98,18 @@ mise run ingest
 mise run enrich
 ```
 
-- Enrichment is **incremental**: it reuses cached classifications keyed by
-  `pushed_at`, so only repos whose upstream changed since the last run pay the
-  LLM cost. A metadata refresh therefore re-classifies **few** repos, not all.
+- Enrichment is **incremental**: it reuses a cached classification while
+  the repo's classifier signature (the `signals` column) is unchanged. The
+  signature hashes the whole prompt: the repo's GitHub description, its topics
+  and the first 4,000 characters of its README (`README_PROMPT_CHARS`), plus
+  the taxonomy (`CATEGORY_TREE`) and the classifier instructions
+  (`CLASSIFIER_INSTRUCTIONS`). README edits past that cutoff invalidate
+  nothing; editing the taxonomy or the instructions invalidates every row.
+  While it is unchanged, only repos whose prompt-visible README, description or topics
+  changed since the last run pay the LLM cost; a code-only push costs nothing.
+  A metadata refresh therefore re-classifies **few** repos, not all — unless
+  the taxonomy or the instructions changed, which re-classifies the whole
+  listing and overwrites every hand-pinned cell.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
@@ -120,8 +129,8 @@ markers are missing or out of order.
 
 ### 4. Review the diff — expect broad drift
 
-A refresh is *expected* to touch many rows: any repo whose `pushed_at` moved
-gets re-classified, and star/dormant changes reshuffle which block
+A refresh is *expected* to touch many rows: any repo whose classifier signature
+changed gets re-classified, and star/dormant changes reshuffle which block
 (`Selection` / collapsed `Dormant` / collapsed `To refine`) a repo lands in. So
 a large diff is normal, not a bug. Sanity-check that nothing regressed to an
 empty category unexpectedly and that the block moves look plausible:
