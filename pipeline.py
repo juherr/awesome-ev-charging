@@ -60,6 +60,9 @@ EXCLUDED_REPOS = {
   "pogopaule/awesome-sustainability-jobs",  # a job board
   "snaimio/scooterama-ecommerce",           # an e-scooter web shop
   "Cano2020/Offshore-software-team",        # a company profile
+  # A general-purpose RTOS: no EV charging content of its own, so being a
+  # platform charger firmware can run on does not put it in this catalogue.
+  "zephyrproject-rtos/zephyr",
 }
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
 # `render --readme` replaces the text between these HTML comment markers in README:

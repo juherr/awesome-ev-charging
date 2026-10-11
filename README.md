@@ -477,7 +477,6 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 
 #### Developer tools & libraries
 
-- [zephyrproject-rtos/zephyr](https://github.com/zephyrproject-rtos/zephyr) - Zephyr is a scalable, security-focused real-time operating system for resource-constrained embedded and IoT devices, supporting multiple hardware architectures including ARM, x86, ARC, Xtensa, RISC-V, SPARC, and MIPS (C · ⭐ 16749).
 - [enbility/eebus-go](https://github.com/enbility/eebus-go) - A Go library implementing the EEBUS protocol (SHIP 1.0.1 and SPINE 1.3.0) for energy management and building automation use cases (Go · ⭐ 123).
 - [juherr/mobilityid](https://github.com/juherr/mobilityid) - Monorepo with the original Scala mobility ID library (contract identifiers) and Java, Go, PHP, and TypeScript ports, published to Maven Central, npm, and Packagist (PHP · ⭐ 2).
 - [ChargePi/openev-data-mcp](https://github.com/ChargePi/openev-data-mcp) - An MCP server for querying electric vehicle specifications including battery capacity, range, charging power, and drivetrain details from the open-ev-data dataset (PLpgSQL · ⭐ 1).
