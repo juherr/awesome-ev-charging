@@ -96,9 +96,13 @@ mise run enrich
 ```
 
 - Enrichment is **incremental**: it reuses a cached classification while
-  the repo's classifier signature — a hash of its GitHub description, topics
-  and README as shown to the model (the `signals` column) — is
-  unchanged, so only new/changed repos hit the LLM. **Never pass `--refresh`**
+  the repo's classifier signature (the `signals` column) is unchanged. The
+  signature hashes the whole prompt: the repo's GitHub description, its topics
+  and the first 4,000 characters of its README (`README_PROMPT_CHARS`), plus
+  the taxonomy (`CATEGORY_TREE`) and the classifier instructions
+  (`CLASSIFIER_INSTRUCTIONS`). README edits past that cutoff invalidate
+  nothing; editing the taxonomy or the instructions invalidates every row.
+  While it is unchanged, only new/changed repos hit the LLM. **Never pass `--refresh`**
   here — it re-classifies everything and would overwrite any hand-pinned cells.
 - This can take a few minutes (it iterates all repos, fetching READMEs). Run it
   in the background and wait for it to finish rather than polling tightly.
@@ -119,9 +123,10 @@ grep "<owner>/<repo>" classifications.csv
   `mise run enrich` (cache reuse, no LLM call) so the edit flows into
   `repos.enriched.csv`. A repo can hold several categories separated by `|`.
   Edit only **after** an `enrich` has stamped the row's current signature: if
-  the repo's README, description or topics changed since the row was written,
-  the next `enrich` re-classifies it and overwrites the hand edit. The same
-  holds for a hand-edited `description` cell.
+  any signature input changed since the row was written, the next `enrich`
+  re-classifies it and overwrites the hand edit. That includes a change to the
+  taxonomy or the classifier instructions, which overwrites **every** hand
+  edit at once. The same holds for a hand-edited `description` cell.
 - Alternatively, for a robust code-level override that survives `--refresh`, add
   an entry to `CATEGORY_OVERRIDES` in `pipeline.py` (key is the **lowercased**
   `owner/repo`, e.g. `"owner/repo": "Main > Sub"`); this applies at render time
@@ -148,8 +153,10 @@ a low-star repo showing up under `To refine` is expected, not a bug.
 Re-running `ingest`/`enrich` commonly **re-discovers and re-classifies other
 repos** whose README, GitHub description or topics changed since the last run
 (the cache reuse key is the classifier signature, not `pushed_at`). Stars and
-forks are refreshed for every repo too. So the diff on `README.md` / `classifications.csv` is often
-much larger than your single addition. This is normal pipeline drift, not a bug.
+forks change too, for every repo whose cached GitHub response has expired
+(24h `CACHE_TTL`) or once `cache_github/` is cleared — not on every run. So
+the diff on `README.md` / `classifications.csv` is often much larger than your
+single addition. This is normal pipeline drift, not a bug.
 Sanity-check that nothing regressed to an empty category unexpectedly:
 
 ```bash

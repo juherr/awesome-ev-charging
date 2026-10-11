@@ -86,19 +86,25 @@ hand-edited cells — never use it when you want to keep manual edits.
 #### Fix a description
 
 1. `mise run ingest` then `mise run enrich`, so the row's `signals` fingerprint
-   matches the repo as it is today. Skip this if the repo's README, GitHub
-   description and topics have not changed since the row was written.
+   matches the repo as it is today. Skip this only if none of the signature's
+   inputs (listed below) changed since the row was written.
 2. Edit the `description` cell for that repo's row in `classifications.csv`.
 3. `mise run enrich` again — it reuses the cache (no LLM call) because the
    fingerprint still matches, and carries your edit into `repos.enriched.csv`.
 4. `python pipeline.py render --readme README.md`
 5. Commit `classifications.csv` and `README.md`.
 
-Editing against a stale fingerprint does not stick: if the repo's README,
-description or topics changed since the row was written, the next `enrich`
-re-classifies the repo and overwrites your edit. Likewise, an edit only lasts
-until the upstream repo changes one of those again — which is usually when the
-description needs revisiting anyway.
+The `signals` fingerprint hashes the whole classifier prompt: the repo's GitHub
+description, its topics and the first 4,000 characters of its README
+(`README_PROMPT_CHARS`), plus the taxonomy (`CATEGORY_TREE`) and the classifier
+instructions (`CLASSIFIER_INSTRUCTIONS`) in `pipeline.py`. Editing against a
+stale fingerprint does not stick: the next `enrich` re-classifies the repo and
+overwrites your edit. Likewise, an edit only lasts until one of those inputs
+changes again. A change to the repo's own inputs is usually when the
+description needs revisiting anyway. A change to the taxonomy or the
+instructions re-classifies **every** repo and overwrites every hand edit at
+once. README edits past the 4,000-character cutoff change nothing, because the
+model never sees them.
 
 #### Change or move a category (section)
 
@@ -138,8 +144,10 @@ by manual ordering.
 
 ## How classification works
 
-New repos — and repos whose README, GitHub description or topics have changed —
-are classified automatically by a pluggable LLM-CLI backend, selected with
+New repos — and repos whose classifier inputs have changed: the GitHub
+description, the topics or the first 4,000 characters of the README, or, for
+every repo at once, the taxonomy or the classifier instructions — are
+classified automatically by a pluggable LLM-CLI backend, selected with
 `enrich --classifier` (`claude` — the default, using the skill agent
 [`.claude/agents/repo-classifier.md`](.claude/agents/repo-classifier.md); `codex`;
 or `copilot`). It reads the repo's own description and README and produces the
