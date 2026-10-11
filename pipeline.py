@@ -87,11 +87,11 @@ ADDITIONAL_REPOS = {
 CATEGORY_TREE = {
   "OCPP": ["Server", "Simulator", "Libraries", "Misc"],
   "OCPI": ["Server", "Simulator", "Libraries", "Misc"],
-  "iso15118": ["Plug&Charge", "Misc"],
+  "iso15118": ["Plug&Charge", "Simulator", "Libraries", "Misc"],
   "OICP": ["Server", "Simulator", "Libraries", "Misc"],
   "EMIP": ["Server", "Simulator", "Libraries", "Misc"],
   "OIOI": ["Server", "Simulator", "Libraries", "Misc"],
-  "Eichrecht": ["Misc"],
+  "Eichrecht": ["Libraries", "Misc"],
   # A closed list: left empty, the prompt showed a bare `- Other`, and the
   # classifier answered with a bare `Other` or a fresh 1-repo label each run.
   # Alphabetical, because this order is also the README's section order.
@@ -155,6 +155,7 @@ SUBCATEGORY_ALIASES = {
   "evaluation framework": "Developer tools & libraries",
   "libraries": "Developer tools & libraries",
   "mcp server": "Developer tools & libraries",
+  "rtos": "Developer tools & libraries",
   "vehicle api client": "Developer tools & libraries",
   "wallbox library": "Developer tools & libraries",
   "websocket infrastructure": "Developer tools & libraries",
@@ -167,7 +168,6 @@ SUBCATEGORY_ALIASES = {
   "evse gateway firmware": "EVSE firmware",
   "firmware": "EVSE firmware",
   "hardware adapter": "EVSE firmware",
-  "rtos": "EVSE firmware",
   # Energy management
   "der management": "Energy management",
   "energy management system": "Energy management",
@@ -242,13 +242,21 @@ CATEGORY_OVERRIDES = {
   "remontsuri/ev-qa-framework": "Other > Battery",
   "izivia/ocpp-toolkit": "OCPP > Libraries",  # a Kotlin library, not a simulator
   "juherr/evolve": "OCPP > Server",  # OCPP server; classifier returned empty categories
+  # Its README only says "Charge-Point-Simulator", with no description or topics,
+  # so the classifier cannot tell it is an OCPP charge point simulator.
+  "i-love-ocpp/charge-point-simulator": "OCPP > Simulator",
+  # Its README only lists "Roaming integration (Gire, Hubject)"; the source tree
+  # has OCPI and OICP modules (src/client/ocpi, src/assets/server/oicp).
+  "sap-labs-france/ev-server": "OCPP > Server|OCPI > Server|OICP > Server",
+  # Parses OCPP 1.5 JSON logs into Advenir reports: a parser built for OCPP. The
+  # model kept OCPP for a comparable KPI calculator but dropped it here.
+  "glurp/avere-advenir-json-generator": "OCPP > Misc|Other > Analytics & data",
   # A Home Assistant integration, restored by hand in #57; the #59 re-run filed it
   # under its feature (charging optimisation) instead.
   "henrikekblad/spotnav-home-assistant": "Other > Home automation",
-  # Charger firmware stacks; the #59 re-run filed both as developer tooling,
-  # which also moved EVerest's primary listing out of OCPP.
+  # A charger firmware stack; the #59 re-run filed it as developer tooling,
+  # which also moved its primary listing out of OCPP.
   "everest/everest": "OCPP > Misc|iso15118 > Misc|Other > EVSE firmware",
-  "zephyrproject-rtos/zephyr": "Other > EVSE firmware",
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
@@ -298,9 +306,18 @@ CLASSIFIER_INSTRUCTIONS = (
   "1) a concise, factual one-sentence description (English, no marketing) of what "
   "the project is and does;\n"
   "2) its categories from the taxonomy below — one or more main categories. "
-  "Every main category always carries a subcategory: pick one the taxonomy lists "
-  "for it, and propose a short new one only when none fits. Never return a bare "
-  "main category.\n"
+  "Include a protocol main category (every one except Other) whenever the project "
+  "speaks that protocol: it implements, simulates or tests it, or is built "
+  "specifically for it (a library, a parser, a test or spec tool). A project that "
+  "only talks to a vendor API, or to a server that happens to use the protocol, "
+  "does not get that protocol. Eichrecht includes the OCMF signed meter-data "
+  "format and transparency software. Other adds what the protocol categories cannot "
+  "describe (a home automation integration, charger firmware, a security tool); "
+  "it never replaces a protocol category the project qualifies for. List protocol "
+  "categories first. Every main category always carries a subcategory: pick one "
+  "the taxonomy lists for it; under a protocol, use Misc when none fits; under "
+  "Other, propose a short new one only when none fits. Never return a bare main "
+  "category.\n"
   "Some repositories have no README; the prompt says so when that happens — "
   "classify from the description and topics alone rather than declining.\n"
   "Do not run any commands or tools — everything you need is below.\n"
@@ -1009,6 +1026,27 @@ def classification_downgrades(before, after):
   return sorted(downgraded, key=str.lower)
 
 
+def _mains(categories):
+  return {chunk.split(">", 1)[0].strip() for chunk in categories.split("|") if chunk.strip()}
+
+
+def protocol_losses(before, after):
+  """(full_name, main) pairs for protocol categories a repo had and lost.
+
+  A repo is filed under its protocol when it speaks it; losing one while still
+  classified is the drift a re-classification can introduce without emptying
+  anything, so neither of the other checks sees it. Losing "Other", changing a
+  subcategory, an emptied category and a new repo are not reported here.
+  """
+  lost = []
+  for full_name, row in after.items():
+    now = (row.get("categories") or "").strip()
+    prev = ((before.get(full_name) or {}).get("categories") or "").strip()
+    if now and prev:
+      lost += [(full_name, main) for main in sorted(_mains(prev) - _mains(now) - {"Other"})]
+  return sorted(lost, key=lambda pair: (pair[0].lower(), pair[1]))
+
+
 def check_classifications(args):
   """CI guard: fail when a repo that had a category comes back without one."""
   if args.base == "-":
@@ -1025,6 +1063,8 @@ def check_classifications(args):
     print(f"::warning::{full_name} entered the listing without a category.")
   # A warning, not a failure: the repo still renders under its main category,
   # and blocking the monthly refresh on model drift would cost more than it saves.
+  for full_name, main in protocol_losses(before, after):
+    print(f"::warning::{full_name} lost its {main} category.")
   for full_name in classification_downgrades(before, after):
     print(f"::warning::{full_name} lost its subcategory (now a bare main category).")
   for full_name in lost:
@@ -1254,7 +1294,25 @@ def _row_categories(row):
   # e.g. "Route planner" + "Charging station map" -> one bucket) while preserving order.
   seen = set()
   out = [p for p in out if not (p in seen or seen.add(p))]
+  # The README lists a repo under its first category only, so a protocol
+  # category goes before "Other" whatever order the classifier used: an OCPP
+  # implementation that is also a Home Assistant integration belongs in OCPP.
+  out.sort(key=lambda p: p[0] == "Other")
   return out or [("Uncategorized", None)]
+
+
+def unknown_subcategories(rows):
+  """`Main > Sub` labels outside CATEGORY_TREE once aliases and overrides apply.
+
+  The classifier may propose a subcategory when none fits, and each one becomes
+  a README section of its own. Returns {label: [full_name, ...]}, both sorted.
+  """
+  found = defaultdict(list)
+  for row in rows:
+    for main, sub in _row_categories(row):
+      if sub and sub not in CATEGORY_TREE.get(main, []):
+        found[f"{main} > {sub}"].append(row["full_name"])
+  return {label: sorted(found[label], key=str.lower) for label in sorted(found)}
 
 
 _MAIN_INDEX = {main: i for i, main in enumerate(CATEGORY_TREE)}
@@ -1453,6 +1511,12 @@ def render(args):
   # never shows an excluded repo even from a stale enriched CSV.
   excluded = {r.lower() for r in EXCLUDED_REPOS}
   rows = [r for r in rows if r["full_name"].lower() not in excluded]
+
+  # A warning, not a failure: a proposed subcategory is allowed when none fits,
+  # but it opens a new section, so it should be a decision — alias it, add it
+  # to the taxonomy, or override the repo.
+  for label, names in unknown_subcategories(rows).items():
+    print(f"::warning::{label} is not in CATEGORY_TREE ({', '.join(names)}).")
 
   in_list = [r for r in rows if _promotion(r) >= 0]
   selection = [r for r in in_list if not _inactive(r)]

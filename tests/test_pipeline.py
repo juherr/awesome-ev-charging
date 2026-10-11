@@ -175,6 +175,76 @@ def test_the_guard_warns_on_a_downgrade_without_failing(tmp_path, capsys):
     assert "::error::" not in out
 
 
+# --- The CI guard: a repo that lost a protocol category ------------------------
+
+def test_a_repo_that_lost_a_protocol_category_is_reported():
+    """The #61 drift: a firmware that implements OCPP came back as `Other` only."""
+    before = {"acme/fw": cached("acme/fw", "OCPP > Libraries"),
+              "acme/meter": cached("acme/meter", "Eichrecht > Misc|Other > Battery")}
+    after = {"acme/fw": cached("acme/fw", "Other > EVSE firmware"),
+             "acme/meter": cached("acme/meter", "Other > Developer tools & libraries")}
+    assert pipeline.protocol_losses(before, after) == [("acme/fw", "OCPP"),
+                                                       ("acme/meter", "Eichrecht")]
+
+
+def test_a_changed_protocol_subcategory_or_a_lost_other_is_not_a_protocol_loss():
+    before = {"acme/sim": cached("acme/sim", "OCPP > Server|Other > Home automation")}
+    after = {"acme/sim": cached("acme/sim", "OCPP > Simulator")}
+    assert pipeline.protocol_losses(before, after) == []
+
+
+def test_an_emptied_or_new_repo_is_not_a_protocol_loss():
+    before = {"acme/lost": cached("acme/lost", "OCPP > Server")}
+    after = {"acme/lost": cached("acme/lost", ""), "acme/new": cached("acme/new", "Other > Security")}
+    assert pipeline.protocol_losses(before, after) == []
+
+
+def test_the_guard_warns_on_a_protocol_loss_without_failing(tmp_path, capsys):
+    base = tmp_path / "base.csv"
+    cache = tmp_path / "classifications.csv"
+    pipeline.save_classifications(base, {"acme/fw": cached("acme/fw", "OCPP > Libraries")})
+    pipeline.save_classifications(cache, {"acme/fw": cached("acme/fw", "Other > EVSE firmware")})
+    pipeline.check_classifications(types.SimpleNamespace(base=str(base), cache=str(cache)))
+    out = capsys.readouterr().out
+    assert "::warning::acme/fw lost its OCPP category" in out
+    assert "::error::" not in out
+
+
+# --- Rendering: placement and subcategories outside the taxonomy --------------
+
+def test_a_protocol_category_places_the_repo_before_other():
+    """The README lists a repo under its first category only, so `Other` first
+    pulled OCPP implementations out of the OCPP section."""
+    row = {"full_name": "acme/ha", "categories": "Other > Home automation|OCPP > Server"}
+    assert pipeline._row_categories(row) == [("OCPP", "Server"), ("Other", "Home automation")]
+
+
+def test_an_other_only_repo_keeps_its_order():
+    row = {"full_name": "acme/evcc", "categories": "Other > Energy management|Other > Mobile app"}
+    assert pipeline._row_categories(row) == [("Other", "Energy management"),
+                                             ("Other", "Mobile app")]
+
+
+def test_a_subcategory_outside_the_taxonomy_is_reported():
+    rows = [{"full_name": "a/jobs", "categories": "Other > Job portal"},
+            {"full_name": "b/ha", "categories": "Other > Home Assistant Integration"},
+            {"full_name": "c/srv", "categories": "OCPP > Server|OCPP > Dashboard"}]
+    assert pipeline.unknown_subcategories(rows) == {"OCPP > Dashboard": ["c/srv"],
+                                                    "Other > Job portal": ["a/jobs"]}
+
+
+def test_render_warns_about_a_subcategory_outside_the_taxonomy(tmp_path, capsys):
+    enriched = tmp_path / "repos.enriched.csv"
+    fields = pipeline.CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"]
+    with open(enriched, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        writer.writerow({**repo("a/jobs", promoted="2"), "categories": "Other > Job portal"})
+    pipeline.render(types.SimpleNamespace(infile=str(enriched), out=str(tmp_path / "legacy.md"),
+                                          readme=None))
+    assert "::warning::Other > Job portal is not in CATEGORY_TREE" in capsys.readouterr().out
+
+
 # --- The taxonomy: every main offers a closed subcategory list -----------------
 
 def test_every_main_category_offers_subcategories():
@@ -212,7 +282,7 @@ def test_aliases_only_apply_under_other():
 
 def test_a_case_variant_folds_onto_its_taxonomy_label():
     row = {"full_name": "acme/app", "categories": "Other > Mobile App|OCPP > misc"}
-    assert pipeline._row_categories(row) == [("Other", "Mobile app"), ("OCPP", "Misc")]
+    assert pipeline._row_categories(row) == [("OCPP", "Misc"), ("Other", "Mobile app")]
 
 
 def test_every_category_override_uses_the_taxonomy():
@@ -238,6 +308,14 @@ def test_no_contract_copy_allows_a_bare_main(copy):
     text = CONTRACT_COPIES[copy]()
     assert "on its own" not in text
     assert "- Main\n" not in text + "\n"
+
+
+@pytest.mark.parametrize("copy", CONTRACT_COPIES)
+def test_every_contract_copy_keeps_protocol_categories_ahead_of_other(copy):
+    text = " ".join(CONTRACT_COPIES[copy]().split())
+    assert "never replaces a protocol" in text
+    assert "speaks" in text  # implementing a protocol, not mentioning it, is the test
+    assert "OCMF" in text  # the model filed OCMF libraries as "Other protocols"
 
 
 @pytest.mark.parametrize("copy", CONTRACT_COPIES)
