@@ -179,6 +179,8 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 **eMI³ (eMobility ICT Interoperability)** was a European initiative for e-mobility interoperability.
 
 - [Website (archived)](https://web.archive.org/web/20230925033629/http://emi3group.com/)
+- [Document index](https://github.com/juherr/awesome-ev-charging/blob/main/emi3/README.md) - Every PDF the website published, with a verified archived copy where one survives.
+- [Statement on quality of e-mobility service](https://github.com/juherr/awesome-ev-charging/blob/main/emi3/eMI3-statement-on-QoS-2020-final.pdf) - Using publicly accessible charging infrastructures (2020-06).
 - Specifications
   - eMi³ standard version V1.1 electric vehicle ICT interface specifications (2019-10)
     - [Part 1 v1.1](https://github.com/juherr/awesome-ev-charging/blob/main/emi3/emi3-1.1/eMI3-standard-v1.1-Part-1.pdf)
