@@ -194,6 +194,7 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 
 - [Website (archived)](https://web.archive.org/web/20230205021136/https://nemo-emobility.eu/)
 - [Deliverables (archived)](https://web.archive.org/web/20230205021136/https://nemo-emobility.eu/deliverables/)
+- [Document index](https://github.com/juherr/awesome-ev-charging/blob/main/nemo/README.md) - Every PDF the website published, with its original and archived links.
 - Specifications
   - [D3.2 Open European Inter-Roaming Protocol](https://github.com/juherr/awesome-ev-charging/blob/main/nemo/NeMo-D3.2-Open-European-InterRoaming-Protocol_Final.pdf) - Draft (2017-12).
   - Common Information Models v1.0 (2017-09)
