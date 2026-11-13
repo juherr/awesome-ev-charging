@@ -171,7 +171,7 @@ when that documentation is public and unlinked when it sits behind a login.
 | evspeed CSMS | WELLBIOTECEVC Co., Ltd. | 1.6 | [1.6 Full (1.6)](https://openchargealliance.org/wp-content/uploads/2024/02/Certificate_OCA.0016.0609.CSMS_WELLBIOTECEVC.pdf) | — | — | — | — | — |
 | [evsys](https://github.com/ruslan-hut/evsys) | ruslan-hut | 1.6 | — | [Y](https://github.com/ruslan-hut/evsys) | — | — | self-hosted | active |
 | evSystem | [Powercube Korea Co., Ltd.](https://openchargealliance.org/participants/powercube-korea-co-ltd/) | 1.6 | [1.6 Full (1.0)](https://openchargealliance.org/wp-content/uploads/2023/12/Certificate_OCA00160148CSMS_Powercube.pdf) | — | — | — | — | — |
-| [EVtivity CSMS](https://github.com/EVtivity/evtivity-csms) | EVtivity | 1.6, 2.0.1 | — | [Y](https://github.com/EVtivity/evtivity-csms) | — | — | self-hosted | active |
+| [EVtivity CSMS](https://evtivity.com) | EVtivity | 1.6, 2.0.1, 2.1 | — | [Y](https://github.com/EVtivity/evtivity-csms) | [Y](https://evtivity.com/docs/csms/roaming) | [Y](https://evtivity.com/api-reference) | self-hosted | active |
 | [Exploren](https://exploren.com.au/) | EVSE Australia Pty Ltd | 1.6, 2.0.1 | — | — | — | — | saas | active |
 | FILTSON EV | SG Safety Corp. | 1.6 | [1.6 Full + Security (1.0.0)](https://openchargealliance.org/wp-content/uploads/2025/10/Certificate_OCA.0016.0114.CSMS_SG_Safety_Corp.pdf) | — | — | — | — | — |
 | [FITS eMobility Cloud](https://www.emobilitycloud.de/) | Fink IT-Solutions GmbH & Co. KG | — | — | — | — | — | saas | active |
