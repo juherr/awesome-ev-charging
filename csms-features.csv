@@ -25,6 +25,21 @@ driivz,Tariffs,https://driivz.com/platform/interoperability-and-extensibility/,S
 driivz,Load Management,https://driivz.com/platform/energy-management-system/,"""Optimize energy flow at EV charging sites by orchestrating the grid, renewables, batteries, and EVs"""
 driivz,Reporting,https://driivz.com/platform/reporting-and-analytics/,"""Use one of dozens of reports built into Driivz's EV charging platform, or build your own"""
 driivz,Payments,https://driivz.com/platform/ev-billing/,Billing module monetising networks across business models
+evtivity,Core,https://evtivity.com/docs/csms/stations,"Stations connect over OCPP 1.6, 2.0.1 and 2.1; register stations, manage connectors and OCPP settings"
+evtivity,Smart Charging,https://evtivity.com/docs/csms/smart-charging,Charging profile templates with time-of-day power schedules pushed to multiple stations
+evtivity,Local Authorization List Management,https://evtivity.com/docs/csms/local-auth-list,Manage offline authorization tokens stored on each charging station
+evtivity,Reservation,https://evtivity.com/docs/csms/reservations,Reserve connectors for drivers and manage the reservation lifecycle
+evtivity,Firmware Management,https://evtivity.com/docs/csms/firmware-updates,"Firmware update campaigns to groups of stations, and signed firmware updates"
+evtivity,ISO 15118 Support,https://evtivity.com/docs/csms/certificates,"PKI for ISO 15118: CA certificates, station V2G certificates and certificate signing requests"
+evtivity,Plug & Charge,https://evtivity.com/docs/csms/certificates,Enable Plug & Charge (ISO 15118); contract certificates from a local contract CA or a PKI provider
+evtivity,OCPI Roaming,https://evtivity.com/docs/csms/roaming,Connect to roaming partners using OCPI 2.2.1 and 2.3.0
+evtivity,Tariffs,https://evtivity.com/docs/csms/pricing,"Tariffs with time-of-day restrictions, split billing, holidays and multi-level assignment"
+evtivity,Payments,https://evtivity.com/docs/integrations/payment-providers,"Stripe and Adyen payment providers, payment lifecycle, webhooks and reconciliation"
+evtivity,Token Management,https://evtivity.com/docs/csms/tokens,Driver authentication tokens including RFID cards and app-based tokens
+evtivity,Load Management,https://evtivity.com/docs/csms/load-management,Distributes available power across stations with hierarchical panel and circuit modelling
+evtivity,Reporting,https://evtivity.com/docs/csms/reports,"Financial, energy and sustainability reports"
+evtivity,White-label,https://evtivity.com/docs/guides/white-labeling,"Rebrand the CSMS and driver portal with logo, colours, domain, content and notifications"
+evtivity,Remote Commands,https://evtivity.com/docs/csms/stations#ocpp-commands,"Send OCPP commands such as Reset, UnlockConnector, ChangeAvailability and TriggerMessage"
 monta,Remote Commands,https://developer.monta.com/reference/start-charge-1,"Start, stop and unlock endpoints in the public API"
 monta,Smart Charging,https://developer.monta.com/reference/set-charging-profile-1,Set and clear charging profiles plus per-charge-point charging rules
 monta,Token Management,https://developer.monta.com/reference/get-charge-auth-tokens-1,"Charge auth tokens can be created, listed and blocked"
