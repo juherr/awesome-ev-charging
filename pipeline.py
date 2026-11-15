@@ -1234,6 +1234,12 @@ def check_classifications(args):
         f"{len(arrived_empty)} newcomer(s) without a category.")
 
 
+def cached_labels(entry):
+  """The `Main > Sub` labels of a cache entry, as `--reask-category` names them."""
+  return {label.strip() for label in (entry.get("categories") or "").split("|")
+          if label.strip()}
+
+
 def enrich(args):
   headers = auth_headers(args.token)
 
@@ -1269,7 +1275,13 @@ def enrich(args):
   # The cache itself is saved after every paid answer, not only at the end: a
   # full re-classification outlives a 2-hour job limit, and a killed run runs no
   # cleanup, so an answer saved only at the end is an answer paid for and lost.
-  reused = classified = failed = unreadable = 0
+  # An edit to CATEGORY_TREE or CLASSIFIER_INSTRUCTIONS changes every signature
+  # at once, and re-asking the whole listing costs hours of paid calls for
+  # answers most of which cannot have moved. `--restamp` keeps them; the labels
+  # in `--reask-category` are the catch-all buckets the edit split, whose old
+  # answers are the ones worth paying for again.
+  reask = {label.strip() for label in args.reask_category or []}
+  reused = restamped = classified = failed = unreadable = 0
   with open(args.out, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"])
     writer.writeheader()
@@ -1312,6 +1324,20 @@ def enrich(args):
         description = prev.get("description", "")
         reused += 1
         tag = "♻️  reused"
+      elif (args.restamp and prev
+            and ((prev.get("categories") or "").strip()
+                 or not has_classifiable_signal(row, readme))
+            and not (reask & cached_labels(prev)
+                     and row["full_name"].lower() not in CATEGORY_OVERRIDES)):
+        # The signature is stale, but `--restamp` says the prompt edit behind it
+        # cannot have moved this answer: adopt it as the answer to the current
+        # prompt. Only the buckets the edit split (`--reask-category`) are asked
+        # again, and a repo pinned by CATEGORY_OVERRIDES never is — it renders
+        # from the override whatever the model says.
+        row["categories"] = prev.get("categories", "")
+        description = prev.get("description", "")
+        restamped += 1
+        tag = "🔖 restamped"
       else:
         result = classify(row, readme)
         if result is None:
@@ -1347,7 +1373,8 @@ def enrich(args):
 
   save_classifications(args.cache, cache)
   print(f"\n✅ Wrote {len(rows)} enriched repositories to {args.out}")
-  print(f"   classified: {classified} — reused: {reused} — failed: {failed}"
+  print(f"   classified: {classified} — reused: {reused} — restamped: {restamped}"
+        f" — failed: {failed}"
         f" — README unreadable: {unreadable} — cache: {args.cache} ({len(cache)} entries)")
 
   # Every repo the backend was asked about came back a hard failure. Each one
@@ -1748,6 +1775,14 @@ def main():
   p_enrich.add_argument("--skip-dormant", action="store_true", help="Skip dormant repos.")
   p_enrich.add_argument("--refresh", action="store_true",
                         help="Re-classify everything, ignoring the previous enriched CSV.")
+  p_enrich.add_argument("--restamp", action="store_true",
+                        help="Keep a cached answer whose signature went stale (after "
+                             "an edit to the taxonomy or the classifier contract) "
+                             "and stamp it as current, instead of asking again.")
+  p_enrich.add_argument("--reask-category", action="append", metavar="'MAIN > SUB'",
+                        help="With --restamp: ask again for a stale answer holding "
+                             "this category (repeatable), unless CATEGORY_OVERRIDES "
+                             "pins the repo.")
   p_enrich.set_defaults(func=enrich)
 
   p_render = sub.add_parser("render", help="Render a curated Markdown view from the enriched CSV.")
@@ -1768,6 +1803,14 @@ def main():
   p_check.set_defaults(func=check_classifications)
 
   args = parser.parse_args()
+  if args.stage == "enrich":
+    # `--refresh` asks every repo again, `--restamp` keeps stale answers: one
+    # silently overriding the other would either pay for the whole listing or
+    # skip the re-ask that was wanted.
+    if args.restamp and args.refresh:
+      p_enrich.error("--restamp and --refresh are mutually exclusive")
+    if args.reask_category and not args.restamp:
+      p_enrich.error("--reask-category only applies with --restamp")
   args.func(args)
 
 
