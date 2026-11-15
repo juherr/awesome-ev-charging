@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve **Awesome Electric Vehicle**! Contributions of new
+Thanks for helping improve **Awesome EV Charging**! Contributions of new
 tools, fixes to descriptions, and better categorization are all welcome.
 
 > **Important:** the project listing under `## Tools and Resources` in
