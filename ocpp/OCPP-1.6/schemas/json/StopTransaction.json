@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "id": "urn:OCPP:1.6:2019:12:StopTransactionRequest",
+    "id": "urn:OCPP:1.6:2025:04:StopTransactionRequest",
     "title": "StopTransactionRequest",
     "type": "object",
     "properties": {
@@ -147,6 +147,7 @@
                                         "V",
                                         "K",
                                         "Celcius",
+                                        "Celsius",
                                         "Fahrenheit",
                                         "Percent"
                                     ]
