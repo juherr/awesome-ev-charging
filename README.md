@@ -68,10 +68,14 @@ The **Open Charge Point Protocol (OCPP)** is a communication protocol between el
 ### OCPI (Open Charge Point Interface)
 
 The **Open Charge Point Interface (OCPI)** is a protocol for roaming between charging station networks.
+The next version is developed in the `ocpi-3` repository, which only [EVRoaming Foundation contributors](https://evroaming.org/how-to-join/) can access.
+
+OCPI versions read `MAJOR.MINOR.PATCH`. A `-dN` suffix (`2.1.1-d2`, `2.2-d2`) marks a documentation update of the same specification: text and examples only, no protocol change. From 2.3.0 on, the core is also published in editions (`ed1`, `ed2`), where an edition may change messages, fields or datatypes. This edition scheme follows a CEN-CENELEC proposal that is [still under discussion](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/README.md#versioning-of-the-230-documents).
 
 - [Specifications on GitHub](https://github.com/ocpi/ocpi)
-  - [2.3.0-d2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2/OCPI-2.3.0-ed2.pdf) (2026-06)
-  - [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf) (2025-02)
+  - [2.3.0 Edition 2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2/OCPI-2.3.0-ed2.pdf) - Core edition 2, adds Invoice Reconciliation (2026-06).
+  - [2.3.0 Edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed1/OCPI-2.3.0.pdf) - Core edition 1 without the Payments module, an internal release upstream (2026-06).
+  - [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf) - Original release, core edition 1 including the Payments module (2025-02).
   - [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf) (2021-10)
   - [2.2.0-d2](https://github.com/ocpi/ocpi/releases/download/2.2-d2/OCPI-2.2-d2.pdf) - Deprecated, use 2.2.1 instead (2020-06)
   - [2.2.0](https://github.com/ocpi/ocpi/releases/download/2.2/OCPI-2.2.pdf) - Deprecated, use 2.2.0-d2 instead (2019-09)
@@ -79,12 +83,12 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
   - [2.1.1](https://github.com/ocpi/ocpi/releases/download/2.1.1/OCPI_2.1.1.pdf) - Deprecated, use 2.1.1-d2 instead (2017-06)
   - 2.1.0 - Deprecated, contains some bugs, use 2.1.1 instead (2016-04)
   - [2.0](https://github.com/ocpi/ocpi/files/135934/OCPI_2.0-d2.pdf) (2016-02)
+  - Sources: the [`2.3.0/release/core`](https://github.com/ocpi/ocpi/tree/2.3.0/release/core), [`2.3.0/release/payments`](https://github.com/ocpi/ocpi/tree/2.3.0/release/payments) and [`2.3.0/release/bookings`](https://github.com/ocpi/ocpi/tree/2.3.0/release/bookings) branches are the source of truth for 2.3.0; fixes to earlier versions live on [`release-2.2.1-bugfixes`](https://github.com/ocpi/ocpi/tree/release-2.2.1-bugfixes), [`release-2.2-bugfixes`](https://github.com/ocpi/ocpi/tree/release-2.2-bugfixes) and [`release-2.1.1-bugfixes`](https://github.com/ocpi/ocpi/tree/release-2.1.1-bugfixes). The older `release-2.3.0-bugfixes` branch is frozen.
 - [ocpi.github.io](https://ocpi.github.io/) - OCPI feature-development hub: proposals and processes for upcoming spec versions.
 - Official OpenAPI/Swagger definitions and migration guides (rendered from the [openapi-specification](#api-specification) project).
   - [2.3.0 Swagger UI](https://ocpi.github.io/openapi-specification/ocpi/2.3.0/)
   - [2.2.1 → 2.3.0 migration guide](https://ocpi.github.io/openapi-specification/migrations/2.2.1-2.3.0/migration-guide.html)
   - [2.2.1 Swagger UI](https://ocpi.github.io/openapi-specification/ocpi/2.2.1/)
-  
 - [ocpi.fyi](https://ocpi.fyi/) - A browsable rendering of the OCPI specification with an API reference and version comparison. 🏅
   - [2.3.0 Swagger](https://ocpi.fyi/api/2.3.0/swagger/) (unofficial)
   - [2.2.1 Swagger](https://ocpi.fyi/api/2.2.1/swagger/) (unofficial)
@@ -92,7 +96,9 @@ The **Open Charge Point Interface (OCPI)** is a protocol for roaming between cha
 
 #### Modules
 
-OCPI 2.3.0 is published as a [core specification](https://github.com/ocpi/ocpi/tree/2.3.0/release/core) plus optional modules packaged separately.
+OCPI 2.3.0 is published as a [core specification](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/README.md#specification-contents) plus functional modules that are packaged and released independently: each module package bundles a core edition with one module.
+
+Besides the modules, the core defines the protocol meta information that connects the parties: [transport and format](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/transport_and_format.asciidoc), [status codes](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/status_codes.asciidoc), the [version information endpoint](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/version_information_endpoint.asciidoc) and [credentials & registration](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/credentials.asciidoc).
 
 Core functional modules:
 
@@ -108,15 +114,15 @@ Core functional modules:
 | Hub Client Info        | [2.2.1][ocpi-hci-221], [2.3.0][ocpi-hci-230]                        |
 | Invoice Reconciliation | [2.3.0 (ed2)][ocpi-ir-230]                                          |
 
-Additional modules (packaged separately). Payments and Bookings are optional, evolve independently of the core, and are published as standalone PDFs bundling a core edition with the module. They are independent from each other and from Invoice Reconciliation — an implementation may support any of them on its own.
+Additional modules (packaged separately). Payments and Bookings are optional and evolve independently of the core: each carries its own module version, and each PDF bundles it with one core edition. They are independent from each other and from Invoice Reconciliation — an implementation may support any of them on its own. The upstream [compatibility matrix](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/README.md#compatibility-matrix) maps every document to its tag, branch, core edition and module version.
 
-- Payments (2.3.0)
-  - [ed2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2-payments/OCPI-2.3.0-ed2-payments.pdf) (2026-06, core edition 2 + Payments)
-  - [ed1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-payments/OCPI-2.3.0-payments.pdf) (2026-06, core edition 1 + Payments)
-- Booking (2.3.0) — exact version labels are still being settled; the OCPI editors deferred on this in [ocpi/ocpi#572](https://github.com/ocpi/ocpi/issues/572)
-  - ed2 — not yet released
-  - [ed1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-bookings/OCPI-2.3.0-bookings.pdf) (2026-06, tag `v2.3.0-bookings`)
-  - [1.1](https://evroaming.org/wp-content/uploads/2026/01/OCPI-2.3.0-booking-1.1.pdf) (2025-06, no GitHub tag)
+- Payments 1 ([specification](https://github.com/ocpi/ocpi/blob/2.3.0/release/payments/mod_payments.asciidoc))
+  - [With core edition 2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2-payments/OCPI-2.3.0-ed2-payments.pdf) (2026-06, tag `v2.3.0-ed2-payments`)
+  - [With core edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-payments/OCPI-2.3.0-payments.pdf) - Same specification as the original 2.3.0 release (2026-06, tag `v2.3.0-payments`)
+- Bookings ([specification](https://github.com/ocpi/ocpi/blob/2.3.0/release/bookings/mod_bookings.asciidoc))
+  - Bookings 1.1 with core edition 2 - Not yet released
+  - [Bookings 1.1 with core edition 1](https://evroaming.org/wp-content/uploads/2026/01/OCPI-2.3.0-booking-1.1.pdf) (2025-06, not yet tagged)
+  - [Bookings 1 with core edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-bookings/OCPI-2.3.0-bookings.pdf) (2026-06, tag `v2.3.0-bookings`)
 
 Extensions (vendor / community):
 
