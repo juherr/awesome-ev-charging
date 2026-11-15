@@ -1027,6 +1027,10 @@ def test_a_codeberg_repo_is_promoted_to_the_selection():
     ({"/contents": FakeResponse(502)}, None),
     ({"/contents": FakeJsonResponse(200, [{"name": "Readme.rst", "type": "file"}]),
       "/raw/Readme.rst": FakeResponse(503)}, None),
+    # The listing names a README the raw endpoint no longer serves: the cached
+    # listing is stale, which says nothing about whether the repo has a README.
+    ({"/contents": FakeJsonResponse(200, [{"name": "README.md", "type": "file"}]),
+      "/raw/README.md": FakeResponse(404)}, None),
 ])
 def test_a_codeberg_readme_is_read_from_codeberg(tmp_path, monkeypatch, routes, expected):
     sent = stub_codeberg(monkeypatch, tmp_path, routes)

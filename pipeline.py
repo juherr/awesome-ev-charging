@@ -538,8 +538,10 @@ def fetch_codeberg_readme(full_name):
                if e.get("type") == "file" and _README_FILE.fullmatch(e.get("name", ""))), None)
   if name is None:
     return ""
+  # No `missing=""` here: the listing named this file, so a 404 means the
+  # (cached) listing is stale, not that the repo has no README.
   return github_request_cached(f"{CODEBERG_API}/repos/{full_name}/raw/{name}",
-                               headers={}, missing="", raw=True)
+                               headers={}, raw=True)
 
 
 def paginate(url, headers, params=None, cap=None, throttle=0):
