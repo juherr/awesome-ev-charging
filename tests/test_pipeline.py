@@ -52,6 +52,7 @@ def run_enrich(tmp_path, rows, classify, cache=(), expect_exit=False, **override
         infile=str(infile), out=str(tmp_path / "repos.enriched.csv"),
         cache=str(cache_path), token=None, limit=None, classifier="stub",
         skip_forks=False, skip_dormant=False, refresh=False,
+        restamp=False, reask_category=None,
     )
     args.__dict__.update(overrides)
 
@@ -856,6 +857,140 @@ def test_the_chosen_model_does_not_invalidate_the_cache(monkeypatch):
     before = pipeline.classifier_signature(repo(description="An OCPP server"), "")
     monkeypatch.setattr(pipeline, "CLASSIFIER_COPILOT_MODEL", "some-other-model")
     assert pipeline.classifier_signature(repo(description="An OCPP server"), "") == before
+
+
+# --- enrich --restamp: keeping answers a prompt edit cannot have changed ------
+
+def never_asked(row, readme):
+    raise AssertionError("a restamped entry must not reach the backend")
+
+
+def ocpp_server(row, readme):
+    return ("A fresh answer.", [("OCPP", "Server")])
+
+
+def test_restamp_adopts_a_stale_answer_without_asking(tmp_path):
+    """An edit to the taxonomy or the contract changes every signature at once.
+
+    Re-asking ~680 repos costs hours of paid calls for answers most of which
+    cannot have moved; `--restamp` keeps them and stamps them as current.
+    """
+    entry = repo(description="An OCPP server")
+    enriched, cache = run_enrich(
+        tmp_path, [entry], never_asked, restamp=True,
+        cache=[cached("acme/charger", "OCPP > Server", description="An OCPP server.",
+                      signals="a-stale-signature")])
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert enriched[0]["description"] == "An OCPP server."
+    assert cache["acme/charger"]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["description"] == "An OCPP server."
+    assert cache["acme/charger"]["signals"] == pipeline.classifier_signature(entry, "")
+
+
+def test_restamp_is_counted_apart_from_reuse(tmp_path, capsys):
+    run_enrich(tmp_path, [repo(description="An OCPP server")], never_asked, restamp=True,
+               cache=[cached("acme/charger", "OCPP > Server", signals="a-stale-signature")])
+    assert "restamped: 1" in capsys.readouterr().out
+
+
+def test_without_restamp_a_stale_answer_is_still_asked_again(tmp_path):
+    enriched, _ = run_enrich(
+        tmp_path, [repo(description="An OCPP server")], ocpp_server,
+        cache=[cached("acme/charger", "OCPP > Misc", signals="a-stale-signature")])
+    assert enriched[0]["categories"] == "OCPP > Server"
+
+
+def test_restamp_re_asks_a_stale_answer_in_a_split_bucket(tmp_path):
+    """The edit split `OCPP > Misc`: the old answer is the one that may move."""
+    enriched, cache = run_enrich(
+        tmp_path, [repo(description="An OCPP server")], ocpp_server, restamp=True,
+        reask_category=["OCPP > Misc"],
+        cache=[cached("acme/charger", "Other > Tools| OCPP > Misc ",
+                      signals="a-stale-signature")])
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["categories"] == "OCPP > Server"
+
+
+def test_restamp_keeps_a_stale_answer_outside_the_split_buckets(tmp_path):
+    enriched, _ = run_enrich(
+        tmp_path, [repo(description="An OCPP server")], never_asked, restamp=True,
+        reask_category=["OCPP > Misc"],
+        cache=[cached("acme/charger", "OCPP > Miscellaneous", signals="a-stale-signature")])
+    assert enriched[0]["categories"] == "OCPP > Miscellaneous"
+
+
+def test_restamp_does_not_re_ask_a_repo_pinned_by_an_override(tmp_path, monkeypatch):
+    """A pinned repo renders from CATEGORY_OVERRIDES whatever the model says."""
+    monkeypatch.setattr(pipeline, "CATEGORY_OVERRIDES", {"acme/charger": "OCPP > Server"})
+    enriched, cache = run_enrich(
+        tmp_path, [repo("Acme/Charger", description="An OCPP server")], never_asked,
+        restamp=True, reask_category=["OCPP > Misc"],
+        cache=[cached("Acme/Charger", "OCPP > Misc", signals="a-stale-signature")])
+    assert enriched[0]["categories"] == "OCPP > Misc"
+    assert cache["Acme/Charger"]["signals"] != "a-stale-signature"
+
+
+def test_restamp_reuses_a_current_answer_even_in_a_split_bucket(tmp_path):
+    """A matching signature was asked under the current prompt already."""
+    entry = repo(description="An OCPP server")
+    enriched, _ = run_enrich(
+        tmp_path, [entry], never_asked, restamp=True, reask_category=["OCPP > Misc"],
+        cache=[cached("acme/charger", "OCPP > Misc",
+                      signals=pipeline.classifier_signature(entry, ""))])
+    assert enriched[0]["categories"] == "OCPP > Misc"
+
+
+def test_restamp_classifies_a_repo_missing_from_the_cache(tmp_path):
+    enriched, cache = run_enrich(
+        tmp_path, [repo(description="An OCPP server")], ocpp_server, restamp=True)
+    assert enriched[0]["categories"] == "OCPP > Server"
+    assert cache["acme/charger"]["categories"] == "OCPP > Server"
+
+
+def test_restamp_re_asks_a_stale_empty_answer_with_something_to_read(tmp_path):
+    """An empty category there is a leftover failure, not an answer to keep."""
+    enriched, _ = run_enrich(
+        tmp_path, [repo(description="An OCPP server")], ocpp_server, restamp=True,
+        cache=[cached("acme/charger", "", signals="a-stale-signature")])
+    assert enriched[0]["categories"] == "OCPP > Server"
+
+
+def test_restamp_leaves_an_unreadable_readme_entry_untouched(tmp_path, monkeypatch):
+    monkeypatch.setattr(pipeline, "fetch_readme_content", lambda *a, **k: None)
+    _, cache = run_enrich(
+        tmp_path, [repo(description="An OCPP server")], never_asked, restamp=True,
+        cache=[cached("acme/charger", "OCPP > Server", signals="a-stale-signature")],
+        expect_exit=True)
+    assert cache["acme/charger"]["signals"] == "a-stale-signature"
+
+
+@pytest.mark.parametrize("argv", [
+    ["--reask-category", "OCPP > Misc"],
+    ["--restamp", "--refresh"],
+])
+def test_restamp_flag_combinations_are_rejected(monkeypatch, capsys, argv):
+    def never(args):
+        raise AssertionError("a rejected command line must not run enrich")
+    monkeypatch.setattr(pipeline, "enrich", never)
+    monkeypatch.setattr(pipeline.sys, "argv", ["pipeline.py", "enrich", *argv])
+    with pytest.raises(SystemExit) as exit_info:
+        pipeline.main()
+    assert exit_info.value.code == 2
+    err = capsys.readouterr().err
+    # Rejected as a combination, not as an option argparse does not know.
+    assert "unrecognized" not in err
+    assert all(flag in err for flag in argv if flag.startswith("--"))
+
+
+def test_restamp_accepts_repeated_reask_categories(monkeypatch):
+    seen = []
+    monkeypatch.setattr(pipeline, "enrich", seen.append)
+    monkeypatch.setattr(pipeline.sys, "argv", [
+        "pipeline.py", "enrich", "--restamp",
+        "--reask-category", "OCPP > Misc", "--reask-category", "ISO 15118 > Misc"])
+    pipeline.main()
+    assert seen[0].restamp is True
+    assert seen[0].reask_category == ["OCPP > Misc", "ISO 15118 > Misc"]
 
 
 # --- enrich: a dead backend must not pass for a refresh -----------------------

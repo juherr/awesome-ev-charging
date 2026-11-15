@@ -110,6 +110,12 @@ mise run enrich
   A metadata refresh therefore re-classifies **few** repos, not all — unless
   the taxonomy or the instructions changed, which re-classifies the whole
   listing and overwrites every hand-pinned cell.
+- **After an edit to `CATEGORY_TREE` or `CLASSIFIER_INSTRUCTIONS`**, run
+  `python pipeline.py enrich --token "$(gh auth token)" --restamp` instead,
+  adding one `--reask-category 'Main > Sub'` per catch-all bucket the edit
+  split (e.g. `'OCPP > Misc'`). Every other stale answer is kept and stamped
+  as current; only those buckets, minus repos pinned in `CATEGORY_OVERRIDES`,
+  are asked again.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
