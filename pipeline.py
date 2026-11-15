@@ -20,7 +20,7 @@ import sys
 import tempfile
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 
@@ -95,6 +95,13 @@ ADDITIONAL_REPOS = {
   "zach401/acnportal",
   "OpenChargingCloud/ISO15118ConformanceTests",
 }
+# Repositories hosted on Codeberg (Forgejo), as owner/repo. Ingest reads them
+# from Codeberg's API, enrich reads their README there, and they render like any
+# other row. A GitHub Stars list cannot hold them, so listing one here is the
+# curation itself: `_promotion` lifts them into the selection.
+CODEBERG_API = "https://codeberg.org/api/v1"
+CODEBERG_WEB = "https://codeberg.org/"
+CODEBERG_REPOS = set()
 CATEGORY_TREE = {
   "OCPP": ["Server", "Simulator", "Libraries", "Message inspection",
            "Testing & conformance", "Security testing", "Misc"],
@@ -313,12 +320,8 @@ CATEGORY_OVERRIDES = {
 # Applied at render time, so it survives re-ingest and `enrich --refresh`.
 # CSV values are strings, so booleans use "true"/"false" (match the dormant column).
 #
-# Future (Option B): instead of a static override, fetch live metadata from the
-# new host's API — Codeberg runs Forgejo, Gitea-compatible:
-#   GET https://codeberg.org/api/v1/repos/{owner}/{repo}
-#   -> stars_count, updated_at, archived (no auth for public repos)
-# to keep stars / pushed_at / dormant real and auto-refreshed. Escalate to that
-# if off-GitHub migrations become common.
+# A repository that lives on Codeberg alone belongs in CODEBERG_REPOS instead,
+# which reads live metadata from Codeberg's API rather than freezing it here.
 REPO_OVERRIDES = {
   # GitHub counts slightly more TypeScript than Go, but the published OCPI
   # library is for Go: https://github.com/shiv3/gocpi#readme
@@ -414,15 +417,18 @@ CSV_FIELDS = [
 
 # --- GitHub HTTP with on-disk cache ------------------------------------------
 
-def github_request_cached(url, headers=None, ttl=CACHE_TTL, missing=None):
+def github_request_cached(url, headers=None, ttl=CACHE_TTL, missing=None, raw=None):
   """Fetch a GitHub API URL, caching the raw response on disk.
 
-  Returns the JSON-decoded body (or raw text when Accept requests raw), or
+  Returns the JSON-decoded body (or raw text when Accept requests raw, or when
+  `raw` says so for an API that does not negotiate it, such as Codeberg's), or
   None on error. A 404 returns `missing` instead, for callers to whom "there is
   none" is an answer while any other failure is not.
   """
   key = hashlib.md5(url.encode()).hexdigest()
-  ext = ".json" if "raw" not in (headers or {}).get("Accept", "") else ".txt"
+  if raw is None:
+    raw = "raw" in (headers or {}).get("Accept", "")
+  ext = ".txt" if raw else ".json"
   cache_path = os.path.join(CACHE_DIR, key + ext)
 
   # newline="" on both sides: the cache must hand back the exact text it was
@@ -457,16 +463,75 @@ def get_repo_data(full_name, headers):
   return github_request_cached(f"{BASE_URL}/repos/{full_name}", headers=headers)
 
 
-def fetch_readme_content(repo_full_name, headers):
+def fetch_readme_content(repo_full_name, headers, html_url=None):
   """Fetch the raw Markdown README of a repository (cached).
 
   Returns "" when the repository has no README (a 404, a fact about the repo)
   and None when it could not be read (rate limit, 5xx: a fact about the run).
+  A Codeberg `html_url` reads it from Codeberg instead of GitHub.
   """
+  if (html_url or "").startswith(CODEBERG_WEB):
+    return fetch_codeberg_readme(repo_full_name)
   url = f"{BASE_URL}/repos/{repo_full_name}/readme"
   headers = dict(headers or {})
   headers["Accept"] = "application/vnd.github.v3.raw"
   return github_request_cached(url, headers, missing="")
+
+
+# --- Codeberg (Forgejo) -------------------------------------------------------
+# Every Codeberg request goes out with empty headers: the GitHub token the rest
+# of the pipeline carries must never leave for another host.
+
+_README_FILE = re.compile(r"readme(\.\w+)?", re.IGNORECASE)
+
+
+def _utc_z(timestamp):
+  """Rewrite an ISO timestamp with an offset as the UTC `...Z` form GitHub uses."""
+  if not timestamp:
+    return timestamp
+  dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+  return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def forgejo_repo_as_github(obj):
+  """Map a Forgejo repository object onto the GitHub fields build_repo_record reads.
+
+  Forgejo has no `pushed_at`; `updated_at` stands in for it. It also moves on
+  metadata edits, so it can report a repo as active a little longer than a push
+  date would. Forgejo exposes no licence name, so the record says `N/A`.
+  """
+  return dict(
+    obj,
+    stargazers_count=obj.get("stars_count", 0),
+    pushed_at=_utc_z(obj.get("updated_at")),
+    created_at=_utc_z(obj.get("created_at")),
+  )
+
+
+def codeberg_record(full_name):
+  """Build the CSV record of a Codeberg repository, or None if unreachable."""
+  obj = github_request_cached(f"{CODEBERG_API}/repos/{full_name}", headers={})
+  if not obj:
+    return None
+  return build_repo_record(forgejo_repo_as_github(obj), "codeberg", set(), set(), set())
+
+
+def fetch_codeberg_readme(full_name):
+  """Fetch a Codeberg repository's README, with fetch_readme_content's contract.
+
+  Forgejo has no "the README" endpoint: list the root and read the first file
+  named like one.
+  """
+  listing = github_request_cached(f"{CODEBERG_API}/repos/{full_name}/contents",
+                                  headers={}, missing=[])
+  if listing is None:
+    return None
+  name = next((e["name"] for e in listing
+               if e.get("type") == "file" and _README_FILE.fullmatch(e.get("name", ""))), None)
+  if name is None:
+    return ""
+  return github_request_cached(f"{CODEBERG_API}/repos/{full_name}/raw/{name}",
+                               headers={}, missing="", raw=True)
 
 
 def paginate(url, headers, params=None, cap=None, throttle=0):
@@ -732,6 +797,19 @@ def ingest(args):
     starred_by = {u for u, starred in user_starred.items() if canonical in starred}
     source = "+".join(sorted(meta["sources"]))
     records.append(build_repo_record(obj, source, meta["matched_topics"], starred_by, contributors))
+
+  for full_name in sorted(CODEBERG_REPOS):
+    if full_name.lower() in excluded:
+      continue
+    # Classifications are keyed by owner/repo alone, so a GitHub repo of the
+    # same name already owns that key.
+    if full_name.lower() in seen:
+      print(f"⚠️  {full_name} is on GitHub too; keeping the GitHub record")
+      continue
+    record = codeberg_record(full_name)
+    if record:
+      seen.add(full_name.lower())
+      records.append(record)
 
   records.sort(key=lambda r: (-int(r["promoted"]), -int(r["topic_matches"]), -int(r["stars"])))
 
@@ -1184,7 +1262,7 @@ def enrich(args):
           cache.setdefault(row["full_name"], dict(cache.pop(old), full_name=row["full_name"]))
       # README is fetched for every repo (cached, so cheap) to extract supported
       # protocol versions; only the model call is skipped on a cache hit.
-      readme = fetch_readme_content(row["full_name"], headers)
+      readme = fetch_readme_content(row["full_name"], headers, html_url=row.get("html_url"))
       row["ocpp_versions"] = extract_versions(readme, "ocpp", OCPP_VERSIONS)
       row["ocpi_versions"] = extract_versions(readme, "ocpi", OCPI_VERSIONS)
       # Computed before `description` is overwritten below with the synthesized
@@ -1288,6 +1366,7 @@ def enrich(args):
 #       contributor of this repo                    -> selection
 #    0  starred by mateogreil only                  -> bottom of the selection
 #   -1  in neither list (topic discovery)           -> collapsed "To refine"
+# A repo listed in CODEBERG_REPOS scores at least 1: no Stars list can hold it.
 ANCHOR_USER = "juherr"
 SECOND_USER = "mateogreil"
 
@@ -1303,6 +1382,8 @@ def _promotion(row):
     base = -1
   if row.get("by_contributor") == "true":
     base = max(base, 1)  # a contributor's own project is worth at least 1
+  if "codeberg" in (row.get("source") or "").split("+"):
+    base = max(base, 1)  # listed by hand in CODEBERG_REPOS: no star can say so
   return base
 
 
