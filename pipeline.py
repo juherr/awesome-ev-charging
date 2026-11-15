@@ -318,6 +318,14 @@ CATEGORY_OVERRIDES = {
   # A charger firmware stack; the #59 re-run filed it as developer tooling,
   # which also moved its primary listing out of OCPP.
   "everest/everest": "OCPP > Misc|iso15118 > Misc|Other > EVSE firmware",
+  # Protocol categories the 2026-11 re-classification dropped although each repo
+  # speaks, or is written specifically for, the protocol.
+  "lbbrhzn/ocpp": "OCPP > Server|Other > Home automation",  # the charger connects to it
+  "solarnetwork/solarnetwork-central": "OCPP > Server|Other > Energy management",
+  "road-labs/chargestation-one": "OCPP > Simulator|Eichrecht > Misc",  # signs meter values
+  "anmirazik/open-source-ev-charger-end-to-end-solution": "OCPP > Misc|Other > Specifications & documentation",
+  "quentin-bacquet/gireve_tech_ocpi_v2.2.1": "OCPI > Misc|Other > Specifications & documentation",
+  "sepehr-safari/ocpp-handbook": "OCPP > Misc|iso15118 > Misc|OCPI > Misc|Other > Specifications & documentation",
   # It plays the OCPP central system the EVSE connects to; the classifier kept
   # only the Domoticz side.
   "slash909uk/ocpp-domoticz-bridge": "OCPP > Server|Other > Home automation",
