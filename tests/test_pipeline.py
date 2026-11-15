@@ -1053,3 +1053,17 @@ def test_enrich_reads_the_readme_from_the_repo_host(tmp_path, monkeypatch):
     run_enrich(tmp_path, [repo("slash909uk/ocpp-domoticz-bridge", html_url=url)],
                lambda row, readme: ("", []))
     assert seen == [url]
+
+
+def test_a_codeberg_repo_wins_over_its_github_mirror(monkeypatch):
+    """A project that moved to Codeberg often leaves an archived GitHub mirror
+    under the same owner/repo, which also keys the classification cache. The
+    Codeberg entry is the live one; the mirror must not reach the listing."""
+    monkeypatch.setattr(pipeline, "CODEBERG_REPOS", {"tandemdrive/ocpi-tariffs"})
+    monkeypatch.setattr(pipeline, "search_topic_repo_names",
+                        lambda topic, headers: ["TandemDrive/ocpi-tariffs", "acme/charger"])
+    monkeypatch.setattr(pipeline, "ADDITIONAL_REPOS", set())
+    monkeypatch.setattr(pipeline, "readme_repo_names", lambda: [])
+    monkeypatch.setattr(pipeline, "get_starred_list_repos", lambda user, slug, headers: [])
+    candidates = pipeline.collect_candidates({})
+    assert set(candidates) == {"acme/charger"}
