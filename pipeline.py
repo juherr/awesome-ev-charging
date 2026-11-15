@@ -341,6 +341,29 @@ CATEGORY_OVERRIDES = {
   "slash909uk/ocpp-domoticz-bridge": "OCPP > Server|Other > Home automation",
   # An HTTPie plugin, a developer tool rather than a library.
   "ikarius/httpie-ocpi-auth": "OCPI > Misc|Other > Developer tools & libraries",
+  # Protocol categories the 2026-11 re-classification dropped (second batch)
+  # although each repo speaks, or is written specifically for, the protocol.
+  # Servers and charger-side tooling.
+  "ekkehard-lutz/wallbox-manager": "OCPP > Server|Other > Home automation",  # serves OCPP 2.1 to the station
+  "electroop-engineering/electroop-ev-charging-platform": "OCPP > Server|OCPI > Server|iso15118 > Plug&Charge|Other > Charging management system",  # product info, no code
+  "hupe1980/emob": "OCPP > Server|OCPI > Server|OICP > Server|iso15118 > Plug&Charge|Eichrecht > Libraries|Other > Charging management system",  # the re-run wrote "ISO 15118"
+  "iceccarelli/derim-middleware": "OCPP > Libraries|Other > Energy management",  # one OCPP central-system adapter among several
+  "digitaltwinconsortium/ocpp-charging-dashboard": "OCPP > Misc|Other > Charging management system",  # OCPP data model, companion of an OCPP central system
+  "matiebird/ocular-ocpp-compatibility-relay": "OCPP > Misc|Other > Home automation",  # relays the charger's OCPP 1.6J socket
+  "glurp/dynamicreverseproxy": "OCPP > Misc|Other > Developer tools & libraries",  # routes by the OCPP equipment id
+  "wirelane/ocpp-client-simulator": "OCPP > Simulator|Eichrecht > Misc",  # sends signed OCMF meter values
+  "bsvkey/ocmf-kit": "Eichrecht > Libraries|OCPP > Libraries",  # maps OCMF to OCPP SignedMeterValue
+  # Libraries, schemas and demos.
+  "llocer/llocer_ocpi_json": "OCPI > Libraries|Other > Data models & identifiers",
+  "llocer/llocer_ocpp_json": "OCPP > Libraries|Other > Data models & identifiers",
+  "ko1103/ocpi-mcp-server": "OCPI > Misc|Other > Developer tools & libraries",
+  "drvelvetfog/x402-charging-agent": "OCPI > Misc|Other > Other protocols",  # ships a mock OCPI 2.2 CPO and settles its CDR
+  # Guides and specifications written for a protocol.
+  "javierojan/awesome-ocpp": "OCPP > Misc|OCPI > Misc|Other > Specifications & documentation",
+  "openchargingtechnology/whitepapers": "OCPP > Misc|OCPI > Misc|OICP > Misc|iso15118 > Misc|Other > Specifications & documentation",
+  "hubject/opcp": "iso15118 > Plug&Charge|Other > Specifications & documentation",
+  "quentin-bacquet/gireve_tech_ocpi_v2.1.1": "OCPI > Misc|Other > Specifications & documentation",
+  "suroorhussain/ev-protocols": "OCPI > Misc|Other > Specifications & documentation",
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
