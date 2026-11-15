@@ -221,8 +221,8 @@ Common facts for all nine files:
 
 ## Follow-ups
 
-These are open points, listed without a decision. Removing, replacing or
-relinking any file is an editorial decision tracked separately.
+These are open points. Where no decision is recorded below, removing,
+replacing or relinking a file is left to a separate editorial decision.
 
 ### Files whose notice forbids redistribution
 
@@ -230,6 +230,9 @@ relinking any file is an editorial decision tracked separately.
   `ocpp/OCPP-1.2/*.wsdl.wsdl` files (Logica): "all rights reserved", no
   reproduction without prior written consent.
 - `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` (e-laad.nl): the same notice.
+- Decision (2026-11-15): these files are kept despite the notice. They are
+  historical versions, superseded for over a decade, which the OCA now serves
+  only from its login-gated archive of older versions.
 - Open question: did e-laad.nl or Logica (or their successors) ever transfer
   these rights to the OCA or relicense them? Not found: the OCA archive page of
   older versions is login-gated and could not be read. Only the rights holder or
