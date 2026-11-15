@@ -23,7 +23,21 @@ name: Monthly metadata refresh
 on:
   schedule:
     - cron: "0 6 1 * *" # 1st of each month, 06:00 UTC
-  workflow_dispatch: {} # allow manual runs from the Actions tab
+  # Manual runs from the Actions tab. The inputs serve the run that follows an
+  # edit to the taxonomy or the classifier instructions: that edit makes every
+  # cached signature stale, and `--restamp` keeps the answers it cannot have
+  # changed, re-asking only the catch-all buckets it split. The scheduled run
+  # leaves them empty and behaves as before.
+  workflow_dispatch:
+    inputs:
+      restamp:
+        description: "Keep stale cached answers (enrich --restamp)"
+        type: boolean
+        default: false
+      reask_categories:
+        description: "With restamp: buckets to re-ask, ';'-separated (e.g. OCPP > Misc; iso15118 > Misc)"
+        type: string
+        default: ""
 
 # One refresh at a time; a new run cancels an in-flight one.
 concurrency:
@@ -77,11 +91,22 @@ jobs:
       - name: Enrich — classify changed repos via Copilot
         env:
           GH_TOKEN: ${{ github.token }}
+          # Through env, never interpolated into the script: the input is free text.
+          RESTAMP: ${{ inputs.restamp }}
+          REASK_CATEGORIES: ${{ inputs.reask_categories }}
         run: |
+          args=()
+          if [ "$RESTAMP" = "true" ]; then args+=(--restamp); fi
+          # A re-ask without --restamp is left for argparse to reject.
+          IFS=';' read -ra buckets <<< "$REASK_CATEGORIES"
+          for bucket in "${buckets[@]}"; do
+            bucket="$(echo "$bucket" | xargs)"
+            if [ -n "$bucket" ]; then args+=(--reask-category "$bucket"); fi
+          done
           mise exec -- python pipeline.py enrich \
             --token "$GH_TOKEN" \
             --in repos.csv --out repos.enriched.csv \
-            --classifier copilot
+            --classifier copilot "${args[@]}"
 
       - name: Render — inject listing into README + standalone
         run: mise exec -- python pipeline.py render --readme README.md
