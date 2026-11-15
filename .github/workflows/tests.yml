@@ -18,6 +18,8 @@ on:
       # against a fresh render, so a hand-edit between the markers counts too.
       - "csms*.csv"
       - "csms*.md"
+      # The vendored OSCP files are pinned by tests/test_oscp_schemas.py.
+      - "oscp/**"
       - "requirements*.txt"
       - "mise.toml"
       - "pytest.ini"
