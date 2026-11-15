@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/asset-category.json",
+  "title": "AssetCategory",
+  "type": "string",
+  "enum": ["CHARGING", "CONSUMPTION", "GENERATION", "STORAGE"]
+}

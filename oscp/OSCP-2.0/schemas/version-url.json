@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/version_url.json",
+  "title": "VersionUrl",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "base_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "base_url"
+  ]
+}

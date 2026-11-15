@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/instantaneous-measurement.json",
+  "title": "InstantaneousMeasurement",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "number"
+    },
+    "phase": {
+      "$ref": "phase-indicator.json"
+    },
+    "unit": {
+      "$ref": "instantaneous-measurement-unit.json"
+    },
+    "measure_time": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "value",
+    "phase",
+    "unit",
+    "measure_time"
+  ]
+}

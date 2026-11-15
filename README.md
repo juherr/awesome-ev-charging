@@ -7,6 +7,7 @@ A carefully curated list of specifications, tools, and resources for electric ve
 <!-- BEGIN GENERATED TOC -->
 - [Specifications](#specifications)
   - [OCPP (Open Charge Point Protocol)](#ocpp-open-charge-point-protocol)
+  - [OSCP (Open Smart Charging Protocol)](#oscp-open-smart-charging-protocol)
   - [ISO 15118](#iso-15118)
   - [OCPI (Open Charge Point Interface)](#ocpi-open-charge-point-interface)
   - [OICP (Open InterCharge Protocol)](#oicp-open-intercharge-protocol)
@@ -78,6 +79,14 @@ The **Open Charge Point Protocol (OCPP)** is a communication protocol between el
   - [Using OpenADR with OCPP](https://openchargealliance.org/ocpp-info-whitepapers/oca-using-openadr-with-ocpp/)
   - [The World's First Large-Scale Migration of OCPP-Based PEV Charging Infrastructure](https://openchargealliance.org/ocpp-info-whitepapers/the-worlds-first-large-scale-migration-of-ocpp-based-pev-charging-infrastructure/)
 - [Configuration Keys (1.6)](https://github.com/juherr/awesome-ev-charging/blob/main/ocpp/OCPP-1.6-configuration-keys.md) - Reference table of OCPP 1.6 configuration keys.
+
+### OSCP (Open Smart Charging Protocol)
+
+The **Open Smart Charging Protocol (OSCP)** communicates forecasts of available capacity from a Capacity Provider, such as a distribution system operator, to a Flexibility Provider, such as a charging station management system, for capacity-based smart charging.
+
+- Specifications
+  - [2.0](https://github.com/juherr/awesome-ev-charging/tree/main/oscp/OSCP-2.0) (2020-10)
+  - [1.0](https://openchargealliance.org/my-oca/oscp/) (2015-04)
 
 ### ISO 15118
 
@@ -324,7 +333,7 @@ Protocol governance bodies and industry associations:
 ### Demand response and capacity exchange
 
 - [OpenADR Alliance specifications](https://www.openadr.org/specification) - Industry demand-response specifications for Virtual Top Nodes (VTNs) and Virtual End Nodes (VENs), with OpenADR 2.0b and 3.x representing distinct protocol generations.
-- [Open Smart Charging Protocol (OSCP)](https://openchargealliance.org/protocols/open-smart-charging-protocol/) - OCA specification for communicating available network capacity between grid or site actors and charging back offices; version 2.0 extends the original model.
+- [Open Smart Charging Protocol (OSCP)](https://openchargealliance.org/protocols/open-smart-charging-protocol/) - OCA specification for communicating available network capacity between grid or site actors and charging back offices; version 2.0 extends the original model. Specifications are listed under [OSCP](#oscp-open-smart-charging-protocol).
 
 The generated OpenADR and OSCP categories separate these implementations from generic energy management. OpenLEADR's Rust implementation documents OpenADR 3.1 VEN and VTN roles; its earlier releases targeted 3.0. These versions should not be assumed interchangeable. The [LF Energy project status](https://lfenergy.org/projects/openleadr/) identifies the Python 2.0b implementation as currently unmaintained, so it belongs with historical resources rather than maintained recommendations. Neither a protocol implementation nor a developer test suite automatically confers OpenADR certification.
 

@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/required-behaviour.json",
+    "title": "RequiredBehaviour",
+    "type": "object",
+    "properties": {
+        "heartbeat_interval": {
+            "type": "number"
+        },
+        "measurement_configuration": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "measurement-configuration.json" }
+        }
+    },
+    "required": [
+        "measurement_configuration"
+    ]
+}

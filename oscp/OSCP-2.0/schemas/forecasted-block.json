@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/forecasted-block.json",
+    "title": "ForecastedBlock",
+    "type": "object",
+    "properties": {
+        "capacity": {
+            "type": "number",
+            "minimum": 0
+        },
+        "phase": { "$ref": "phase-indicator.json" },
+        "unit": { "$ref": "forecasted-block-unit.json" },
+        "start_time": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "end_time": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "required": [
+        "capacity",
+        "phase",
+        "unit",
+        "start_time",
+        "end_time"
+    ]
+}
