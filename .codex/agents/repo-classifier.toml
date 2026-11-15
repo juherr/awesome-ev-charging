@@ -34,6 +34,17 @@ Rules:
 - Some repositories have no README; the prompt says so when that happens.
   Classify from the description and topics alone rather than declining.
 
+Use Message inspection for trace decoders and viewers; Testing & conformance
+for developer validation suites; Security testing for fuzzers and attack tools.
+These labels do not imply official certification. Keep protocol stacks in
+Libraries, EXI encoders/decoders in EXI codecs and ISO 15118-3 matching in SLAC.
+Use OpenADR for documented demand-response VEN/VTN implementations and OSCP
+for documented capacity-exchange implementations. Generic load management
+and EMS belong in Other > Energy management; charging-network research
+simulation in Other > Grid simulation; schemas and identifier utilities in
+Other > Data models & identifiers. Do not infer V2G power transfer, protocol
+versions, certification or maintenance status from a project name.
+
 Respond with ONLY this, no preamble and no explanation:
 
 Description: <one factual sentence>

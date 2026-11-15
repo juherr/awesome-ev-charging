@@ -295,6 +295,33 @@ def test_every_category_override_uses_the_taxonomy():
             assert sub in pipeline.CATEGORY_TREE[main], (full_name, chunk)
 
 
+@pytest.mark.parametrize("main, sub", [
+    ("OpenADR", "VEN & VTN"), ("OSCP", "Libraries"),
+    ("OCPP", "Testing & conformance"), ("OCPP", "Message inspection"),
+    ("OCPP", "Security testing"), ("iso15118", "EXI codecs"),
+    ("iso15118", "SLAC"), ("iso15118", "Message inspection"),
+    ("iso15118", "Testing & conformance"), ("iso15118", "Security testing"),
+    ("Other", "Data models & identifiers"), ("Other", "Grid simulation"),
+])
+def test_specialist_tools_have_explicit_taxonomy_slots(main, sub):
+    assert sub in pipeline.CATEGORY_TREE[main]
+
+
+def test_trace_inspection_is_not_filed_as_a_protocol_library():
+    assert pipeline._row_categories({"full_name": "dspace-group/dsV2Gshark"})[0] == (
+        "iso15118", "Message inspection")
+
+
+def test_new_grid_protocols_keep_protocol_priority_and_single_listing():
+    row = repo("acme/flex", categories="Other > Energy management|OpenADR > VEN & VTN",
+               html_url="https://example.com/flex", description="Demand response service.")
+    assert pipeline._row_categories(row)[0] == ("OpenADR", "VEN & VTN")
+    lines = []
+    pipeline._render_grouped([row], lines)
+    assert sum("https://example.com/flex" in line for line in lines) == 1
+    assert "### OpenADR" in lines
+
+
 # --- The classifier contract: one rule in every copy ---------------------------
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -324,6 +351,31 @@ def test_every_contract_copy_keeps_protocol_categories_ahead_of_other(copy):
 @pytest.mark.parametrize("copy", CONTRACT_COPIES)
 def test_every_contract_copy_requires_a_subcategory(copy):
     assert "always carries a subcategory" in " ".join(CONTRACT_COPIES[copy]().split())
+
+
+@pytest.mark.parametrize("copy", CONTRACT_COPIES)
+def test_every_contract_copy_distinguishes_developer_tools_from_certification(copy):
+    text = " ".join(CONTRACT_COPIES[copy]().split())
+    for rule in ("These labels do not imply official certification.",
+                 "EXI encoders/decoders in EXI codecs", "ISO 15118-3 matching in SLAC",
+                 "OpenADR for documented", "Other > Grid simulation"):
+        assert rule in text
+
+
+def test_navigation_includes_editorial_guides_without_duplicating_project_links(tmp_path):
+    readme = tmp_path / "README.md"
+    readme.write_text("# List\n\n## Contents\n\n## Regulation & Standards Bodies\n\n"
+                      "### Regulatory Frameworks\n\n## Smart Charging & Grid Integration\n\n"
+                      "## Testing & Conformance\n\n## Tools and Resources\n\n"
+                      "### OpenADR\n\n#### VEN & VTN\n\n"
+                      "- [a/b](https://example.com/project) - A tool.\n", encoding="utf-8")
+    toc = pipeline._build_toc(readme)
+    assert "[Regulation & Standards Bodies](#regulation--standards-bodies)" in toc
+    assert "[Regulatory Frameworks](#regulatory-frameworks)" in toc
+    assert "[Smart Charging & Grid Integration](#smart-charging--grid-integration)" in toc
+    assert "[Testing & Conformance](#testing--conformance)" in toc
+    assert "[OpenADR](#openadr)" in toc
+    assert "VEN & VTN" not in toc
 
 
 # --- Classifying a repo that has no README ------------------------------------
