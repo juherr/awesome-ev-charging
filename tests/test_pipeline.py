@@ -226,6 +226,28 @@ def test_render_warns_about_a_subcategory_outside_the_taxonomy(tmp_path, capsys)
     assert "::warning::Other > Job portal is not in CATEGORY_TREE" in capsys.readouterr().out
 
 
+# --- Parsing the classifier's answer -------------------------------------------
+
+def test_prose_bullets_are_not_taken_for_categories():
+    """The 2026-11 run filed uhi22/pyPLC under six "main categories" that were
+    the model's bulleted summary of its README."""
+    text = (
+        "Description: A Python toolkit for ISO 15118 charging communication.\n"
+        "- Implements ISO 15118 V2G communication protocols\n"
+        "- Works with SLAC and V2G protocols\n"
+        "Categories:\n"
+        "- iso15118 > Misc\n"
+        "- Other > Developer tools & libraries\n"
+    )
+    assert pipeline.parse_classification(text)[1] == [
+        ("iso15118", "Misc"), ("Other", "Developer tools & libraries")]
+
+
+def test_a_bulleted_bare_main_still_parses():
+    """The contract forbids it, but dropping it would empty the category."""
+    assert pipeline.parse_categories("- Other\n- OCPP") == [("Other", None), ("OCPP", None)]
+
+
 # --- The taxonomy: every main offers a closed subcategory list -----------------
 
 def test_every_main_category_offers_subcategories():

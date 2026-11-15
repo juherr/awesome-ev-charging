@@ -795,9 +795,10 @@ def parse_categories(text):
   """Parse category lines into (main, sub) tuples.
 
   Tolerant of backend formatting: the leading `- ` bullet is optional (codex
-  sometimes drops it), the `Categories:` header is skipped, and a bare line is
-  only taken as a main-only category when it is a known taxonomy key — so prose
-  lines are ignored rather than mistaken for categories.
+  sometimes drops it), the `Categories:` header is skipped, and a line without
+  `>`, bulleted or not, is only taken as a main-only category when it is a known
+  taxonomy key — so prose lines, including a bulleted summary, are ignored rather
+  than mistaken for categories.
 
   A bare main still parses even though the contract forbids it: dropping it
   would empty the category, render the repo as Uncategorized and fail the CI
@@ -808,14 +809,11 @@ def parse_categories(text):
     line = line.strip()
     if not line or line.lower().rstrip(":") == "categories":
       continue
-    bulleted = line.startswith("- ")
-    if bulleted:
+    if line.startswith("- "):
       line = line[2:].strip()
     if ">" in line:
       main, sub = map(str.strip, line.split(">", 1))
       parsed.append((main, sub))
-    elif bulleted and line:
-      parsed.append((line, None))
     elif line in CATEGORY_TREE:
       parsed.append((line, None))
   return parsed
