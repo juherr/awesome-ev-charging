@@ -27,4 +27,7 @@ The specification PDF is normative. These schemas disagree with it:
 | `version-url.json` | `$id` ends in `version_url.json`, while `register.json` refers to `version-url.json`; a validator that resolves by `$id` cannot find it | — |
 | `group-capacity-compliance-error.json` | `forecasted_blocks` has `minItems: 1` | §4.4.3: cardinality `0..*` |
 
+`tests/test_oscp_schemas.py` checks each of these defects, and that a local
+patch of each one is enough, on in-memory copies of the schemas.
+
 Patch them locally if you validate messages against these schemas.
