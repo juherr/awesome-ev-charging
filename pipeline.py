@@ -104,6 +104,8 @@ CODEBERG_WEB = "https://codeberg.org/"
 CODEBERG_REPOS = {
   "slash909uk/ocpp-domoticz-bridge",
   "ikarius/httpie-ocpi-auth",
+  # Moved from GitHub, where an archived mirror remains under the same name.
+  "tandemdrive/ocpi-tariffs",
 }
 CATEGORY_TREE = {
   "OCPP": ["Server", "Simulator", "Libraries", "Message inspection",
@@ -324,14 +326,16 @@ CATEGORY_OVERRIDES = {
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
-# reflects reality — typically a project that migrated off GitHub: the GitHub
-# repo is archived/dormant while active development continues elsewhere (Codeberg,
-# GitLab, self-hosted). Keyed by lowercased full_name -> {csv_column: value}.
+# reflects reality — a curated description, or a project that migrated off
+# GitHub to a host the pipeline cannot read (GitLab, self-hosted), whose
+# archived GitHub repo needs `html_url` and `dormant` patched.
+# Keyed by lowercased full_name -> {csv_column: value}.
 # Applied at render time, so it survives re-ingest and `enrich --refresh`.
 # CSV values are strings, so booleans use "true"/"false" (match the dormant column).
 #
-# A repository that lives on Codeberg alone belongs in CODEBERG_REPOS instead,
-# which reads live metadata from Codeberg's API rather than freezing it here.
+# A repository on Codeberg belongs in CODEBERG_REPOS instead, which reads live
+# metadata from Codeberg's API rather than freezing it here, and drops the
+# GitHub mirror left behind under the same name.
 REPO_OVERRIDES = {
   # GitHub counts slightly more TypeScript than Go, but the published OCPI
   # library is for Go: https://github.com/shiv3/gocpi#readme
@@ -343,12 +347,6 @@ REPO_OVERRIDES = {
   },
   "lastproject-esiee/ocppconfigurationserver": {
     "description": "A Spring Boot application providing an OCPP WebSocket server for configuring and managing charge points.",
-  },
-  # Development moved to Codeberg; the GitHub mirror is archived (hence dormant).
-  # Codeberg confirmed active (updated 2026-07-02, not archived).
-  "tandemdrive/ocpi-tariffs": {
-    "html_url": "https://codeberg.org/tandemdrive/ocpi-tariffs",
-    "dormant": "false",
   },
   # The maintainer's own wording (#57). A hand edit of classifications.csv is
   # overwritten by the next re-classification; this survives it.
@@ -750,7 +748,9 @@ def collect_candidates(headers):
   search, manual list, curated README) is fetched once. Returns
   {lower_full_name: {"full_name": str, "sources": set, "matched_topics": set}}.
   """
-  excluded = {r.lower() for r in EXCLUDED_REPOS}
+  # A name in CODEBERG_REPOS is read from Codeberg: a GitHub repo of the same
+  # name is the mirror it left behind, and would claim its classification key.
+  excluded = {r.lower() for r in EXCLUDED_REPOS | CODEBERG_REPOS}
   candidates = {}
 
   def add(full_name, source, topic=None):
@@ -793,7 +793,8 @@ def ingest(args):
   candidates = collect_candidates(headers)
   print(f"\n📥 Building records for {len(candidates)} candidate repositories...")
 
-  excluded = {r.lower() for r in EXCLUDED_REPOS}
+  dropped = {r.lower() for r in EXCLUDED_REPOS}
+  excluded = dropped | {r.lower() for r in CODEBERG_REPOS}  # GitHub mirrors, see collect_candidates
   records = []
   seen = set()
   for meta in candidates.values():
@@ -809,16 +810,10 @@ def ingest(args):
     records.append(build_repo_record(obj, source, meta["matched_topics"], starred_by, contributors))
 
   for full_name in sorted(CODEBERG_REPOS):
-    if full_name.lower() in excluded:
-      continue
-    # Classifications are keyed by owner/repo alone, so a GitHub repo of the
-    # same name already owns that key.
-    if full_name.lower() in seen:
-      print(f"⚠️  {full_name} is on GitHub too; keeping the GitHub record")
+    if full_name.lower() in dropped:
       continue
     record = codeberg_record(full_name)
     if record:
-      seen.add(full_name.lower())
       records.append(record)
 
   records.sort(key=lambda r: (-int(r["promoted"]), -int(r["topic_matches"]), -int(r["stars"])))
