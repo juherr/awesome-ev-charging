@@ -34,7 +34,7 @@ A carefully curated list of specifications, tools, and resources for electric ve
   - [iso15118](#iso15118)
   - [Eichrecht](#eichrecht-1)
   - [OpenADR](#openadr)
-  - [Other](#other-1)
+  - [Other](#other)
   - [Uncategorized](#uncategorized)
 <!-- END GENERATED TOC -->
 
@@ -371,8 +371,8 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 - [Beep-Technologies/esteban-ocpp](https://github.com/Beep-Technologies/esteban-ocpp) - Esteban-OCPP is a Golang OCPP server providing charge-point, user, transaction, and REST administration functions (OCPP 2.0 · Go · ⭐ 5).
 - [parklapp/steve-pluggable](https://github.com/parklapp/steve-pluggable) - SteVe is a Java-based OCPP server for managing electric vehicle charging stations, users, RFID cards, and related operations (OCPP 1.2, 1.5, 1.6 · Java · ⭐ 4).
 - [juherr/evolve](https://github.com/juherr/evolve) - EVolve is a Java implementation of an OCPP server for electric vehicle charging systems (Java · ⭐ 4).
-- [erik73/app-steve](https://github.com/erik73/app-steve) - A Home Assistant add-on that runs the SteVe OCPP server to communicate with charge points (Dockerfile · ⭐ 3).
 - [eveys-mobility/OCPP](https://github.com/eveys-mobility/OCPP) - A Python-based OCPP 1.6/2.0.1 gateway that manages EV charger WebSocket connections and exposes REST, gRPC, Kafka, and webhook interfaces (OCPP 1.6, 2.0.1 · Python · ⭐ 3).
+- [erik73/app-steve](https://github.com/erik73/app-steve) - A Home Assistant add-on that runs the SteVe OCPP server to communicate with charge points (Dockerfile · ⭐ 3).
 - [eliodecolli/Medinilla](https://github.com/eliodecolli/Medinilla) - An open-source Charging Station Management System backend implementing the OCPP protocol in ASP.NET Core (OCPP 2.0.1 · C# · ⭐ 3).
 - [elton-saraci/ocpp-central-system](https://github.com/elton-saraci/ocpp-central-system) - An open-source Java backend that manages EV charging stations through OCPP 1.6 over WebSockets and provides REST APIs for monitoring and control (OCPP 1.6 · Java · ⭐ 3).
 - [SukritJaAIproject/bpc-csms-cloud](https://github.com/SukritJaAIproject/bpc-csms-cloud) - An OCPP 1.6-J charging station management system (CSMS) with operator console, customer app, payment integration, and operations management (OCPP 1.6, 2.0.1 · Python · ⭐ 2).
@@ -549,16 +549,13 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 ##### Rust
 
 - [mobilityhub-vn/ocpi-rs](https://github.com/mobilityhub-vn/ocpi-rs) - A production-grade OCPI library in Rust providing typed models, an async HTTP client, and server handler traits for all supported OCPI versions (2.0 through 2.3.0) (OCPI 2.0, 2.1.1, 2.2.1, 2.3.0 · ⭐ 4).
+- [tandemdrive/ocpi-tariffs](https://codeberg.org/tandemdrive/ocpi-tariffs) - A project for calculating tariffs defined by the Open Charge Point Interface (OCPI) (OCPI 2.1.1, 2.2.1 · ⭐ 4).
 - [hupe1980/ocpi-kit](https://github.com/hupe1980/ocpi-kit) - A Rust toolkit that implements OCPI versions 2.1.1–2.3.0 with data models, protocol translation, client and server components, roaming-hub support, tariff auditing, and a CLI (OCPI 2.1.1, 2.2.1, 2.3.0 · ⭐ 1).
 
 ##### TypeScript
 
 - [ocpi/ocpi-tool](https://github.com/ocpi/ocpi-tool) - A command-line tool that exports filtered charging data from OCPI platforms for use in external data-processing pipelines (OCPI 2.2.1 · ⭐ 33).
 - [solidstudiosh/ocpi-schema](https://github.com/solidstudiosh/ocpi-schema) - A Node.js tool that generates JSON Schemas for OCPI 2.1.1 and later (⭐ 20).
-
-##### Other
-
-- [tandemdrive/ocpi-tariffs](https://codeberg.org/tandemdrive/ocpi-tariffs) - A project for calculating tariffs defined by the Open Charge Point Interface (OCPI) (⭐ 40).
 
 #### Misc
 
