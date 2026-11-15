@@ -65,6 +65,14 @@ EXCLUDED_REPOS = {
   # A general-purpose RTOS: no EV charging content of its own, so being a
   # platform charger firmware can run on does not put it in this catalogue.
   "zephyrproject-rtos/zephyr",
+  # A general German car-advice website (insurance, etiquette, buying tips),
+  # matched on its `e-mobility` topic.
+  "Autoknigge/Autoknigge.de",
+  # Archived; its content moved to EVerest/EVerest, which the listing carries.
+  "EVerest/EVerest-archived",
+  # Tokenises charging sites as securities on Hedera. OCPP is only a box in its
+  # architecture notes; the code implements no charging protocol.
+  "jimmyjoseph-web3/ChargeFrog-Hedera",
 }
 README_PATH = "README.md"  # the curated list; its GitHub links seed a 4th ingest source
 # `render --readme` replaces the text between these HTML comment markers in README:
@@ -94,6 +102,8 @@ ADDITIONAL_REPOS = {
   "evcc-io/evcc",
   "zach401/acnportal",
   "OpenChargingCloud/ISO15118ConformanceTests",
+  # Maintained fork of lorenzodonini/ocpp-go, whose upstream went dormant (#38).
+  "enesismail/ocpp-go",
 }
 # Repositories hosted on Codeberg (Forgejo), as owner/repo. Ingest reads them
 # from Codeberg's API, enrich reads their README there, and they render like any
