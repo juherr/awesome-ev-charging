@@ -31,21 +31,32 @@ Research date: 2026-11-15. This is a record of what was found, not legal advice.
   forbidden.
 
 The repository's own files are not rated: `ocpp/OCPP-1.6-configuration-keys.md`
-(a hand-written table, see the first follow-up question on it below),
-`oscp/OSCP-2.0/README.md`, `emi3/README.md` and `nemo/README.md`.
+(a hand-written table, see the follow-up question on it below), the provenance
+`README.md` of each OCPP schema folder (`ocpp/OCPP-1.6/schemas/`,
+`ocpp/OCPP-2.0.1/OCPP-2.0.1_part3_JSON_schemas/`,
+`ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` and
+`ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/`),
+`oscp/OSCP-2.0/README.md`, `emi3/README.md` and `nemo/README.md`. A licence
+sentence in one of these READMEs is the repository's statement, not evidence of
+the rights holder's; it is weighed as such below.
 
 ## Summary by verdict
 
 | Verdict | Files | Paths |
 | --- | --- | --- |
-| Allowed | 238 | `ocpp/OCPP-1.6/*.pdf` (7), `ocpp/OCPP-1.6/schemas/soap/` (2), `ocpp/OCPP-2.0/*.pdf` (4), `ocpp/OCPP-2.0.1/*.pdf` (8), `ocpp/OCPP-2.1/*.pdf` (5), `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` (181), `ocpp/Whitepapers/` (3 PDFs), `oscp/OSCP-2.0/` (specification PDF and 26 schemas), `eichrecht/signed_meter_values-v10.pdf` |
+| Allowed | 241 | `ocpp/OCPP-1.6/*.pdf` (7), `ocpp/OCPP-1.6/schemas/soap/` (2), `ocpp/OCPP-2.0/*.pdf` (4), `ocpp/OCPP-2.0.1/*.pdf` (8), `ocpp/OCPP-2.1/*.pdf` (8), `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` (181), `ocpp/Whitepapers/` (3 PDFs), `oscp/OSCP-2.0/` (specification PDF and 26 schemas), `eichrecht/signed_meter_values-v10.pdf` |
 | Not allowed | 4 | `ocpp/OCPP-1.2/` (specification PDF and 2 WSDLs), `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` |
-| Unknown | 256 | `ocpp/OCPP-1.5/` (Technical Description and 2 WSDLs), `ocpp/OCPP-1.6/schemas/json/` (57), `ocpp/OCPP-2.0/ReadMe.md`, `ocpp/OCPP-2.0.1/` (3 groups, 136 files), `ocpp/OCPP-2.1/Appendices_CSV_v2.0/` and `ReadMe.md` (16), `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-3-2/schema/` (22), `ocpi/` (1), `oicp/` (4), `eichrecht/Presentation_Eichrecht_Plugfest.pdf`, `emi3/` (6 PDFs), `nemo/` (9 PDFs) |
+| Unknown | 255 | `ocpp/OCPP-1.5/` (Technical Description and 2 WSDLs), `ocpp/OCPP-1.6/schemas/json/` (56), `ocpp/OCPP-2.0/ReadMe.md`, `ocpp/OCPP-2.0.1/` (ReadMe, `Appendices_CSV_v1.5/` and the 128 JSON schemas, 136 files), `ocpp/OCPP-2.1/Appendices_CSV_v2.1/` and `ReadMe.md` (16), `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/` (22), `ocpi/` (1), `oicp/` (4), `eichrecht/Presentation_Eichrecht_Plugfest.pdf`, `emi3/` (6 PDFs), `nemo/` (9 PDFs) |
+
+The three verdicts add up to 500 files: every vendored file under the seven
+directories except the eight repository files listed above.
 
 ## OCPP (`ocpp/`)
 
 Evidence was read in the files first (`pdftotext`, file headers), then on
-openchargealliance.org. Counts in the Path column are files.
+openchargealliance.org. Counts in the Path column are files. The four OCA
+download bundles behind the JSON schemas and the CSVs were also listed with
+`unzip -l` (see the Open Charge Alliance follow-up).
 
 | Path | Rights holder | Licence | Verbatim redistribution | Evidence |
 | --- | --- | --- | --- | --- |
@@ -54,21 +65,21 @@ openchargealliance.org. Counts in the Path column are files.
 | `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` | e-laad.nl | All rights reserved | **Not allowed** without prior written consent | PDF p. 2: same e-laad.nl notice as 1.2 ("Version management by OCPP Steering Group"). |
 | `ocpp/OCPP-1.5/OCPP 1.5 Technical Description.pdf` | Unknown. PDF author metadata: "Klaas van Zuuren"; the text says OCPP "is an open standard initiated by E-laad" | Unknown, no notice in the 7 pages | **Unknown** | `pdfinfo`: Author "Klaas van Zuuren", Creator "Microsoft Word 2010"; `pdftotext` finds no copyright or licence line. |
 | `ocpp/OCPP-1.5/*_1.5_FINAL.wsdl.wsdl` (2) | e-laad.nl | Ad hoc: "Free to use without modifications." | **Unknown**: "use" does not clearly cover redistribution; the "without modifications" condition is met by a verbatim copy | Header comment: "Version 1.5 draft for approval (1.5 RC4) / Copyright e-laad.nl. Free to use without modifications." |
-| `ocpp/OCPP-1.6/*.pdf` (7: edition 2, OCPP-J, OCPP-S, three errata sheets, ISO 15118 whitepaper) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | e.g. `ocpp-1.6 edition 2.pdf`: "Copyright © 2010 – 2017 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". Same in OCPP-J and OCPP-S (2010–2015), the errata sheets (2010–2019) and `ocpp_1_6_ISO_15118_v10.pdf` (© 2020). |
+| `ocpp/OCPP-1.6/*.pdf` (7: edition 2, OCPP-J, OCPP-S, three errata sheets, ISO 15118 whitepaper) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | e.g. `ocpp-1.6 edition 2.pdf`: "Copyright © 2010 – 2017 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". Same in OCPP-J and OCPP-S (2010–2015), the errata sheets (OCPP and OCPP-J 2010–2025, OCPP-S 2010–2019) and `ocpp_1_6_ISO_15118_v10.pdf` (© 2020). |
 | `ocpp/OCPP-1.6/schemas/soap/*.wsdl` (2) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | Header comment: "Copyright © 2010 – 2015 Open Charge Alliance. All rights reserved. This document is made available under the Creative Commons Attribution-NoDerivatives 4.0 International Public License". |
-| `ocpp/OCPP-1.6/schemas/json/` (57) | Unknown (presumably OCA) | Unknown, no notice in any file; the OCA download page states none | **Unknown** | 0 of 57 files match `copyright\|licen\|©`; the header is only `"id": "urn:OCPP:1.6:2019:12:…"`. <https://openchargealliance.org/protocols/open-charge-point-protocol/> and <https://openchargealliance.org/my-oca/ocpp/> state no licence. |
+| `ocpp/OCPP-1.6/schemas/json/` (56) | Open Charge Alliance per [`schemas/README.md`](../ocpp/OCPP-1.6/schemas/README.md), which cites no notice for it | Unknown: no notice in any file or in the download bundle; the OCA pages state none | **Unknown** | 0 of 56 files match `copyright\|licen\|©\|creative`; the header is only `"id": "urn:OCPP:1.6:2019:12:…"`. The bundle `OCPP_1.6_documentation.zip` (SHA-256 `2a1d8028…`, as in the README) holds the PDFs, `schemas/soap/` and `schemas/json/`, and no licence file. The README says "© Open Charge Alliance and published under" CC BY-ND 4.0, but that is the repository's own statement. The only notices in the bundle are those of the PDFs and WSDLs. |
 | `ocpp/OCPP-2.0/*.pdf` (4: changelog 2.0 to 2.0.1, part 1, 2 and 4 errata) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | PDF p. 1–2: "Copyright © 2010 – 2020 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". |
 | `ocpp/OCPP-2.0/ReadMe.md` | Open Charge Alliance (zip readme, verbatim) | Unknown, no notice | **Unknown** | The file says "This zip contains the changelog and errata documents…"; no licence text. |
-| `ocpp/OCPP-2.0.1/*.pdf` (8: parts 0, 1, 2 specification, 2 appendices v14, 4, 5, 6, errata 2025-01) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | Every PDF: "Copyright © 2010 – 2024 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*" (errata: 2010 – 2025; part 2 specification: notice after the table of contents). |
-| `ocpp/OCPP-2.0.1/OCPP-2.0.1_part3_JSON_schemas/` (128) | Unknown (presumably OCA) | Unknown, no notice in any file; the OCA download page states none | **Unknown** | All 128 carry only `"comment": "OCPP 2.0.1 FINAL"`; 0 of 128 match `copyright\|licen\|©`. |
-| `ocpp/OCPP-2.0.1/Appendices_CSV_v1.4/` (6 CSV, 1 xlsx) | Unknown (presumably OCA; xlsx `dc:creator` "Buve, Franc") | Unknown, no notice in the CSVs or the xlsx (`sharedStrings.xml`, `core.xml`) | **Unknown** | The only grep hit is the data string "countryName (C)". |
-| `ocpp/OCPP-2.0.1/ReadMe.md` | Open Charge Alliance (zip readme, verbatim) | Unknown, no notice | **Unknown** | "This zip contains the latest version of all OCPP 2.0.1 Edition 3 specification parts…"; no licence text. |
-| `ocpp/OCPP-2.1/*.pdf` (5: parts 0, 1, 2 specification, 2 appendices v20, 4) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | "Copyright © 2010 – 2025 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". |
-| `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` (181) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | 181 of 181: `"comment": "OCPP 2.1 Edition 1 (c) OCA, Creative Commons Attribution-NoDerivatives 4.0 International Public License"`. |
-| `ocpp/OCPP-2.1/Appendices_CSV_v2.0/` (14 CSV, 1 xlsx) | Unknown (presumably OCA; xlsx `dc:creator` "Buve, Franc") | Unknown, no notice in the CSVs or the xlsx | **Unknown** | 0 of 15 files match `copyright\|licen\|©`. |
-| `ocpp/OCPP-2.1/ReadMe.md` | Open Charge Alliance (zip readme, verbatim) | Unknown, no notice | **Unknown** | "This zip contains the latest version of the OCPP 2.1 Edition 1 specification parts…"; no licence text. |
-| `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-3-2/OCPP 1.6 security whitepaper edition 3.pdf` | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | "Copyright © 2022 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". |
-| `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-3-2/schema/` (22) | Unknown (presumably OCA) | Unknown, no notice in any file | **Unknown** | 0 of 22 match `copyright\|licen\|©`; the header is only `"$id": "urn:OCPP:Cp:1.6:2020:3:…"`. |
+| `ocpp/OCPP-2.0.1/*.pdf` (8: Edition 4 parts 0, 1, 2 specification, 2 appendices v15, 4, 5, 6, errata 2026-09) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | Every PDF: "Copyright © 2010 – 2025 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*" (errata: 2010 – 2026; part 6: "2010 - 2025"; part 2 specification: notice after the front matter). |
+| `ocpp/OCPP-2.0.1/OCPP-2.0.1_part3_JSON_schemas/` (128) | Open Charge Alliance per [its README](../ocpp/OCPP-2.0.1/OCPP-2.0.1_part3_JSON_schemas/README.md), which cites no notice for it | Unknown: no notice in any file or in the download bundle; the OCA pages state none | **Unknown** | All 128 carry only `"comment": "OCPP 2.0.1 FINAL"`; 0 of 128 match `copyright\|licen\|©\|creative`. The bundle `OCPP-2.0.1_all_files.zip` (SHA-256 `9e025b7d…`, as in the README) holds the Edition 4 PDFs, the schemas zip, the CSV zip and `ReadMe.md`, and no licence file. The schemas date from 2020-03-31 and Edition 4 did not reissue them. |
+| `ocpp/OCPP-2.0.1/Appendices_CSV_v1.5/` (6 CSV, 1 xlsx) | Unknown (presumably OCA; xlsx `dc:creator` "Buve, Franc") | Unknown, no notice in the CSVs or the xlsx (`sharedStrings.xml`, `core.xml`) | **Unknown** | 0 of 7 files match `copyright\|licen\|©` (the xlsx was read inside its archive); the bundle holds no licence file. |
+| `ocpp/OCPP-2.0.1/ReadMe.md` | Open Charge Alliance (zip readme, verbatim) | Unknown, no notice | **Unknown** | "This zip contains the latest version of all OCPP 2.0.1 specification parts…" (Edition 4 changelog inside); no licence text. |
+| `ocpp/OCPP-2.1/*.pdf` (8: Edition 2 parts 0, 1, 2 specification, 2 appendices v21, 4, 5, 6, errata 2026-09) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | "Copyright © 2010 – 2025 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*" (errata: 2010 – 2026; part 6: "2010 - 2025"). |
+| `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` (181) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | 181 of 181: `"comment": "OCPP 2.1 Edition 1 (c) OCA, Creative Commons Attribution-NoDerivatives 4.0 International Public License"`. The schemas are the 2025-01-23 files, which Edition 2 did not reissue (README of the folder). |
+| `ocpp/OCPP-2.1/Appendices_CSV_v2.1/` (14 CSV, 1 xlsx) | Unknown (presumably OCA; xlsx `dc:creator` "Buve, Franc") | Unknown, no notice in the CSVs or the xlsx | **Unknown** | 0 of 15 files match `copyright\|licen\|©`; the bundle `OCPP-2.1_all_files.zip` (SHA-256 `2774ada2…`) holds no licence file. |
+| `ocpp/OCPP-2.1/ReadMe.md` | Open Charge Alliance (zip readme, verbatim) | Unknown, no notice | **Unknown** | "This zip contains the latest version of the OCPP 2.1 Edition 2 specification parts…"; no licence text. |
+| `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/OCPP 1.6 security whitepaper edition 4.pdf` | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | PDF p. 1: "Copyright © 2026 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*" (edition 4, 2026-02-05). |
+| `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/` (22) | Open Charge Alliance per [its README](../ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/README.md), which cites no notice for it | Unknown: no notice in any file or in the download bundle | **Unknown** | 0 of 22 match `copyright\|licen\|©\|creative`; the header is only `"$id": "urn:OCPP:Cp:1.6:2020:3:…"`. The bundle `OCPP-1.6-security-whitepaper-edition-4.zip` (SHA-256 `158b883e…`) holds the PDF and `JSON_schemas.zip` only. |
 | `ocpp/Whitepapers/improving_uptime_with_ocpp_v1_1.pdf` | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | "Copyright © 2024 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". |
 | `ocpp/Whitepapers/ocpp_1_x_multiple_connectors_per_evse.pdf` | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | Same notice, © 2024 (v1.2 Final, 2024-03-25). |
 | `ocpp/OCPP-1.6-configuration-keys.md` | Repository author (Julien Herr, commits `2d0b37d`, `7e732ab`); not an OCA file | The repository's root `LICENSE`: CC0 1.0 Universal (added in `aaa1bb9`) | Not applicable (own work), see the follow-up question below | `git log`. The file is a hand-written reference table that "reflects the OCPP 1.6 specification (edition 2) and the Security Whitepaper (edition 3)". |
@@ -288,14 +299,30 @@ replacing or relinking a file is left to a separate editorial decision.
     of Hubject's services, not the documents.
 - **Open Charge Alliance**, files without an in-file notice (the 1.6 and 2.0.1
   JSON schemas, both `Appendices_CSV_*`, the three `ReadMe.md`, the
-  security-whitepaper schemas, about 230 files). They ship in the same OCA
-  bundles whose PDFs are CC BY-ND 4.0, but each PDF notice says "This document
-  is made available…", and no publisher page extends it to the bundle. Whether
-  OCA intends CC BY-ND for them is unconfirmed. If it does, §3(a) attribution
-  would have to be supplied by the repository (a README per directory, as for
-  OSCP). A possible next step, not done: download the OCA "all files" zips and
-  run `unzip -l` on them to see whether they ship a licence or notice file that
-  was never copied here.
+  security-whitepaper schemas, 231 files). They ship in the same OCA bundles
+  whose PDFs are CC BY-ND 4.0, but each PDF notice says "This document is made
+  available…", and no publisher page extends it to the bundle. Whether OCA
+  intends CC BY-ND for them is unconfirmed.
+  - Checked on 2026-11-15: `unzip -l` of the four bundles
+    (`OCPP_1.6_documentation.zip`, `OCPP-2.0.1_all_files.zip`,
+    `OCPP-2.1_all_files.zip`, `OCPP-1.6-security-whitepaper-edition-4.zip`,
+    SHA-256 equal to those in the folder READMEs) lists the PDFs, the schema and
+    CSV archives and `ReadMe.md`, and no licence or notice file. The nested
+    schema and CSV archives were not opened: their extracted content is what
+    the repository holds, and it has none.
+  - The OCPP 2.1 schemas are the exception: their own `comment` carries the
+    CC BY-ND 4.0 notice.
+  - The four schema-folder READMEs state "© Open Charge Alliance and published
+    under" CC BY-ND 4.0 for all their files. For the 1.6 WSDLs and the 2.1
+    schemas that matches the files' own notices. For the 1.6 and 2.0.1 JSON
+    schemas and the security-whitepaper schemas it goes beyond them: the only
+    source the READMEs cite is the OCA download page, which states no licence.
+    Either OCA confirms the licence, or those READMEs should say only that the
+    files are verbatim, and the rows above would become Allowed on that
+    confirmation. The OSCP README makes the same statement for its schemas, none
+    of which carries a notice; the OSCP section above is unchanged.
+  - If OCA does confirm, §3(a) attribution would have to be supplied by the
+    repository, which the READMEs already do.
 - **Open Charge Alliance**, other points:
   - The Eichrecht Plugfest presentation has no licence. Neither the file nor any
     OCA page read (home, terms of service, privacy policy, search for
@@ -328,11 +355,13 @@ replacing or relinking a file is left to a separate editorial decision.
   marked "Draft". They may differ from the versions the EC accepted. CORDIS's
   download module failed on 2026-11-02 (`nemo/README.md`), so this was not
   compared.
-- The OCA download page now offers "OCPP 2.1 Edition 2 (all files)" (the
-  repository has Edition 1). The whitepapers page lists the security whitepaper
-  4th edition (repository: edition 3) and uptime v1.3 (repository: v1.1). CC
-  BY-ND does not require tracking updates, but the repository may be pointing
-  readers at outdated material.
+- The repository now holds OCPP 2.0.1 Edition 4, OCPP 2.1 Edition 2, the OCPP
+  1.6 documentation of 2025-04 and the security whitepaper edition 4, as the OCA
+  download page offers them. The whitepapers page listed uptime v1.3 when last
+  read (repository: v1.1; not re-checked). CC BY-ND does not require tracking
+  updates, but the repository may be pointing readers at outdated material.
+- `ocpp/OCPP-1.6-configuration-keys.md` still cites the security whitepaper
+  "edition 3", while the repository now vendors edition 4.
 - Every eMI³ and NeMo file has a live or archived URL recorded in
   `emi3/README.md` and `nemo/README.md`, so linking instead of vendoring needs no
   licence. Whether to switch is a decision for the owner. This research does not
