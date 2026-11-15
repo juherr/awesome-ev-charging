@@ -46,12 +46,28 @@ Descriptions and categories are stored in **`classifications.csv`** — the dura
 | `signals`     | fingerprint of what the classifier read (cache key — leave it alone)      |
 
 - Valid **main** categories come from `CATEGORY_TREE` in `pipeline.py`: `OCPP`,
-  `OCPI`, `iso15118`, `OICP`, `EMIP`, `OIOI`, `Eichrecht`, `Other`. Every main
+  `OCPI`, `iso15118`, `OICP`, `EMIP`, `OIOI`, `Eichrecht`, `OpenADR`, `OSCP`, `Other`. Every main
   carries a **sub**category, also listed in `CATEGORY_TREE` — `Other` included,
   which has a closed list (`Home automation`, `EVSE firmware`, `Simulators`, …).
   Propose a new subcategory only when none fits.
 - A repo can belong to several categories: separate them with `|`, e.g.
   `Other > Maps & route planning|Other > Developer tools & libraries`.
+
+Use protocol-specific `Message inspection`, `Testing & conformance` and
+`Security testing` slots where available. A simulator emulates an endpoint;
+a test suite checks behavior; neither is an official certification system.
+Document the EVCC/SECC or VEN/VTN role and supported protocol edition from the
+project's own documentation. Put EXI codecs and SLAC implementations in their
+ISO 15118 subcategories, and retain general EMS, grid simulation and data-model
+tools under `Other`. Do not infer bidirectional power transfer from “V2G”.
+
+Regulations, standards and organizations are hand-authored outside the README's
+generated markers. Prefer official legal texts and publisher catalogues; state
+jurisdiction, publication status and scope, and distinguish binding provisions,
+voluntary standards, certification schemes and technical recommendations.
+Cross-reference existing specifications instead of repeating their links.
+See [the content audit](docs/content-taxonomy-audit.md) for the taxonomy rationale
+and verification record.
 
 **Do not commit** the generated artifacts `repos.csv`, `repos.enriched.csv`,
 `cache_github/`, or `list.txt` — they're git-ignored. The files meant to be

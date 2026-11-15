@@ -55,6 +55,8 @@ EXCLUDED_REPOS = {
   # A fusion-energy company's API portal; matched only because it tags itself
   # `e-mobility`. Unrelated to EV charging protocols.
   "api-evangelist/tae-technologies",
+  # Identical draft specification; keep the CharIN-owned upstream entry.
+  "unified-error-codes/specification",
   # Off-topic: no EV charging content. Each one forced a subcategory of its own
   # under the closed "Other" list (#59).
   "pogopaule/awesome-sustainability-jobs",  # a job board
@@ -85,16 +87,26 @@ ADDITIONAL_REPOS = {
   "TECHS-Technological-Solutions/ocpi",
   "ChargeMap/ocpi-protocol",
   "ChargeMap/autocharge-vehicles-database",
-  "ocpp-debugkit/ocpp-debugkit"
+  "ocpp-debugkit/ocpp-debugkit",
+  "OpenLEADR/openleadr-rs",
+  "OpenLEADR/openleadr-python",
+  "EVerest/libcbv2g",
+  "evcc-io/evcc",
+  "zach401/acnportal",
+  "OpenChargingCloud/ISO15118ConformanceTests",
 }
 CATEGORY_TREE = {
-  "OCPP": ["Server", "Simulator", "Libraries", "Misc"],
+  "OCPP": ["Server", "Simulator", "Libraries", "Message inspection",
+           "Testing & conformance", "Security testing", "Misc"],
   "OCPI": ["Server", "Simulator", "Libraries", "Misc"],
-  "iso15118": ["Plug&Charge", "Simulator", "Libraries", "Misc"],
+  "iso15118": ["Plug&Charge", "Simulator", "Libraries", "EXI codecs", "SLAC",
+               "Message inspection", "Testing & conformance", "Security testing", "Misc"],
   "OICP": ["Server", "Simulator", "Libraries", "Misc"],
   "EMIP": ["Server", "Simulator", "Libraries", "Misc"],
   "OIOI": ["Server", "Simulator", "Libraries", "Misc"],
   "Eichrecht": ["Libraries", "Misc"],
+  "OpenADR": ["VEN & VTN", "Libraries", "Testing & conformance", "Misc"],
+  "OSCP": ["Libraries", "Misc"],
   # A closed list: left empty, the prompt showed a bare `- Other`, and the
   # classifier answered with a bare `Other` or a fresh 1-repo label each run.
   # Alphabetical, because this order is also the README's section order.
@@ -102,9 +114,11 @@ CATEGORY_TREE = {
     "Analytics & data",
     "Battery",
     "Charging management system",
+    "Data models & identifiers",
     "Developer tools & libraries",
     "EVSE firmware",
     "Energy management",
+    "Grid simulation",
     "Home automation",
     "Maps & route planning",
     "Mobile app",
@@ -240,6 +254,36 @@ SUBCATEGORY_ALIASES = {
 # (pipe-joined) form. Applied at render time, so it survives re-classification
 # and `enrich --refresh`.
 CATEGORY_OVERRIDES = {
+  # Specialist tooling: retain the protocol primary, distinguish inspection,
+  # developer tests and security research from libraries and certification.
+  "dspace-group/dsv2gshark": "iso15118 > Message inspection",
+  "zeloscloud/zelos-extension-v2g": "iso15118 > Message inspection",
+  "uhi22/ccs32ebony": "iso15118 > Message inspection",
+  "ecog-io/pyslac": "iso15118 > SLAC",
+  "cepsdev/v2g-guru-slac": "iso15118 > SLAC|iso15118 > Simulator",
+  "everest/libcbv2g": "iso15118 > EXI codecs",
+  "ocpp-debugkit/ocpp-debugkit": "OCPP > Message inspection",
+  "ocpp-debugkit/studio": "OCPP > Message inspection",
+  "ocpp-debugkit/toolkit": "OCPP > Message inspection",
+  "vfg27/checkocpp": "OCPP > Message inspection",
+  "brandonprry/volatileocpp": "OCPP > Testing & conformance|Other > Security",
+  "tzi-app/tzi-octt": "OCPP > Testing & conformance",
+  "leonard-voss/nocpp": "OCPP > Security testing|Other > Security",
+  "ocpp-fuzzer/ocpp-fuzzer": "OCPP > Security testing|Other > Security",
+  "fluxius/v2ginjector": "iso15118 > Security testing|Other > Security",
+  "konicst1/chargesploit": "iso15118 > Security testing|iso15118 > Simulator|Other > Security",
+  "openchargingcloud/iso15118conformancetests": "iso15118 > Testing & conformance",
+  "openleadr/openleadr-rs": "OpenADR > VEN & VTN",
+  "openleadr/openleadr-python": "OpenADR > VEN & VTN",
+  "hupe1980/openadr": "OpenADR > VEN & VTN",
+  "chargepi/oscp-go": "OSCP > Libraries",
+  "andreibesleaga/oscp-sdk": "OSCP > Libraries",
+  "zach401/acnportal": "Other > Grid simulation",
+  "chargepi/oecs": "Other > Data models & identifiers",
+  "etalab/schema-irve": "Other > Data models & identifiers",
+  "juherr/mobilityid": "Other > Data models & identifiers",
+  "ducminhquan/datex2-ts": "Other > Data models & identifiers",
+  "juherr/datex4j": "Other > Data models & identifiers",
   "dalathegreat/battery-emulator": "Other > Battery",
   "mnh-jansson/open-battery-information": "Other > Battery",
   "remontsuri/ev-qa-framework": "Other > Battery",
@@ -276,6 +320,14 @@ CATEGORY_OVERRIDES = {
 # to keep stars / pushed_at / dormant real and auto-refreshed. Escalate to that
 # if off-GitHub migrations become common.
 REPO_OVERRIDES = {
+  # Its stated certification focus does not establish official recognition;
+  # its README marks newer protocol versions as under development.
+  "openchargingcloud/chargingstationapp": {
+    "description": "An Electron-based virtual OCPP charging station for developer testing, with OCPP 1.6 support and newer protocol versions under development.",
+  },
+  "lastproject-esiee/ocppconfigurationserver": {
+    "description": "A Spring Boot application providing an OCPP WebSocket server for configuring and managing charge points.",
+  },
   # Development moved to Codeberg; the GitHub mirror is archived (hence dormant).
   # Codeberg confirmed active (updated 2026-07-02, not archived).
   "tandemdrive/ocpi-tariffs": {
@@ -321,6 +373,16 @@ CLASSIFIER_INSTRUCTIONS = (
   "the taxonomy lists for it; under a protocol, use Misc when none fits; under "
   "Other, propose a short new one only when none fits. Never return a bare main "
   "category.\n"
+  "Use Message inspection for trace decoders and viewers; Testing & conformance "
+  "for developer validation suites; Security testing for fuzzers and attack tools. "
+  "These labels do not imply official certification. Keep protocol stacks in "
+  "Libraries, EXI encoders/decoders in EXI codecs and ISO 15118-3 matching in SLAC. "
+  "Use OpenADR for documented demand-response VEN/VTN implementations and OSCP "
+  "for documented capacity-exchange implementations. Generic load management "
+  "and EMS belong in Other > Energy management; charging-network research "
+  "simulation in Other > Grid simulation; schemas and identifier utilities in "
+  "Other > Data models & identifiers. Do not infer V2G power transfer, protocol "
+  "versions, certification or maintenance status from a project name.\n"
   "Some repositories have no README; the prompt says so when that happens — "
   "classify from the description and topics alone rather than declining.\n"
   "Do not run any commands or tools — everything you need is below.\n"
