@@ -8,6 +8,7 @@ themselves are exercised through a stubbed `subprocess.run`.
 import csv
 import pathlib
 import types
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -1080,11 +1081,26 @@ FORGEJO_REPO = {
     "topics": [],
     "updated_at": "2026-09-09T01:09:14+02:00",
     "created_at": "2026-09-09T00:40:32+02:00",
+    "default_branch": "main",
+    "empty": False,
     "archived": False,
     "fork": False,
     "parent": None,
     "mirror": False,
 }
+
+REPO_URL = "/repos/slash909uk/ocpp-domoticz-bridge"
+BRANCH_URL = REPO_URL + "/branches/main"
+
+
+def forgejo_branch(timestamp):
+    """GET /api/v1/repos/{repo}/branches/{branch}, trimmed to what is read."""
+    return {"name": "main", "commit": {"id": "c0ffee", "timestamp": timestamp}}
+
+
+def _iso_days_ago(days):
+    return (datetime.now(timezone.utc)
+            - timedelta(days=days)).isoformat(timespec="seconds")
 
 
 class FakeJsonResponse(FakeResponse):
@@ -1113,20 +1129,76 @@ def test_a_forgejo_repo_is_mapped_onto_the_github_shape():
     assert obj["html_url"] == "https://codeberg.org/slash909uk/ocpp-domoticz-bridge"
     # days_since_push only reads UTC `Z` timestamps: an offset left as is would
     # make every Codeberg repo look active forever.
-    assert obj["pushed_at"] == "2026-09-08T23:09:14Z"
+    assert obj["updated_at"] == "2026-09-08T23:09:14Z"
     assert obj["created_at"] == "2026-09-08T22:40:32Z"
 
 
-def test_a_stale_codeberg_repo_is_dormant():
-    stale = dict(FORGEJO_REPO, updated_at="2020-01-01T12:00:00+01:00")
-    record = pipeline.build_repo_record(
-        pipeline.forgejo_repo_as_github(stale), "codeberg", set(), set(), set())
+def test_a_forgejo_repo_update_is_not_taken_for_a_push():
+    """`updated_at` also moves on a description or topic edit: it is the last
+    known modification, not the last commit."""
+    assert not pipeline.forgejo_repo_as_github(FORGEJO_REPO).get("pushed_at")
+
+
+def test_a_codeberg_repo_is_dated_by_its_last_commit(tmp_path, monkeypatch):
+    stub_codeberg(monkeypatch, tmp_path, {
+        REPO_URL: FakeJsonResponse(200, dict(FORGEJO_REPO, updated_at="2026-11-06T13:59:02+01:00")),
+        BRANCH_URL: FakeJsonResponse(200, forgejo_branch("2026-11-06T13:31:20+01:00"))})
+    record = pipeline.codeberg_record("slash909uk/ocpp-domoticz-bridge")
+    assert record["pushed_at"] == "2026-11-06T12:31:20Z"
+    assert record["updated_at"] == "2026-11-06T12:59:02Z"
+
+
+def test_a_metadata_edit_leaves_a_stale_codeberg_repo_dormant(tmp_path, monkeypatch):
+    stub_codeberg(monkeypatch, tmp_path, {
+        REPO_URL: FakeJsonResponse(200, dict(FORGEJO_REPO, updated_at=_iso_days_ago(1))),
+        BRANCH_URL: FakeJsonResponse(200, forgejo_branch("2020-01-01T12:00:00+01:00"))})
+    record = pipeline.codeberg_record("slash909uk/ocpp-domoticz-bridge")
+    assert record["pushed_at"] == "2020-01-01T11:00:00Z"
     assert record["dormant"] == "true"
+
+
+def test_a_recent_commit_keeps_a_codeberg_repo_active(tmp_path, monkeypatch):
+    stub_codeberg(monkeypatch, tmp_path, {
+        REPO_URL: FakeJsonResponse(200, FORGEJO_REPO),
+        BRANCH_URL: FakeJsonResponse(200, forgejo_branch(_iso_days_ago(3)))})
+    record = pipeline.codeberg_record("slash909uk/ocpp-domoticz-bridge")
+    assert record["days_since_push"] in (2, 3)
+    assert record["dormant"] == "false"
+
+
+@pytest.mark.parametrize("repo_obj, routes", [
+    # The default branch answers 404: there is no commit to date.
+    (FORGEJO_REPO, {}),
+    # Forgejo flags a repository without any commit as empty: nothing to read.
+    (dict(FORGEJO_REPO, empty=True), {}),
+])
+def test_a_codeberg_repo_without_commits_has_no_push_date(tmp_path, monkeypatch, repo_obj, routes):
+    sent = stub_codeberg(monkeypatch, tmp_path, dict(routes, **{
+        REPO_URL: FakeJsonResponse(200, repo_obj)}))
+    record = pipeline.codeberg_record("slash909uk/ocpp-domoticz-bridge")
+    assert record["pushed_at"] == ""
+    assert record["days_since_push"] == ""
+    # An unknown push date does not make a repo dormant: only archiving does.
+    assert record["dormant"] == "false"
+    assert record["updated_at"] == "2026-09-08T23:09:14Z"
+    if repo_obj.get("empty"):
+        assert not any(url.endswith(BRANCH_URL) for url, _ in sent)
+
+
+@pytest.mark.parametrize("branch_response", [FakeResponse(503), FakeResponse(429)])
+def test_an_unreadable_codeberg_branch_fails_the_run(tmp_path, monkeypatch, branch_response):
+    """Writing the row without its push date would publish a dormancy verdict
+    nothing supports; abort like an unreadable repo does."""
+    stub_codeberg(monkeypatch, tmp_path, {
+        REPO_URL: FakeJsonResponse(200, FORGEJO_REPO), BRANCH_URL: branch_response})
+    with pytest.raises(SystemExit, match="slash909uk/ocpp-domoticz-bridge"):
+        pipeline.codeberg_record("slash909uk/ocpp-domoticz-bridge")
 
 
 def test_a_codeberg_record_is_built_without_the_github_token(tmp_path, monkeypatch):
     sent = stub_codeberg(monkeypatch, tmp_path, {
-        "/repos/slash909uk/ocpp-domoticz-bridge": FakeJsonResponse(200, FORGEJO_REPO)})
+        REPO_URL: FakeJsonResponse(200, FORGEJO_REPO),
+        BRANCH_URL: FakeJsonResponse(200, forgejo_branch("2026-09-09T01:00:00+02:00"))})
     record = pipeline.codeberg_record("slash909uk/ocpp-domoticz-bridge")
     assert record["full_name"] == "slash909uk/ocpp-domoticz-bridge"
     assert record["source"] == "codeberg"
@@ -1134,8 +1206,30 @@ def test_a_codeberg_record_is_built_without_the_github_token(tmp_path, monkeypat
     assert record["dormant"] in ("true", "false")
     # Nobody starred it: the column records a fact, not the curation.
     assert record["starred_by"] == ""
-    assert sent and all("Authorization" not in headers for _, headers in sent)
-    assert all(url.startswith("https://codeberg.org/api/v1/") for url, _ in sent)
+    assert [url for url, _ in sent] == [
+        "https://codeberg.org/api/v1" + REPO_URL, "https://codeberg.org/api/v1" + BRANCH_URL]
+    # Not even an Accept header: Codeberg gets nothing the GitHub calls carry.
+    assert all(headers == {} for _, headers in sent)
+
+
+def test_a_github_record_carries_its_last_update():
+    record = pipeline.build_repo_record(
+        {"full_name": "acme/charger", "pushed_at": "2026-01-01T00:00:00Z",
+         "updated_at": "2026-02-01T00:00:00Z"}, "topic", set(), set(), set())
+    assert record["pushed_at"] == "2026-01-01T00:00:00Z"
+    assert record["updated_at"] == "2026-02-01T00:00:00Z"
+    assert "updated_at" in pipeline.CSV_FIELDS
+    assert set(record) == set(pipeline.CSV_FIELDS)
+
+
+def test_a_record_without_a_push_date_is_not_dormant_unless_archived():
+    assert pipeline.days_since_push("") is None
+    assert pipeline.days_since_push(None) is None
+    active = pipeline.build_repo_record({"full_name": "a/b"}, "topic", set(), set(), set())
+    assert (active["pushed_at"], active["days_since_push"], active["dormant"]) == ("", "", "false")
+    archived = pipeline.build_repo_record(
+        {"full_name": "a/b", "archived": True}, "topic", set(), set(), set())
+    assert archived["dormant"] == "true"
 
 
 def test_a_deleted_codeberg_repo_is_skipped_with_a_warning(tmp_path, monkeypatch, capsys):

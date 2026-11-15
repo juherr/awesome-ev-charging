@@ -436,7 +436,7 @@ CSV_FIELDS = [
   "stars", "forks", "open_issues",
   "topics", "topic_matches",
   "pushed_at", "days_since_push", "dormant", "archived", "created_at",
-  "is_fork", "parent_full_name",
+  "updated_at", "is_fork", "parent_full_name",
   "starred_by", "promoted", "by_contributor", "source",
 ]
 
@@ -522,23 +522,45 @@ def _utc_z(timestamp):
 def forgejo_repo_as_github(obj):
   """Map a Forgejo repository object onto the GitHub fields build_repo_record reads.
 
-  Forgejo has no `pushed_at`; `updated_at` stands in for it. It also moves on
-  metadata edits, so it can report a repo as active a little longer than a push
-  date would. Forgejo exposes no licence name, so the record says `N/A`.
+  Forgejo has no `pushed_at`, and its `updated_at` is not one: it also moves on
+  a description or topic edit, so it is the last known modification, not the
+  last commit. It is kept as `updated_at`; codeberg_record reads the push date
+  from the default branch. Forgejo exposes no licence name, so the record says
+  `N/A`.
   """
   return dict(
     obj,
     stargazers_count=obj.get("stars_count", 0),
-    pushed_at=_utc_z(obj.get("updated_at")),
+    updated_at=_utc_z(obj.get("updated_at")),
     created_at=_utc_z(obj.get("created_at")),
   )
+
+
+def codeberg_last_commit(full_name, obj):
+  """Return the UTC date of the last commit on a Codeberg repo's default branch.
+
+  `""` when there is none to read (an empty repository, or a branch answering
+  404). Any other failure aborts the run, like an unreadable repository: the
+  date decides dormancy, and a row without it would read as active.
+  """
+  branch = obj.get("default_branch")
+  if obj.get("empty") or not branch:
+    return ""
+  data = github_request_cached(f"{CODEBERG_API}/repos/{full_name}/branches/{branch}",
+                               headers={}, missing={})
+  if data is None:
+    raise SystemExit(f"❌ Could not read the {branch} branch of {full_name} from "
+                     "Codeberg; aborting before the output CSV is written.")
+  return _utc_z((data.get("commit") or {}).get("timestamp")) or ""
 
 
 def codeberg_record(full_name):
   """Build the CSV record of a Codeberg repository, or None if it was deleted.
 
-  Any other failure aborts the run: skipping the repo would drop it from the
-  listing at the next render, since its GitHub mirror is excluded.
+  `pushed_at` is the last commit on the default branch, `updated_at` the
+  repository's last known modification. Any failure other than a 404 aborts
+  the run: skipping the repo would drop it from the listing at the next render,
+  since its GitHub mirror is excluded.
   """
   gone = object()
   obj = github_request_cached(f"{CODEBERG_API}/repos/{full_name}", headers={}, missing=gone)
@@ -550,7 +572,8 @@ def codeberg_record(full_name):
                      "aborting before the output CSV is written.")
   if not obj:
     return None
-  return build_repo_record(forgejo_repo_as_github(obj), "codeberg", set(), set(), set())
+  github_shaped = dict(forgejo_repo_as_github(obj), pushed_at=codeberg_last_commit(full_name, obj))
+  return build_repo_record(github_shaped, "codeberg", set(), set(), set())
 
 
 def fetch_codeberg_readme(full_name):
@@ -729,7 +752,10 @@ def build_repo_record(obj, source, matched_topics, starred_by, contributors):
 
   Reads every field from `obj` (the /repos response) so topic-sourced and
   manual repos share the exact same shape — including `pushed_at`, which the
-  previous code only stored for manual repos.
+  previous code only stored for manual repos. `pushed_at` is the last commit
+  and decides dormancy; `updated_at` is the last known modification (a push or
+  a metadata edit) and is recorded only. A record without `pushed_at` has no
+  `days_since_push` and is dormant only if archived.
   """
   repo_topics = set(obj.get("topics") or [])
   all_topics = repo_topics | set(matched_topics)
@@ -763,6 +789,7 @@ def build_repo_record(obj, source, matched_topics, starred_by, contributors):
     "dormant": _b(dormant),
     "archived": _b(archived),
     "created_at": obj.get("created_at") or "",
+    "updated_at": obj.get("updated_at") or "",
     "is_fork": _b(is_fork),
     "parent_full_name": parent_full_name,
     "starred_by": "|".join(sorted(starred_by)),
