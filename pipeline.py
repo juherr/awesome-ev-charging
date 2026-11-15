@@ -517,8 +517,19 @@ def forgejo_repo_as_github(obj):
 
 
 def codeberg_record(full_name):
-  """Build the CSV record of a Codeberg repository, or None if unreachable."""
-  obj = github_request_cached(f"{CODEBERG_API}/repos/{full_name}", headers={})
+  """Build the CSV record of a Codeberg repository, or None if it was deleted.
+
+  Any other failure aborts the run: skipping the repo would drop it from the
+  listing at the next render, since its GitHub mirror is excluded.
+  """
+  gone = object()
+  obj = github_request_cached(f"{CODEBERG_API}/repos/{full_name}", headers={}, missing=gone)
+  if obj is gone:
+    print(f"::warning::{full_name} is gone from Codeberg (404); skipping it.")
+    return None
+  if obj is None:
+    raise SystemExit(f"❌ Could not read {full_name} from Codeberg; "
+                     "aborting before the output CSV is written.")
   if not obj:
     return None
   return build_repo_record(forgejo_repo_as_github(obj), "codeberg", set(), set(), set())
