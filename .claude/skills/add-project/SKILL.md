@@ -74,6 +74,12 @@ will land in the `Dormant` / `To refine` blocks.
   `pipeline.py`.
 
 When unsure, just add it to `ADDITIONAL_REPOS` — it's idempotent and explicit.
+
+A repo hosted on **Codeberg** (no GitHub mirror) goes in `CODEBERG_REPOS`
+instead: ingest reads it from Codeberg's API and promotes it into the
+selection, since no GitHub Stars list can hold it. Its README is read from
+Codeberg too, so `enrich` classifies it like any other.
+
 A repo can be discovered by several sources at once (the CSV `source` column
 shows the `+`-joined provenance); that's fine.
 

@@ -673,7 +673,7 @@ def test_an_unreadable_readme_never_reaches_the_backend(tmp_path, monkeypatch):
 
 def stub_readmes(monkeypatch, readmes):
     monkeypatch.setattr(pipeline, "fetch_readme_content",
-                        lambda full_name, headers: readmes[full_name])
+                        lambda full_name, headers, html_url=None: readmes[full_name])
 
 
 def test_one_unreadable_readme_fails_a_run_that_read_the_others(tmp_path, monkeypatch):
@@ -929,3 +929,127 @@ def test_extract_ocpi_versions_from_a_list():
     assert pipeline.extract_versions(
         "Implements OCPI 2.1.1 / 2.2.1 and 2.3.0", "ocpi", pipeline.OCPI_VERSIONS
     ) == "2.1.1,2.2.1,2.3.0"
+
+
+# --- Codeberg: repositories hosted outside GitHub -------------------------------
+
+# Trimmed from the real response of GET /api/v1/repos/slash909uk/ocpp-domoticz-bridge.
+FORGEJO_REPO = {
+    "full_name": "slash909uk/ocpp-domoticz-bridge",
+    "html_url": "https://codeberg.org/slash909uk/ocpp-domoticz-bridge",
+    "description": "A bridge to allow domoticz to control an EVSE via OCPP.",
+    "language": "Python",
+    "stars_count": 1,
+    "forks_count": 0,
+    "open_issues_count": 0,
+    "topics": [],
+    "updated_at": "2026-09-09T01:09:14+02:00",
+    "created_at": "2026-09-09T00:40:32+02:00",
+    "archived": False,
+    "fork": False,
+    "parent": None,
+    "mirror": False,
+}
+
+
+class FakeJsonResponse(FakeResponse):
+    def __init__(self, status_code, body):
+        super().__init__(status_code, pipeline.json.dumps(body))
+
+
+def stub_codeberg(monkeypatch, tmp_path, routes):
+    """Serve `routes` (URL suffix -> response) and record every request's headers."""
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    sent = []
+
+    def get(url, headers=None, **kwargs):
+        sent.append((url, dict(headers or {})))
+        for suffix, response in routes.items():
+            if url.endswith(suffix):
+                return response
+        return FakeResponse(404)
+    monkeypatch.setattr(pipeline.requests, "get", get)
+    return sent
+
+
+def test_a_forgejo_repo_is_mapped_onto_the_github_shape():
+    obj = pipeline.forgejo_repo_as_github(FORGEJO_REPO)
+    assert obj["stargazers_count"] == 1
+    assert obj["html_url"] == "https://codeberg.org/slash909uk/ocpp-domoticz-bridge"
+    # days_since_push only reads UTC `Z` timestamps: an offset left as is would
+    # make every Codeberg repo look active forever.
+    assert obj["pushed_at"] == "2026-09-08T23:09:14Z"
+    assert obj["created_at"] == "2026-09-08T22:40:32Z"
+
+
+def test_a_stale_codeberg_repo_is_dormant():
+    stale = dict(FORGEJO_REPO, updated_at="2020-01-01T12:00:00+01:00")
+    record = pipeline.build_repo_record(
+        pipeline.forgejo_repo_as_github(stale), "codeberg", set(), set(), set())
+    assert record["dormant"] == "true"
+
+
+def test_a_codeberg_record_is_built_without_the_github_token(tmp_path, monkeypatch):
+    sent = stub_codeberg(monkeypatch, tmp_path, {
+        "/repos/slash909uk/ocpp-domoticz-bridge": FakeJsonResponse(200, FORGEJO_REPO)})
+    record = pipeline.codeberg_record("slash909uk/ocpp-domoticz-bridge")
+    assert record["full_name"] == "slash909uk/ocpp-domoticz-bridge"
+    assert record["source"] == "codeberg"
+    assert record["stars"] == 1
+    assert record["dormant"] in ("true", "false")
+    # Nobody starred it: the column records a fact, not the curation.
+    assert record["starred_by"] == ""
+    assert sent and all("Authorization" not in headers for _, headers in sent)
+    assert all(url.startswith("https://codeberg.org/api/v1/") for url, _ in sent)
+
+
+def test_an_unreachable_codeberg_repo_yields_no_record(tmp_path, monkeypatch):
+    stub_codeberg(monkeypatch, tmp_path, {})
+    assert pipeline.codeberg_record("gone/away") is None
+
+
+def test_a_codeberg_repo_is_promoted_to_the_selection():
+    """A GitHub Stars list cannot hold a Codeberg repo, so listing it in
+    CODEBERG_REPOS is the curation itself."""
+    assert pipeline._promotion(repo(source="codeberg")) == 1
+    assert pipeline._promotion(repo(source="manual")) == -1
+    assert pipeline._promotion(repo(source="codeberg", starred_by="juherr|mateogreil")) == 2
+
+
+@pytest.mark.parametrize("routes, expected", [
+    ({"/contents": FakeJsonResponse(200, [{"name": "LICENSE", "type": "file"},
+                                          {"name": "README.md", "type": "file"}]),
+      "/raw/README.md": FakeResponse(200, "# An OCPP bridge")}, "# An OCPP bridge"),
+    # No README file at the root: a fact about the repo.
+    ({"/contents": FakeJsonResponse(200, [{"name": "server.py", "type": "file"},
+                                          {"name": "readme", "type": "dir"}])}, ""),
+    # The listing could not be read: a fact about the run.
+    ({"/contents": FakeResponse(502)}, None),
+    ({"/contents": FakeJsonResponse(200, [{"name": "Readme.rst", "type": "file"}]),
+      "/raw/Readme.rst": FakeResponse(503)}, None),
+])
+def test_a_codeberg_readme_is_read_from_codeberg(tmp_path, monkeypatch, routes, expected):
+    sent = stub_codeberg(monkeypatch, tmp_path, routes)
+    readme = real_fetch_readme_content(
+        "slash909uk/ocpp-domoticz-bridge", {"Authorization": "token ghp_secret"},
+        html_url="https://codeberg.org/slash909uk/ocpp-domoticz-bridge")
+    assert readme == expected
+    assert all("Authorization" not in headers for _, headers in sent)
+    assert all(url.startswith("https://codeberg.org/api/v1/") for url, _ in sent)
+
+
+def test_a_github_readme_is_still_read_from_github(tmp_path, monkeypatch):
+    sent = stub_codeberg(monkeypatch, tmp_path, {"/readme": FakeResponse(200, "# GitHub")})
+    assert real_fetch_readme_content(
+        "acme/charger", {}, html_url="https://github.com/acme/charger") == "# GitHub"
+    assert sent[0][0] == f"{pipeline.BASE_URL}/repos/acme/charger/readme"
+
+
+def test_enrich_reads_the_readme_from_the_repo_host(tmp_path, monkeypatch):
+    seen = []
+    monkeypatch.setattr(pipeline, "fetch_readme_content",
+                        lambda full_name, headers, html_url=None: seen.append(html_url) or "")
+    url = "https://codeberg.org/slash909uk/ocpp-domoticz-bridge"
+    run_enrich(tmp_path, [repo("slash909uk/ocpp-domoticz-bridge", html_url=url)],
+               lambda row, readme: ("", []))
+    assert seen == [url]
