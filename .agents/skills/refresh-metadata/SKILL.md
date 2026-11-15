@@ -115,7 +115,9 @@ mise run enrich
   adding one `--reask-category 'Main > Sub'` per catch-all bucket the edit
   split (e.g. `'OCPP > Misc'`). Every other stale answer is kept and stamped
   as current; only those buckets, minus repos pinned in `CATEGORY_OVERRIDES`,
-  are asked again.
+  are asked again. To let Copilot do it in CI instead, run the
+  `refresh-metadata` workflow by hand with `restamp` ticked and the buckets in
+  `reask_categories`, `;`-separated.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
