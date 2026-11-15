@@ -378,6 +378,13 @@ CATEGORY_OVERRIDES = {
 # metadata from Codeberg's API rather than freezing it here, and drops the
 # GitHub mirror left behind under the same name.
 REPO_OVERRIDES = {
+  # The generated description does not say what sets it apart from the
+  # dormant upstream it forks (#38).
+  "enesismail/ocpp-go": {
+    "description": "Maintained fork of lorenzodonini/ocpp-go, with a restored "
+                   "build and stability fixes: a Go library for OCPP-J central "
+                   "systems and charge points",
+  },
   # GitHub counts slightly more TypeScript than Go, but the published OCPI
   # library is for Go: https://github.com/shiv3/gocpi#readme
   "shiv3/gocpi": {"language": "Go"},
