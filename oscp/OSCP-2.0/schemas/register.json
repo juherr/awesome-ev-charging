@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/register.json",
+  "title": "Register",
+  "type": "object",
+  "properties": {
+    "token": {
+      "type": "string"
+    },
+    "version_url": {
+      "type": "array",
+      "items": { "$ref": "version-url.json"},
+      "minItems": 1
+    }
+  },
+  "required": [
+    "token",
+    "version_url"
+  ]
+}

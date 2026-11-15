@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/paginated-request.json",
+    "title": "PaginatedRequest",
+    "type": "object",
+    "properties": {
+        "segment_index": {
+            "type": "integer"
+        },
+        "segment_count": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "segment_index",
+        "segment_count"
+    ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/group-capacity-compliance-error.json",
+  "title": "GroupCapacityComplianceError",
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string"
+    },
+    "forecasted_blocks": {
+      "type": "array",
+      "items": { "$ref": "forecasted-block.json" },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "message"
+  ]
+}

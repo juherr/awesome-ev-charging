@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/energy-measurement.json",
+    "title": "EnergyMeasurement",
+    "type": "object",
+    "properties": {
+        "value": {
+            "type": "number"
+        },
+        "phase": {
+            "$ref": "phase-indicator.json"
+        },
+        "unit": {
+            "$ref": "energy-measurement-unit.json"
+        },
+        "direction": {
+            "$ref": "energy-flow-direction.json"
+        },
+        "energy_type": {
+            "$ref": "energy-type.json"
+        },
+        "measure_time": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "initial_measure_time": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "required": [
+        "value",
+        "phase",
+        "unit",
+        "direction",
+        "measure_time"
+    ]
+}

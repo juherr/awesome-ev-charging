@@ -1,0 +1,7 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/capacity-forecast-type.json",
+    "title": "CapacityForecastType",
+    "type": "string",
+    "enum": ["CONSUMPTION", "GENERATION", "FALLBACK_CONSUMPTION", "FALLBACK_GENERATION", "OPTIMUM"]
+}

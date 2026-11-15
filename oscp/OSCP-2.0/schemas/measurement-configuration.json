@@ -1,0 +1,7 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/measurement-configuration.json",
+    "title": "MeasurementConfiguration",
+    "type": "string",
+    "enum": ["CONTINUOUS", "INTERMITTENT"]
+}

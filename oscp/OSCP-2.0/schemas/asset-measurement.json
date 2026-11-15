@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/asset-measurement.json",
+  "title": "AssetMeasurement",
+  "type": "object",
+  "properties": {
+    "asset_id": {
+      "type": "string"
+    },
+    "asset_category": {
+      "$ref": "asset-category.json"
+    },
+    "energy_measurement": {
+      "$ref": "energy-measurement.json"
+    },
+    "instantaneous_measurement": {
+      "$ref": "instantaneous-measurement.json"
+    }
+  },
+  "required": [
+    "asset_id",
+    "asset_category"
+  ]
+}

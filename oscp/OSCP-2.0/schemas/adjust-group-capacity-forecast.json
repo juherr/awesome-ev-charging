@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://www.openchargealliance.org/schemas/oscp/2.0/adjust-group-capacity-forecast.json",
+    "title": "AdjustGroupCapacityForecast",
+    "type": "object",
+    "properties": {
+        "group_id": {
+            "type": "string"
+        },
+        "type": {
+            "$ref": "capacity-forecast-type.json"
+        },
+        "forecasted_blocks": {
+            "type": "array",
+            "items": { "$ref": "forecasted-block.json" },
+            "minItems": 1
+        }
+    },
+    "required": [
+        "group_id",
+        "type",
+        "forecasted_blocks"
+    ]
+}
