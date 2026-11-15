@@ -312,6 +312,15 @@ def test_trace_inspection_is_not_filed_as_a_protocol_library():
         "iso15118", "Message inspection")
 
 
+def test_gocpi_is_listed_as_a_go_library_despite_github_language_statistics():
+    row = repo("shiv3/gocpi", categories="OCPI > Libraries", language="TypeScript",
+               html_url="https://github.com/shiv3/gocpi", description="An OCPI library for Go.")
+    lines = []
+    pipeline._render_grouped([pipeline._apply_overrides(row)], lines)
+    assert "##### Go" in lines
+    assert "##### TypeScript" not in lines
+
+
 def test_new_grid_protocols_keep_protocol_priority_and_single_listing():
     row = repo("acme/flex", categories="Other > Energy management|OpenADR > VEN & VTN",
                html_url="https://example.com/flex", description="Demand response service.")
