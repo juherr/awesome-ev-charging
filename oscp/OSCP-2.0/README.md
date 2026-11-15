@@ -5,6 +5,12 @@ Verbatim copy of the "OSCP 2.0 (all files)" download from the
 specification (FINAL, 2020-10-12) and the JSON schemas from its `schemas.zip`,
 extracted to `schemas/`.
 
+| | |
+| --- | --- |
+| File | [`OSCP_2.0_Specification.zip`](https://openchargealliance.org/wp-content/uploads/downloads/OSCP_2.0_Specification.zip) |
+| SHA-256 | `742eaa48e3cfcbd56f81c957a01c298c5048295e40be129a2dea2d6a52f2f853` |
+| Retrieved | 2026-11-15 |
+
 The material is © Open Charge Alliance and published under the
 [Creative Commons Attribution-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nd/4.0/legalcode).
 The NoDerivatives term rules out redistributing a modified copy, so the files
