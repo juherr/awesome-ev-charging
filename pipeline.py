@@ -101,7 +101,10 @@ ADDITIONAL_REPOS = {
 # curation itself: `_promotion` lifts them into the selection.
 CODEBERG_API = "https://codeberg.org/api/v1"
 CODEBERG_WEB = "https://codeberg.org/"
-CODEBERG_REPOS = set()
+CODEBERG_REPOS = {
+  "slash909uk/ocpp-domoticz-bridge",
+  "ikarius/httpie-ocpi-auth",
+}
 CATEGORY_TREE = {
   "OCPP": ["Server", "Simulator", "Libraries", "Message inspection",
            "Testing & conformance", "Security testing", "Misc"],
@@ -275,6 +278,7 @@ CATEGORY_OVERRIDES = {
   "vfg27/checkocpp": "OCPP > Message inspection",
   "brandonprry/volatileocpp": "OCPP > Testing & conformance|Other > Security",
   "tzi-app/tzi-octt": "OCPP > Testing & conformance",
+  "juherr/open-ocpp-tck": "OCPP > Testing & conformance|Other > Developer tools & libraries",
   "leonard-voss/nocpp": "OCPP > Security testing|Other > Security",
   "ocpp-fuzzer/ocpp-fuzzer": "OCPP > Security testing|Other > Security",
   "fluxius/v2ginjector": "iso15118 > Security testing|Other > Security",
@@ -291,6 +295,7 @@ CATEGORY_OVERRIDES = {
   "juherr/mobilityid": "Other > Data models & identifiers",
   "ducminhquan/datex2-ts": "Other > Data models & identifiers",
   "juherr/datex4j": "Other > Data models & identifiers",
+  "juherr/open-idro-directory": "Other > Data models & identifiers",
   "dalathegreat/battery-emulator": "Other > Battery",
   "mnh-jansson/open-battery-information": "Other > Battery",
   "remontsuri/ev-qa-framework": "Other > Battery",
@@ -311,6 +316,11 @@ CATEGORY_OVERRIDES = {
   # A charger firmware stack; the #59 re-run filed it as developer tooling,
   # which also moved its primary listing out of OCPP.
   "everest/everest": "OCPP > Misc|iso15118 > Misc|Other > EVSE firmware",
+  # It plays the OCPP central system the EVSE connects to; the classifier kept
+  # only the Domoticz side.
+  "slash909uk/ocpp-domoticz-bridge": "OCPP > Server|Other > Home automation",
+  # An HTTPie plugin, a developer tool rather than a library.
+  "ikarius/httpie-ocpi-auth": "OCPI > Misc|Other > Developer tools & libraries",
 }
 
 # Manual per-repo field overrides for repos whose GitHub record no longer
