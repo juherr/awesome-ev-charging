@@ -142,8 +142,10 @@ ASSET_MEASUREMENT = {
 # --- Integrity ----------------------------------------------------------------
 
 def test_vendored_files_are_byte_identical_to_the_oca_download():
+  # Dotfiles (a Finder .DS_Store) are local noise git ignores, not vendored files.
   present = {path.relative_to(OSCP_DIR).as_posix()
-             for path in OSCP_DIR.rglob("*") if path.is_file()} - {"README.md"}
+             for path in OSCP_DIR.rglob("*")
+             if path.is_file() and not path.name.startswith(".")} - {"README.md"}
   assert present == set(VENDORED_SHA256), (
     f"{LICENCE_NOTE}. Added: {sorted(present - set(VENDORED_SHA256))}, "
     f"missing: {sorted(set(VENDORED_SHA256) - present)}")
