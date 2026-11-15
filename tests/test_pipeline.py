@@ -1003,9 +1003,42 @@ def test_a_codeberg_record_is_built_without_the_github_token(tmp_path, monkeypat
     assert all(url.startswith("https://codeberg.org/api/v1/") for url, _ in sent)
 
 
-def test_an_unreachable_codeberg_repo_yields_no_record(tmp_path, monkeypatch):
-    stub_codeberg(monkeypatch, tmp_path, {})
+def test_a_deleted_codeberg_repo_is_skipped_with_a_warning(tmp_path, monkeypatch, capsys):
+    stub_codeberg(monkeypatch, tmp_path, {})  # every URL answers 404
     assert pipeline.codeberg_record("gone/away") is None
+    assert "::warning::gone/away" in capsys.readouterr().out
+
+
+def _connection_refused(*args, **kwargs):
+    raise pipeline.requests.ConnectionError("connection refused")
+
+
+@pytest.mark.parametrize("get", [
+    lambda *a, **k: FakeResponse(503),   # Codeberg is down
+    lambda *a, **k: FakeResponse(429),   # rate-limited
+    _connection_refused,                 # network error
+])
+def test_an_unreadable_codeberg_repo_fails_the_run(tmp_path, monkeypatch, get):
+    """Skipping it would drop the repo from repos.csv, then from the README at
+    the next render: its GitHub mirror is excluded, and no guard counts rows."""
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(pipeline.requests, "get", get)
+    with pytest.raises(SystemExit, match="acme/bridge"):
+        pipeline.codeberg_record("acme/bridge")
+
+
+def test_ingest_keeps_the_previous_csv_when_a_codeberg_repo_is_unreadable(tmp_path, monkeypatch):
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(pipeline, "STARRED_USERS", set())
+    monkeypatch.setattr(pipeline, "CODEBERG_REPOS", {"acme/bridge"})
+    monkeypatch.setattr(pipeline, "get_contributors", lambda repo, headers: set())
+    monkeypatch.setattr(pipeline, "collect_candidates", lambda headers: {})
+    monkeypatch.setattr(pipeline.requests, "get", lambda *a, **k: FakeResponse(503))
+    out = tmp_path / "repos.csv"
+    out.write_text("previous run\n", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        pipeline.ingest(pipeline.argparse.Namespace(token=None, out=str(out)))
+    assert out.read_text(encoding="utf-8") == "previous run\n"
 
 
 def test_a_codeberg_repo_is_promoted_to_the_selection():
