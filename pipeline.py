@@ -320,6 +320,9 @@ CATEGORY_OVERRIDES = {
 # to keep stars / pushed_at / dormant real and auto-refreshed. Escalate to that
 # if off-GitHub migrations become common.
 REPO_OVERRIDES = {
+  # GitHub counts slightly more TypeScript than Go, but the published OCPI
+  # library is for Go: https://github.com/shiv3/gocpi#readme
+  "shiv3/gocpi": {"language": "Go"},
   # Its stated certification focus does not establish official recognition;
   # its README marks newer protocol versions as under development.
   "openchargingcloud/chargingstationapp": {

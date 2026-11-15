@@ -59,6 +59,7 @@ andreibesleaga awesome-list fork.
 | [OpenLEADR Python](https://github.com/OpenLEADR/openleadr-python) | Documents OpenADR 2.0b client/server roles; [LF Energy](https://lfenergy.org/projects/openleadr/) explicitly calls it currently unmaintained. Retain as a historical candidate, not a maintained recommendation. |
 | [hupe1980/openadr](https://github.com/hupe1980/openadr) | Documents 3.1 VEN/VTN and developer conformance checks; move from Other protocols to OpenADR. No certification claim is inferred. |
 | [ChargePi/oscp-go](https://github.com/ChargePi/oscp-go) | README support table specifies OSCP 2.0 generated client/server code; move to OSCP > Libraries. |
+| [gocpi](https://github.com/shiv3/gocpi) | README documents an OCPI library for Go; override the displayed language to Go because GitHub's byte-based statistics report slightly more TypeScript across the repository. |
 | [evcc](https://github.com/evcc-io/evcc) | Solar-aware charging, load management and documented OCPP support; keep OCPP primary and Energy management as a secondary facet. |
 | [ACN Portal](https://github.com/zach401/acnportal) | Caltech charging-data client, charging algorithm simulation and network constraints; add under Grid simulation. Does not claim general power-flow analysis or a VEN/VTN implementation. |
 | [libcbv2g](https://github.com/EVerest/libcbv2g) | README specifies EXI encoding/decoding for DIN 70121, ISO 15118-2 and -20; add under EXI codecs. |
@@ -136,7 +137,7 @@ one-year dormancy threshold and restores two active entries to Selection.
 
 Validation:
 
-- 174 pytest tests pass after rebasing onto PR #76, including specialist placement, protocol priority,
+- 175 pytest tests pass after rebasing onto PR #76, including specialist placement, protocol priority,
   single listing, classifier-contract guidance and guide navigation.
 - Markdown lint passes across the authored documentation.
 - Awesome-list lint passes. In a new branch without tracking configuration,
