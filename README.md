@@ -1,4 +1,4 @@
-# Awesome Electric Vehicle [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
+# Awesome EV Charging [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
 A carefully curated list of specifications, tools, and resources for electric vehicle (EV) charging protocols — a central point of information for developers and enthusiasts working in the e-mobility space.
 
@@ -39,9 +39,23 @@ A carefully curated list of specifications, tools, and resources for electric ve
   - [Uncategorized](#uncategorized)
 <!-- END GENERATED TOC -->
 
-[![ev roaming protocols](img/ev-roaming-protocols.jpg)](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html)
+The diagram below places each protocol on the link it covers, from the vehicle to the roaming partners and the grid.
+
+```mermaid
+flowchart LR
+  EV[Electric vehicle] <-->|ISO 15118, IEC 61851| CS[Charging station]
+  CS <-->|OCPP| CSMS[CSMS, operated by the CPO]
+  CSMS <-->|OCPI| EMSP[eMSP]
+  CSMS <-->|OCPI, OICP, eMIP, OCHP| HUB[Roaming hub, e.g. Hubject, GIREVE]
+  HUB <-->|OCPI, OICP, eMIP, OCHP| EMSP
+  GRID[DSO and energy management] <-->|OSCP, OpenADR| CSMS
+```
+
+For a comparison of the roaming protocols, see [EV roaming protocol differences](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html).
 
 ## Specifications
+
+Some of the specifications below are vendored in this repository; the rights holder and licence of each vendored file are recorded in [docs/third-party-assets.md](docs/third-party-assets.md).
 
 ### OCPP (Open Charge Point Protocol)
 
