@@ -165,7 +165,7 @@ Extensions (vendor / community):
 
 Roaming relies on ID Registration Offices (IDRO) that assign and publish the operator (CPO) and provider (eMSP) identifiers exchanged over OCPI.
 
-- [Identification Registration Repository](https://alternative-fuels-observatory.ec.europa.eu/markets-and-policy/policy-insights/identification-registration-repository) - The European reference, maintained by the European Alternative Fuels Observatory.
+- [Identification Registration Repository](https://alternative-fuels-observatory.ec.europa.eu/markets-and-policy/identification-registration-repository) - The European reference, maintained by the European Alternative Fuels Observatory.
 - [IDRO Directory](https://idro.juherr.dev/) - A global directory aggregating e-mobility identifiers from national and regional IDRO registries.
 
 Roaming platforms (hubs) that interconnect CPOs and eMSPs, by founding year:
