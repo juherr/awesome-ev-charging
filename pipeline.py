@@ -358,6 +358,7 @@ CATEGORY_OVERRIDES = {
   "llocer/llocer_ocpp_json": "OCPP > Libraries|Other > Data models & identifiers",
   "ko1103/ocpi-mcp-server": "OCPI > Misc|Other > Developer tools & libraries",
   "drvelvetfog/x402-charging-agent": "OCPI > Misc|Other > Other protocols",  # ships a mock OCPI 2.2 CPO and settles its CDR
+  "chargerdojo/ocpi-conformance-action": "OCPI > Misc|Other > Developer tools & libraries",  # runs OCPI conformance suites in CI
   # Guides and specifications written for a protocol.
   "javierojan/awesome-ocpp": "OCPP > Misc|OCPI > Misc|Other > Specifications & documentation",
   "openchargingtechnology/whitepapers": "OCPP > Misc|OCPI > Misc|OICP > Misc|iso15118 > Misc|Other > Specifications & documentation",
