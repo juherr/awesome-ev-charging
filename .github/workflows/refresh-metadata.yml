@@ -184,7 +184,12 @@ jobs:
       # steps put in the job summary and the PR body. The baseline
       # data/projects.json adds selection / dormant / to_refine movements to
       # it; until one is committed (#98) the report says they were not
-      # reported, so the flag is only passed when HEAD holds the file.
+      # reported, so the flag is only passed when HEAD holds the file. The
+      # movements are informational: a missing fresh export or an unreadable
+      # file is a warning and a report line, never a failure.
+      #
+      # pipefail: without it a failing `git show` would feed an empty baseline,
+      # every repo would read as a newcomer and the guard would pass green.
       #
       # It runs *after* the fast-forward above, not before: the baseline is
       # `git show HEAD:classifications.csv`, so it has to read the base the PR
@@ -195,6 +200,7 @@ jobs:
       - name: Guard against classification regressions
         id: guard
         run: |
+          set -o pipefail
           args=(--base - --report "$RUNNER_TEMP/classification-report.md")
           if git cat-file -e HEAD:data/projects.json 2>/dev/null; then
             git show HEAD:data/projects.json > "$RUNNER_TEMP/base-projects.json"

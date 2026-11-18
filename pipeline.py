@@ -1444,18 +1444,21 @@ def curation_movements(base, current):
 
 
 def _projects_comparison(args):
-  """(movements or None, error or None) for `--base-projects` / `--projects`.
+  """(movements or None, warning or None) for `--base-projects` / `--projects`.
 
-  A file that is absent (no baseline committed yet, issue #98, or no
-  `--base-projects` at all) is not an error: the workflow controls that, and
-  the report says the movements were not reported. A file that is present but
-  not an export is: it means a broken render or a broken baseline, and
-  skipping it would hide that.
+  A baseline that is absent (none committed yet, issue #98, or no
+  `--base-projects` at all) is expected, and the report says so without a
+  warning. A fresh export missing next to a baseline, or a file that is
+  present but not an export, is a warning: it points at a broken render, a
+  broken baseline or an export schema change. Curation movements are
+  informational, so neither ever fails the guard.
   """
   base_path = getattr(args, "base_projects", None)
   current_path = getattr(args, "projects", None) or os.path.join("data", PROJECTS_EXPORT)
-  if not base_path or not (os.path.exists(base_path) and os.path.exists(current_path)):
+  if not base_path or not os.path.exists(base_path):
     return None, None
+  if not os.path.exists(current_path):
+    return None, f"the fresh export {current_path} is missing."
   try:
     return curation_movements(load_projects(base_path), load_projects(current_path)), None
   except ValueError as e:
@@ -1509,7 +1512,7 @@ def _arrow(before, after, render=_labels):
   return f"{render(before)} → {render(after)}"
 
 
-def classification_report(before, after, curation=None, curation_error=None):
+def classification_report(before, after, curation=None, curation_warning=None):
   """The guard's findings as a Markdown report, for the step summary and the PR.
 
   Built from the same helpers the guard prints from, so the two agree. One
@@ -1581,8 +1584,8 @@ def classification_report(before, after, curation=None, curation_error=None):
   lines = ["# Classification report", ""]
   lines += table(["Class", "Count"], [[title, len(rows)] for title, _, rows in classes])
   lines.append("")
-  if curation_error:
-    lines += [f"Curation movements not reported: {curation_error}", ""]
+  if curation_warning:
+    lines += [f"Curation movements not reported: {curation_warning}", ""]
   elif curation is None:
     lines += [NO_PROJECTS_BASELINE, ""]
   for title, columns, rows in classes:
@@ -1597,8 +1600,8 @@ def check_classifications(args):
   With `--report`, the findings are also written as Markdown before any exit,
   so a blocked run still leaves the report to review. With `--base-projects`,
   the report adds the curation movements between that export and `--projects`;
-  those never fail the guard, but an export present on disk that cannot be read
-  does.
+  those never fail the guard. A missing fresh export or an unreadable file is
+  a `::warning::` and a line in the report, never an exit.
   """
   if args.base == "-":
     before = read_classifications(sys.stdin)
@@ -1606,11 +1609,11 @@ def check_classifications(args):
     before = load_classifications(args.base)
   after = load_classifications(args.cache)
 
-  curation, curation_error = _projects_comparison(args)
+  curation, curation_warning = _projects_comparison(args)
   report_path = getattr(args, "report", None)
   if report_path:
     with open(report_path, "w", encoding="utf-8", newline="") as f:
-      f.write(classification_report(before, after, curation, curation_error))
+      f.write(classification_report(before, after, curation, curation_warning))
 
   lost, arrived_empty = classification_regressions(before, after)
   diff = classification_diff(before, after)
@@ -1665,9 +1668,9 @@ def check_classifications(args):
     print(f"ℹ️ Curation: {len(curation['moved'])} movement(s), "
           f"{len(curation['added'])} project(s) added to and "
           f"{len(curation['removed'])} removed from the export.")
-  if curation_error:
-    print(f"::error::Curation movements not reported: {curation_error}")
-  if lost or counts["unexplained"] or curation_error:
+  if curation_warning:
+    print(f"::warning::Curation movements not reported: {curation_warning}")
+  if lost or counts["unexplained"]:
     print(f"Summary: {summary}.")
     sys.exit(1)
   print(f"✅ No classification regression — {summary}.")

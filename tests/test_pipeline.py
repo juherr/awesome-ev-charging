@@ -600,12 +600,10 @@ def test_the_report_lists_curation_movements(tmp_path, capsys, curation):
     assert "✅" in capsys.readouterr().out
 
 
-@pytest.mark.parametrize("which", ["base", "fresh", "flag"])
+@pytest.mark.parametrize("which", ["base", "flag"])
 def test_a_missing_projects_baseline_is_reported_not_failed(tmp_path, curation, which):
-    base = projects_file(tmp_path / "base-projects.json", [("acme/x", "selection")])
     fresh = projects_file(tmp_path / "projects.json", [("acme/x", "dormant")])
     extra = {"base": {"base_projects": str(tmp_path / "nope.json"), "projects": fresh},
-             "fresh": {"base_projects": base, "projects": str(tmp_path / "nope.json")},
              "flag": {"base_projects": None, "projects": fresh}}[which]
     rows = [cached("acme/x", "OCPP > Server")]
     report = guard_report(tmp_path, rows, rows, **extra)
@@ -613,18 +611,52 @@ def test_a_missing_projects_baseline_is_reported_not_failed(tmp_path, curation, 
     assert "| Curation movement |" not in report
 
 
+def test_a_missing_fresh_export_is_not_reported_as_a_missing_baseline(tmp_path, capsys,
+                                                                      curation):
+    base = projects_file(tmp_path / "base-projects.json", [("acme/x", "selection")])
+    missing = tmp_path / "nope.json"
+    rows = [cached("acme/x", "OCPP > Server")]
+    report = guard_report(tmp_path, rows, rows, base_projects=base, projects=str(missing))
+    # The baseline is there: saying it is not would send the reviewer the wrong way.
+    assert "No projects.json baseline" not in report
+    assert (f"Curation movements not reported: the fresh export {missing} is missing."
+            in report)
+    assert "| Curation movement |" not in report
+    out = capsys.readouterr().out
+    assert f"::warning::Curation movements not reported: the fresh export {missing}" in out
+    assert "✅" in out
+
+
+@pytest.mark.parametrize("which", ["base", "fresh"])
 @pytest.mark.parametrize("content", ["{not json", '{"projects": [{"full_name": "a/b"}]}',
                                      '["a list"]'])
-def test_an_invalid_projects_file_fails_after_writing_the_report(tmp_path, capsys, curation,
-                                                                 content):
-    bad = tmp_path / "base-projects.json"
+def test_an_invalid_projects_file_warns_without_failing_the_guard(tmp_path, capsys, curation,
+                                                                  content, which):
+    bad = tmp_path / f"{which}-projects-bad.json"
     bad.write_text(content, encoding="utf-8")
-    fresh = projects_file(tmp_path / "projects.json", [("acme/x", "selection")])
+    good = projects_file(tmp_path / "projects.json", [("acme/x", "selection")])
+    extra = {"base": {"base_projects": str(bad), "projects": good},
+             "fresh": {"base_projects": good, "projects": str(bad)}}[which]
     rows = [cached("acme/x", "OCPP > Server")]
-    report = guard_report(tmp_path, rows, rows, expect_exit=True,
-                          base_projects=str(bad), projects=fresh)
-    assert "base-projects.json" in report
-    assert "::error::" in capsys.readouterr().out
+    # Curation movements are informational: a corrupt baseline or an export
+    # schema change must not block the classification refresh.
+    report = guard_report(tmp_path, rows, rows, **extra)
+    assert f"Curation movements not reported: {bad}" in report
+    assert "No projects.json baseline" not in report
+    out = capsys.readouterr().out
+    assert f"::warning::Curation movements not reported: {bad}" in out
+    assert "::error::" not in out
+    assert "✅" in out
+
+
+def test_an_invalid_projects_file_leaves_a_regression_failing(tmp_path, capsys, curation):
+    bad = tmp_path / "base-projects.json"
+    bad.write_text("{not json", encoding="utf-8")
+    fresh = projects_file(tmp_path / "projects.json", [("acme/x", "selection")])
+    report = guard_report(tmp_path, [cached("acme/x", "OCPP > Server")], [cached("acme/x", "")],
+                          expect_exit=True, base_projects=str(bad), projects=fresh)
+    assert f"Curation movements not reported: {bad}" in report
+    assert "::error::acme/x lost the category it had." in capsys.readouterr().out
 
 
 def test_accepted_protocol_losses_are_keyed_lowercase_with_reasons():
