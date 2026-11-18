@@ -70,6 +70,10 @@ EXCLUDED_REPOS = {
   "Autoknigge/Autoknigge.de",
   # Archived; its content moved to EVerest/EVerest, which the listing carries.
   "EVerest/EVerest-archived",
+  # An unofficial mirror of four EVerest/EVerest libraries (iso15118, cbv2g,
+  # slac, util). A mirror is listed only when its upstream is dormant, and
+  # EVerest/EVerest is active and listed.
+  "vampirebyte/EVerest-libiso15118",
   # Tokenises charging sites as securities on Hedera. OCPP is only a box in its
   # architecture notes; the code implements no charging protocol.
   "jimmyjoseph-web3/ChargeFrog-Hedera",
@@ -393,8 +397,6 @@ REPO_OVERRIDES = {
   # GitHub counts slightly more TypeScript than Go, but the published OCPI
   # library is for Go: https://github.com/shiv3/gocpi#readme
   "shiv3/gocpi": {"language": "Go"},
-  # A mirror of EVerest's C++ libiso15118; GitHub counts the vendored C codecs.
-  "vampirebyte/everest-libiso15118": {"language": "C++"},
   # Its README archives the 2.0.1 code on a branch outside the build:
   # https://github.com/cxh123-alt/OCPP#readme
   "cxh123-alt/ocpp": {"ocpp_versions": "1.6"},
