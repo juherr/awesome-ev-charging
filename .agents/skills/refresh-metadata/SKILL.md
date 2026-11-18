@@ -128,7 +128,7 @@ mise run enrich
 ### 3. Render → inject into README + standalone
 
 ```bash
-python pipeline.py render --readme README.md
+python pipeline.py render --readme README.md --export-dir data
 ```
 
 This replaces the text between the `GENERATED` markers in `README.md` and also
@@ -159,7 +159,8 @@ touches only generated, committed artifacts. **The regenerable artifacts
 never commit them.** Commit only the durable, published files:
 
 ```bash
-git add classifications.csv README.md legacy-projects.md
+git add classifications.csv README.md legacy-projects.md \
+  data/projects.json data/manifest.json
 git commit -m "chore(data): refresh project listing
 
 Re-ran ingest + enrich + render. Refreshes N repos whose upstream metadata
@@ -190,5 +191,6 @@ confirmation.
 - ✅ Never pass `--refresh` to `enrich` during a routine refresh — it destroys
   hand-pinned classifications.
 - ✅ Only commit `classifications.csv`, `README.md`,
-  `legacy-projects.md` (+ `pipeline.py` if you changed a constant).
+  `legacy-projects.md`, `data/projects.json`, `data/manifest.json` (+
+  `pipeline.py` if you changed a constant).
 - ✅ No AI/assistant references in commit messages.

@@ -2,8 +2,9 @@
 with the Markdown views.
 
 `data/projects.json` needs `repos.enriched.csv`, which only `enrich` produces,
-so it is not committed yet (issue #98). Its schema is checked on a fixture
-render instead, and its README consistency check skips until it lands.
+so it is not committed yet (issue #98). Its schema and manifest checks run on
+a fixture render instead, and the checks on the committed file skip until it
+lands.
 """
 
 import copy
@@ -103,6 +104,88 @@ def test_the_manifest_checksum_matches_the_committed_payload():
     payload = f.read()
   assert entry["sha256"] == hashlib.sha256(payload).hexdigest()
   assert entry["records"] == len(json.loads(payload)["products"])
+
+
+def projects_export_problems(data_dir):
+  """What is wrong with the projects payload in `data_dir`, or None when absent.
+
+  The payload and its `projects` manifest entry come together or not at all;
+  when both are there, the payload must validate and the entry must record its
+  file name, SHA-256 and record count.
+  """
+  path = os.path.join(data_dir, pipeline.PROJECTS_EXPORT)
+  manifest_path = os.path.join(data_dir, pipeline.MANIFEST_EXPORT)
+  entry = None
+  if os.path.exists(manifest_path):
+    entry = load(manifest_path)["payloads"].get("projects")
+  if not os.path.exists(path):
+    return None if entry is None else ["manifest entry without payload"]
+  if entry is None:
+    return ["payload without manifest entry"]
+  with open(path, "rb") as f:
+    raw = f.read()
+  payload = json.loads(raw)
+  problems = errors("projects.schema.json", payload)
+  if entry["file"] != pipeline.PROJECTS_EXPORT:
+    problems.append("manifest file name")
+  if entry["sha256"] != hashlib.sha256(raw).hexdigest():
+    problems.append("manifest sha256")
+  if entry["records"] != len(payload["projects"]):
+    problems.append("manifest record count")
+  return problems
+
+
+def test_a_fixture_projects_export_matches_its_manifest(tmp_path):
+  _, out = fixture_projects(tmp_path)
+  assert projects_export_problems(str(out / "data")) == []
+
+
+def _set_entry(data_dir, **fields):
+  manifest = load(data_dir, pipeline.MANIFEST_EXPORT)
+  manifest["payloads"]["projects"].update(fields)
+  pipeline.write_public_json(os.path.join(data_dir, pipeline.MANIFEST_EXPORT), manifest)
+
+
+def _drop_entry(data_dir):
+  manifest = load(data_dir, pipeline.MANIFEST_EXPORT)
+  del manifest["payloads"]["projects"]
+  pipeline.write_public_json(os.path.join(data_dir, pipeline.MANIFEST_EXPORT), manifest)
+
+
+def _break_payload(data_dir):
+  path = os.path.join(data_dir, pipeline.PROJECTS_EXPORT)
+  payload = load(path)
+  payload["projects"][0]["curation"] = "featured"
+  pipeline.write_public_json(path, payload)
+
+
+@pytest.mark.parametrize("mutate,problem", [
+  (lambda d: _set_entry(d, sha256="0" * 64), "manifest sha256"),
+  (lambda d: _set_entry(d, records=1), "manifest record count"),
+  (lambda d: _set_entry(d, file="other.json"), "manifest file name"),
+  (_drop_entry, "payload without manifest entry"),
+  (lambda d: os.remove(os.path.join(d, pipeline.PROJECTS_EXPORT)),
+   "manifest entry without payload"),
+], ids=["wrong-sha256", "wrong-records", "wrong-file", "no-entry", "no-payload"])
+def test_the_projects_export_check_catches(tmp_path, mutate, problem):
+  _, out = fixture_projects(tmp_path)
+  mutate(str(out / "data"))
+  assert problem in projects_export_problems(str(out / "data"))
+
+
+def test_the_projects_export_check_runs_the_schema(tmp_path):
+  _, out = fixture_projects(tmp_path)
+  _break_payload(str(out / "data"))
+  problems = projects_export_problems(str(out / "data"))
+  assert any("featured" in p for p in problems)
+  assert "manifest sha256" in problems
+
+
+def test_the_committed_projects_export_matches_its_manifest():
+  problems = projects_export_problems(DATA)
+  if problems is None:
+    pytest.skip("data/projects.json is not committed yet (issue #98)")
+  assert problems == []
 
 
 # --- JSON <-> Markdown --------------------------------------------------------------

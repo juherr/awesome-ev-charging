@@ -46,8 +46,10 @@ renders and commits `data/` in the same pull request as the Markdown. The test
 suite checks the committed `csms.json` and its manifest entry against a fresh
 export of the committed CSVs and validates it against its schema. The projects
 export is validated on a fixture render; once `data/projects.json` is
-committed, the suite checks that its curation blocks agree with `README.md`
-and `legacy-projects.md`.
+committed, the suite also validates it against its schema, checks that its
+`projects` manifest entry records its SHA-256 and record count (neither may
+exist without the other), and checks that its curation blocks agree with
+`README.md` and `legacy-projects.md`.
 
 ## Unknown is never "no"
 

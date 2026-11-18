@@ -150,7 +150,7 @@ hand-edited cells — never use it when you want to keep manual edits.
 2. Edit the `description` cell for that repo's row in `classifications.csv`.
 3. `mise run enrich` again — it reuses the cache (no LLM call) because the
    fingerprint still matches, and carries your edit into `repos.enriched.csv`.
-4. `python pipeline.py render --readme README.md`
+4. `python pipeline.py render --readme README.md --export-dir data`
 5. Commit `classifications.csv` and `README.md`.
 
 The `signals` fingerprint hashes the whole classifier prompt: the repo's GitHub
@@ -171,8 +171,8 @@ model never sees them.
   `classifications.csv`, then `mise run enrich` → `render`.
 - *Option B — code override (most robust):* add an entry to `CATEGORY_OVERRIDES`
   in `pipeline.py`, e.g. `"owner/repo": "Other > Battery"`, then just
-  `python pipeline.py render --readme README.md`. This is applied at render time,
-  needs no `enrich`, and survives `--refresh`.
+  `python pipeline.py render --readme README.md --export-dir data`. This is applied
+  at render time, needs no `enrich`, and survives `--refresh`.
 - To merge near-duplicate subcategory names, add them to `SUBCATEGORY_ALIASES`
   in `pipeline.py` and re-render.
 
@@ -187,7 +187,7 @@ model never sees them.
 2. `mise run ingest`
 3. `mise run enrich` — classifies the new repo and appends it to
    `classifications.csv`.
-4. `python pipeline.py render --readme README.md`
+4. `python pipeline.py render --readme README.md --export-dir data`
 5. Commit `classifications.csv` and `README.md`.
 
 Whether a repo lands in the **Selection** block or the collapsed **To refine**
@@ -197,8 +197,9 @@ by manual ordering.
 #### Remove a project
 
 1. Add its `full_name` to `EXCLUDED_REPOS` in `pipeline.py`.
-2. `python pipeline.py render --readme README.md` — re-rendering is enough to drop
-   it from the README (it's excluded at both ingest and render).
+2. `python pipeline.py render --readme README.md --export-dir data` — re-rendering
+   is enough to drop it from the README (it's excluded at both ingest and
+   render).
 3. Optionally delete its row from `classifications.csv` to keep the cache clean.
 
 ## How classification works

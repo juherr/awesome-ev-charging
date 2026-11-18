@@ -79,7 +79,9 @@ The public JSON export is covered by three test files: `tests/test_public_export
 (`csms.json`, plus the committed `data/csms.json` and its manifest entry
 against a fresh export of the committed CSVs) and `tests/test_public_data.py`
 (both payloads against `data/schema/*.json` with `jsonschema`, from
-`requirements-dev.txt`, and the export agreeing with the Markdown tiers).
+`requirements-dev.txt`, the export agreeing with the Markdown tiers, and a
+committed `data/projects.json` matching its `projects` manifest entry — skipped
+until #98 commits it, and exercised on a fixture render meanwhile).
 `tests/test_markdown_links.py` checks that every relative link, and every
 `https://github.com/juherr/awesome-ev-charging/(tree|blob)/main/…` link, in
 every tracked Markdown file resolves to a path `git ls-files` lists — a
