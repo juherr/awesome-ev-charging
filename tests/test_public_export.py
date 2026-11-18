@@ -168,7 +168,7 @@ def test_each_tier_is_exported(tmp_path):
     assert records["acme/unlisted"]["curation"] == "to_refine"
     retired = records["acme/retired"]
     assert (retired["curation"], retired["dormant"], retired["deprecated"]) == ("dormant", False, True)
-    assert records["acme/selected"]["deprecated"] is False
+    assert records["acme/selected"]["deprecated"] is None  # no wording is not "not deprecated"
 
 
 def test_the_tier_helper_matches_the_markdown_partition(tmp_path):
@@ -202,6 +202,7 @@ def test_hosts_are_derived_from_the_effective_url(tmp_path, monkeypatch):
     assert (codeberg["host"], codeberg["url"]) == ("codeberg", "https://codeberg.org/forge/tariffs")
     assert codeberg["curation"] == "selection"  # CODEBERG_REPOS scores at least 1
     assert codeberg["pushed_at"] is None
+    assert codeberg["dormant"] is None  # no last commit read: activity is unknown
     assert codeberg["license"] is None
     assert codeberg["discovered_via"] == ["codeberg"]
     moved = records["acme/moved"]
@@ -267,13 +268,27 @@ def test_a_full_record_maps_every_field(tmp_path):
         "forks": 2,
         "archived": False,
         "dormant": False,
-        "deprecated": False,
+        "deprecated": None,
         "curation": "selection",
         "pushed_at": "2026-01-01T00:00:00Z",
         "updated_at": "2026-01-02T00:00:00Z",
         "topics": ["alpha", "zeta"],
         "discovered_via": ["readme", "topic"],
     }
+
+
+def test_an_unknown_last_commit_exports_an_unknown_dormancy(tmp_path):
+    records = export(tmp_path, [
+        row("forge/empty", pushed_at="", dormant="false"),
+        row("forge/archived", pushed_at="", archived="true", dormant="true"),
+    ])
+    assert records["forge/empty"]["dormant"] is None
+    assert records["forge/archived"]["dormant"] is True  # archived alone makes it dormant
+
+
+def test_an_unknown_dormancy_leaves_the_markdown_unchanged(tmp_path):
+    out = render(tmp_path, [row("forge/empty", pushed_at="", dormant="false")])
+    assert "forge/empty" in (out / "README.md").read_text(encoding="utf-8")
 
 
 # --- The manifest -------------------------------------------------------------------------

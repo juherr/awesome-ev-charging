@@ -1748,6 +1748,20 @@ def _license(value):
   return None if value == "N/A" else value
 
 
+def _dormant(row):
+  """The dormancy signal, or None when no last commit was read and the repo is
+  not archived: `build_repo_record` writes "false" then, which is not a fact."""
+  if _text_or_none(row.get("pushed_at")) is None and row.get("archived") != "true":
+    return None
+  return _bool_or_none(row.get("dormant"))
+
+
+def _deprecated(row):
+  """True when the description flags it, else None: a description without
+  deprecation wording is no evidence the project is maintained."""
+  return True if _is_deprecated(row) else None
+
+
 def project_record(row):
   """One public record from a rendered row (overrides already applied)."""
   categories = [{"main": main, "sub": sub} for main, sub in _effective_categories(row)]
@@ -1767,8 +1781,8 @@ def project_record(row):
     "stars": _int_or_none(row.get("stars")),
     "forks": _int_or_none(row.get("forks")),
     "archived": _bool_or_none(row.get("archived")),
-    "dormant": _bool_or_none(row.get("dormant")),
-    "deprecated": _is_deprecated(row),
+    "dormant": _dormant(row),
+    "deprecated": _deprecated(row),
     "curation": _curation(row),
     "pushed_at": _text_or_none(row.get("pushed_at")),
     "updated_at": _text_or_none(row.get("updated_at")),

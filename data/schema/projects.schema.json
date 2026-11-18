@@ -25,6 +25,7 @@
     "versions": {
       "description": "Protocol versions detected in the README; null when none was detected.",
       "type": ["array", "null"],
+      "minItems": 1,
       "items": {"type": "string"}
     },
     "project": {
@@ -53,8 +54,14 @@
         "stars": {"type": ["integer", "null"]},
         "forks": {"type": ["integer", "null"]},
         "archived": {"type": ["boolean", "null"]},
-        "dormant": {"type": ["boolean", "null"]},
-        "deprecated": {"type": "boolean"},
+        "dormant": {
+          "description": "null when no last commit was read and the repo is not archived.",
+          "type": ["boolean", "null"]
+        },
+        "deprecated": {
+          "description": "true when the description flags it; null otherwise. Never false.",
+          "enum": [true, null]
+        },
         "curation": {"enum": ["selection", "dormant", "to_refine"]},
         "pushed_at": {"$ref": "#/$defs/nullableString"},
         "updated_at": {"$ref": "#/$defs/nullableString"},

@@ -58,8 +58,15 @@ it. It never means the property is absent. In particular:
   `csms.json` are `true` or `null`, never `false`.
 - A feature missing from `features_certified` or `features_documented` is
   unknown, not unsupported.
-- `ocpp_versions` / `ocpi_versions` in `projects.json` are `null` when none
-  was detected in the README, never `[]`.
+- `ocpp_versions` / `ocpi_versions` in `projects.json`, and `ocpp_versions`
+  in `csms.json`, are `null` when no version is known, never `[]`: the
+  schemas require at least one item.
+- `deprecated` in `projects.json` is `true` or `null`, never `false`: a
+  description without deprecation wording does not show the project is
+  maintained.
+- `dormant` in `projects.json` is `null` when no last commit could be read
+  (an empty Codeberg repository, a default branch that answered 404) and the
+  repository is not archived.
 
 Do not "complete" the data by turning `null` into `false`.
 
@@ -80,13 +87,13 @@ One record per repository, sorted by `id`.
 | `description` | string or null | The listing's one-line description (a `REPO_OVERRIDES` text, else the classifier's summary, else the host's own description) |
 | `primary_category` | object or null | The first entry of `categories`: the section the Markdown lists the repo under |
 | `categories` | array | Every `{main, sub}` facet, in order. Protocol categories come before `Other`, so the first one is the primary. `sub` is `null` for a bare main category. Empty when the repo has none; the README's "Uncategorized" bucket never appears here |
-| `ocpp_versions`, `ocpi_versions` | array or null | Versions detected in the README, in file order |
+| `ocpp_versions`, `ocpi_versions` | non-empty array or null | Versions detected in the README, in file order. `null` when none was detected |
 | `language` | string or null | The host's primary language |
 | `license` | string or null | The licence name; `null` when none was detected (Codeberg repos included) |
 | `stars`, `forks` | integer or null | Counts at the last refresh |
 | `archived` | boolean or null | The host's archived flag |
-| `dormant` | boolean or null | Raw activity signal: no push for 365 days, **or** archived |
-| `deprecated` | boolean | The description flags the project as deprecated or unmaintained. Never null |
+| `dormant` | boolean or null | Raw activity signal: no push for 365 days, **or** archived. `null` when `pushed_at` is unknown and the repo is not archived |
+| `deprecated` | `true` or null | The description flags the project as deprecated or unmaintained. `null` otherwise, never `false` |
 | `curation` | `selection`, `dormant` or `to_refine` | The block the project renders in (see below) |
 | `pushed_at` | string or null | Last commit, ISO 8601 UTC. Decides `dormant` |
 | `updated_at` | string or null | Last known modification, metadata edits included. Not used for dormancy |
@@ -104,7 +111,8 @@ function, so the two cannot disagree:
 - `to_refine`: not curated (in no maintainer's star list, not contributed to).
   Listed in `legacy-projects.md`, whatever its activity.
 
-So an uncurated dormant repository is `to_refine`, not `dormant`. Read
+So an uncurated dormant repository is `to_refine`, not `dormant`, and a
+curated one whose `dormant` is `null` stays in `selection`. Read
 `dormant`, `archived` and `deprecated` for the raw signals, and `curation` for
 the listing.
 
@@ -124,7 +132,7 @@ One record per product, sorted by `id`.
 | `website` | string or null | The product's or the vendor's site (a company-level row in `csms.csv` fills it for every product of that company) |
 | `repo`, `repo_url` | string or null | The curated GitHub `owner/name` and its URL |
 | `source_available` | `true` or null | A public repository was found. `null` is unverified |
-| `ocpp_versions` | array or null | Certified versions plus the versions the vendor claims (`ocpp_claimed`). Not a certification list: read `certificates` for that |
+| `ocpp_versions` | non-empty array or null | Certified versions plus the versions the vendor claims (`ocpp_claimed`). Not a certification list: read `certificates` for that |
 | `certificates` | array | Every OCA certificate: `number`, `ocpp_version`, the raw `type` (e.g. `Core + S + C`), `software_version`, registration `date`, `url` |
 | `features_certified` | array | Features an OCA certificate proves, derived from the certificate types |
 | `features_documented` | array | Features the vendor documents, each `{feature, source_urls}` |

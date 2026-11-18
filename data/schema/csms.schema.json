@@ -58,7 +58,7 @@
         "repo": {"description": "GitHub owner/name.", "$ref": "#/$defs/nullableString"},
         "repo_url": {"$ref": "#/$defs/nullableString"},
         "source_available": {"$ref": "#/$defs/statedOrUnknown"},
-        "ocpp_versions": {"type": ["array", "null"], "items": {"type": "string"}},
+        "ocpp_versions": {"type": ["array", "null"], "minItems": 1, "items": {"type": "string"}},
         "certificates": {"type": "array", "items": {"$ref": "#/$defs/certificate"}},
         "features_certified": {
           "description": "Features an OCA certificate proves.",

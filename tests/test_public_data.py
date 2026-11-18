@@ -63,8 +63,12 @@ def test_a_fixture_projects_export_validates(tmp_path):
   lambda p: p.update(extra=True),
   lambda p: p.update(schema_version="2.0"),
   lambda p: p["projects"][0].pop("curation"),
+  lambda p: p["projects"][0].update(deprecated=False),
+  lambda p: p["projects"][0].update(ocpp_versions=[]),
+  lambda p: p["projects"][0].update(ocpi_versions=[]),
 ], ids=["unknown-curation", "unknown-host", "extra-field", "extra-root-field",
-        "other-version", "missing-field"])
+        "other-version", "missing-field", "deprecated-false", "empty-ocpp-versions",
+        "empty-ocpi-versions"])
 def test_the_projects_schema_rejects(tmp_path, mutate):
   payload, _ = fixture_projects(tmp_path)
   mutate(payload)
@@ -84,8 +88,9 @@ def test_the_committed_csms_export_validates():
   lambda p: p.update(extra=True),
   lambda p: p["products"][0]["features_documented"].append({"feature": "Core"}),
   lambda p: p["products"][0].pop("certificates"),
+  lambda p: p["products"][0].update(ocpp_versions=[]),
 ], ids=["source-available-false", "ocpi-false", "extra-field", "extra-root-field",
-        "unsourced-feature", "missing-field"])
+        "unsourced-feature", "missing-field", "empty-ocpp-versions"])
 def test_the_csms_schema_rejects(mutate):
   payload = copy.deepcopy(load(DATA, csms.CSMS_EXPORT))
   mutate(payload)
