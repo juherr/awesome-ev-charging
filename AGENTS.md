@@ -77,8 +77,10 @@ its README, and that the local patches suffice, with `jsonschema` in memory.
 `https://github.com/juherr/awesome-ev-charging/(tree|blob)/main/…` link, in
 the tracked first-party Markdown resolves to a path `git ls-files` lists — a
 tracked file, or a directory holding one — compared case-sensitively as on the
-Linux runner, so a link that only works on macOS fails. Anchors are not
-checked, and links in code are skipped. The three verbatim OCA `ReadMe.md`
+Linux runner, so a link that only works on macOS fails. It reads Markdown links
+and images, reference definitions, `href` / `src` in inline HTML and
+`<https://…>` autolinks. Anchors are not checked, and links in code or in HTML
+comments are skipped. The three verbatim OCA `ReadMe.md`
 files are exempt, as they are from markdownlint below.
 
 Markdown is linted by `npx markdownlint-cli2` (config in

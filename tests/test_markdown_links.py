@@ -6,6 +6,10 @@ absolute link into this repository on github.com
 resolved against the set `git ls-files` returns, not against the disk: macOS
 resolves a path case-insensitively and CI runs on Linux, and an untracked local
 file is not something a reader of the repository can open.
+
+Links are read from Markdown inline links and images, reference definitions,
+`href` / `src` attributes of inline HTML tags, and `<scheme:...>` autolinks.
+Fenced code blocks, inline code spans and HTML comments are skipped.
 """
 
 import functools
@@ -47,12 +51,72 @@ INLINE_LINK = re.compile(
 )
 # `[label]: target` — but not a footnote definition `[^1]: text`.
 REFERENCE_DEFINITION = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(?:<([^>]*)>|(\S+))")
+# An inline HTML tag on one line, and its `href` / `src` attribute values.
+HTML_TAG = re.compile(r"<[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?>")
+HTML_LINK_ATTRIBUTE = re.compile(
+    r"\s(?:href|src)\s*=\s*(?:\"([^\"]*)\"|'([^']*)')", re.IGNORECASE
+)
+# A CommonMark URI autolink `<scheme:...>`; `](<target>)` is a link
+# destination, already matched by INLINE_LINK.
+AUTOLINK = re.compile(r"(?<!\()<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^\s<>]*)>")
+COMMENT_OPEN = "<!--"
+COMMENT_CLOSE = "-->"
+
+
+def _blank(text):
+    return " " * len(text)
+
+
+def _strip_comments(line, in_comment):
+    """Blank out HTML comments; return the line and whether one is still open."""
+    result = []
+    position = 0
+    while position < len(line):
+        if in_comment:
+            end = line.find(COMMENT_CLOSE, position)
+            if end < 0:
+                result.append(_blank(line[position:]))
+                return "".join(result), True
+            end += len(COMMENT_CLOSE)
+            result.append(_blank(line[position:end]))
+            position = end
+            in_comment = False
+        else:
+            start = line.find(COMMENT_OPEN, position)
+            if start < 0:
+                result.append(line[position:])
+                break
+            result.append(line[position:start])
+            position = start
+            in_comment = True
+    return "".join(result), in_comment
+
+
+def _line_links(line):
+    """`(column, target)` for every link on a line with code and comments blanked."""
+    found = []
+    definition = REFERENCE_DEFINITION.match(line)
+    if definition:
+        found.append((definition.start(), definition.group(1) or definition.group(2)))
+    for match in INLINE_LINK.finditer(line):
+        target = match.group(1) if match.group(1) is not None else match.group(2)
+        found.append((match.start(), target))
+    for tag in HTML_TAG.finditer(line):
+        for attribute in HTML_LINK_ATTRIBUTE.finditer(tag.group(0)):
+            target = attribute.group(1)
+            if target is None:
+                target = attribute.group(2)
+            found.append((tag.start() + attribute.start(), target))
+    for match in AUTOLINK.finditer(line):
+        found.append((match.start(), match.group(1)))
+    return sorted(found, key=lambda item: item[0])
 
 
 def extract_links(text):
-    """Return `(line number, target)` for every link outside code."""
+    """Return `(line number, target)` for every link outside code and comments."""
     links = []
     fence = None
+    in_comment = False
     for number, line in enumerate(text.splitlines(), start=1):
         opening = FENCE.match(line)
         if fence is not None:
@@ -65,16 +129,12 @@ def extract_links(text):
             ):
                 fence = None
             continue
-        if opening:
+        if opening and not in_comment:
             fence = opening.group(1)
             continue
-        line = CODE_SPAN.sub(lambda m: " " * len(m.group(0)), line)
-        definition = REFERENCE_DEFINITION.match(line)
-        if definition:
-            links.append((number, definition.group(1) or definition.group(2)))
-        for match in INLINE_LINK.finditer(line):
-            target = match.group(1) if match.group(1) is not None else match.group(2)
-            links.append((number, target))
+        line = CODE_SPAN.sub(lambda m: _blank(m.group(0)), line)
+        line, in_comment = _strip_comments(line, in_comment)
+        links.extend((number, target) for _, target in _line_links(line))
     return links
 
 
@@ -188,6 +248,70 @@ def test_skips_links_inside_fenced_code_blocks():
 def test_skips_links_inside_inline_code_spans():
     text = "Use `[x](missing.md)` or ``[y](missing.md)`` but [z](real.md).\n"
     assert extract_links(text) == [(1, "real.md")]
+
+
+def test_extracts_href_and_src_from_inline_html():
+    text = (
+        '<a href="docs/a.md">A</a> and <img alt="logo" src=\'img/logo.png\'>\n'
+        '<p align="center"><a class="x" HREF="csms.md"><b>c</b></a></p>\n'
+    )
+    assert extract_links(text) == [
+        (1, "docs/a.md"),
+        (1, "img/logo.png"),
+        (2, "csms.md"),
+    ]
+
+
+def test_extracts_angle_bracket_autolinks():
+    base = "https://github.com/juherr/awesome-ev-charging"
+    text = (
+        f"See <{base}/blob/main/csms.md> and [x](docs/a.md).\n"
+        "Mail <someone@example.org>, not a link: <docs/not-a-link.md>.\n"
+    )
+    assert extract_links(text) == [
+        (1, f"{base}/blob/main/csms.md"),
+        (1, "docs/a.md"),
+    ]
+
+
+def test_an_angle_bracket_link_destination_is_not_an_autolink_too():
+    text = "[x](<https://example.org/a b>)\n"
+    assert extract_links(text) == [(1, "https://example.org/a b")]
+
+
+def test_skips_html_and_autolinks_inside_code():
+    text = (
+        '`<a href="missing.md">` and `<https://github.com/x>`\n'
+        "```html\n"
+        '<img src="missing.png">\n'
+        "```\n"
+    )
+    assert extract_links(text) == []
+
+
+def test_skips_links_inside_html_comments():
+    text = (
+        "<!-- [one](missing.md) --> [kept](a.md) <!-- <a href=\"x.md\"> -->\n"
+        "<!--\n"
+        "[two](missing.md)\n"
+        '<img src="missing.png">\n'
+        "-->[after](b.md)\n"
+        "`<!--` is code, so [c](c.md) still counts\n"
+    )
+    assert extract_links(text) == [(1, "a.md"), (5, "b.md"), (6, "c.md")]
+
+
+def test_broken_html_and_autolink_targets_are_reported():
+    base = "https://github.com/juherr/awesome-ev-charging"
+    text = (
+        '<img src="nope.png">\n'
+        f"<{base}/tree/main/missing-dir>\n"
+        f"<{base}/blob/main/csms.md>\n"
+    )
+    assert broken_links("README.md", text, TRACKED) == [
+        "README.md:1 -> nope.png",
+        f"README.md:2 -> {base}/tree/main/missing-dir",
+    ]
 
 
 # --- Unit tests: target resolution ------------------------------------------
