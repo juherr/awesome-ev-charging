@@ -376,6 +376,15 @@ CATEGORY_OVERRIDES = {
   "suroorhussain/ev-protocols": "OCPI > Misc|Other > Specifications & documentation",
 }
 
+# Reviewed protocol losses that `check-classifications` must not block on.
+# full_name (lowercased) -> {protocol main: why losing it is right}. Add an
+# entry only after reviewing the repo and deciding the non-protocol result is
+# intended (a vendor API client, a tool that only mentions the protocol); when
+# the classifier is wrong, pin the right category in CATEGORY_OVERRIDES
+# instead. An entry excuses the named protocol for the named repo only, so a
+# later loss of another protocol by the same repo still blocks the refresh.
+ACCEPTED_PROTOCOL_LOSSES = {}
+
 # Manual per-repo field overrides for repos whose GitHub record no longer
 # reflects reality — a curated description, or a project that migrated off
 # GitHub to a host the pipeline cannot read (GitLab, self-hosted), whose
@@ -1215,7 +1224,12 @@ def load_classifications(path):
   if not os.path.exists(path):
     return {}
   with open(path, "r", encoding="utf-8", newline="") as f:
-    return {r["full_name"]: r for r in csv.DictReader(f)}
+    return read_classifications(f)
+
+
+def read_classifications(f):
+  """`load_classifications` for an open file, e.g. a baseline piped on stdin."""
+  return {r["full_name"]: r for r in csv.DictReader(f)}
 
 
 def save_classifications(path, cache):
@@ -1236,6 +1250,22 @@ def save_classifications(path, cache):
   os.replace(tmp, path)
 
 
+def _fold_case(cache):
+  """{lowercased full_name: (full_name, row)} for a classifications cache.
+
+  `enrich` folds case when it reuses the cache, but an older file may still
+  hold two spellings of one repo; the classified one wins, so a stale empty
+  duplicate cannot read as a lost category.
+  """
+  folded = {}
+  for full_name in sorted(cache):
+    row = cache[full_name]
+    key = full_name.lower()
+    if key not in folded or not (folded[key][1].get("categories") or "").strip():
+      folded[key] = (full_name, row)
+  return folded
+
+
 def classification_regressions(before, after):
   """Split the empty-category rows of `after` into regressions and newcomers.
 
@@ -1246,13 +1276,17 @@ def classification_regressions(before, after):
   counting empty rows instead conflated the two and blocked the monthly refresh
   every time a README-less repo entered the listing.
 
+  Names are matched case-insensitively, like GitHub's: an owner recasing its
+  name is the same repo, not a regression plus a newcomer.
+
   Returns (lost, arrived_empty), both sorted, so one pass reports every problem.
   """
+  before = _fold_case(before)
   lost, arrived_empty = [], []
-  for full_name, row in after.items():
+  for full_name, row in _fold_case(after).values():
     if (row.get("categories") or "").strip():
       continue
-    prev = before.get(full_name)
+    prev = before.get(full_name.lower(), (None, None))[1]
     if prev is None:
       arrived_empty.append(full_name)
     elif (prev.get("categories") or "").strip():
@@ -1281,50 +1315,156 @@ def _mains(categories):
   return {chunk.split(">", 1)[0].strip() for chunk in categories.split("|") if chunk.strip()}
 
 
-def protocol_losses(before, after):
-  """(full_name, main) pairs for protocol categories a repo had and lost.
+def _label(pair):
+  main, sub = pair
+  return f"{main} > {sub}" if sub else main
 
-  A repo is filed under its protocol when it speaks it; losing one while still
-  classified is the drift a re-classification can introduce without emptying
-  anything, so neither of the other checks sees it. Losing "Other", changing a
-  subcategory, an emptied category and a new repo are not reported here.
+
+def _protocols(mains):
+  return set(mains) - {"Other"}
+
+
+def classification_diff(before, after):
+  """Compare two classifications caches as the README renders them.
+
+  Both sides go through `_effective_categories` with the current
+  CATEGORY_OVERRIDES and SUBCATEGORY_ALIASES, so a reviewed override or an
+  alias fold is not reported as a change; the raw cached categories are kept
+  next to them for diagnosis. Names are matched case-insensitively and reported
+  in `after`'s spelling. A repo present on one side only is a newcomer or a
+  dropped repo, not a change.
+
+  Returns {"repos": [...], "stale_exceptions": [(full_name, protocol), ...]}.
+  Each repo entry, listed when its raw or effective categories differ, is::
+
+    {"full_name": str, "raw_before": str, "raw_after": str,
+     "before": [label], "after": [label],          # effective, "Main > Sub"
+     "added": [label], "removed": [label],
+     "primary_before": label | None, "primary_after": label | None,
+     "primary_changed": bool,
+     "protocol_losses": [{"protocol": str, "reason": str | None,
+                          "status": "unexplained" | "masked" | "accepted"}]}
+
+  A protocol is any main but "Other". Losses are only computed when both raw
+  sides are non-empty: an emptied category is `classification_regressions`'
+  business. "unexplained" is an effective loss nobody reviewed, "accepted" one
+  excused by ACCEPTED_PROTOCOL_LOSSES (with its reason), "masked" a raw loss
+  that CATEGORY_OVERRIDES keeps on the page. A stale exception names a repo
+  absent from `after`, or a protocol it carries again.
   """
-  lost = []
-  for full_name, row in after.items():
-    now = (row.get("categories") or "").strip()
-    prev = ((before.get(full_name) or {}).get("categories") or "").strip()
-    if now and prev:
-      lost += [(full_name, main) for main in sorted(_mains(prev) - _mains(now) - {"Other"})]
-  return sorted(lost, key=lambda pair: (pair[0].lower(), pair[1]))
+  before, after = _fold_case(before), _fold_case(after)
+  repos = []
+  effective_after = {}
+  for key, (full_name, row) in sorted(after.items()):
+    raw_after = (row.get("categories") or "").strip()
+    eff_after = _effective_categories({"full_name": full_name, "categories": raw_after})
+    effective_after[key] = eff_after
+    if key not in before:
+      continue
+    raw_before = (before[key][1].get("categories") or "").strip()
+    eff_before = _effective_categories({"full_name": full_name, "categories": raw_before})
+    if raw_before == raw_after and eff_before == eff_after:
+      continue
+    labels_before = [_label(p) for p in eff_before]
+    labels_after = [_label(p) for p in eff_after]
+    found = []
+    if raw_before and raw_after:
+      eff_kept = _protocols(m for m, _ in eff_after)
+      eff_lost = _protocols(m for m, _ in eff_before) - eff_kept
+      raw_lost = _protocols(_mains(raw_before)) - _protocols(_mains(raw_after))
+      accepted = ACCEPTED_PROTOCOL_LOSSES.get(key, {})
+      for protocol in sorted(eff_lost | (raw_lost & eff_kept)):
+        if protocol in eff_kept:
+          status, reason = "masked", None
+        elif protocol in accepted:
+          status, reason = "accepted", accepted[protocol]
+        else:
+          status, reason = "unexplained", None
+        found.append({"protocol": protocol, "status": status, "reason": reason})
+    primary_before = labels_before[0] if labels_before else None
+    primary_after = labels_after[0] if labels_after else None
+    repos.append({
+      "full_name": full_name, "raw_before": raw_before, "raw_after": raw_after,
+      "before": labels_before, "after": labels_after,
+      "added": [label for label in labels_after if label not in labels_before],
+      "removed": [label for label in labels_before if label not in labels_after],
+      "primary_before": primary_before, "primary_after": primary_after,
+      "primary_changed": bool(primary_before and primary_after
+                              and primary_before != primary_after),
+      "protocol_losses": found,
+    })
+  stale = []
+  for key, protocols in ACCEPTED_PROTOCOL_LOSSES.items():
+    name = after[key][0] if key in after else key
+    carried = {m for m, _ in effective_after.get(key, [])}
+    stale += [(name, protocol) for protocol in protocols
+              if key not in after or protocol in carried]
+  repos.sort(key=lambda r: r["full_name"].lower())
+  return {"repos": repos,
+          "stale_exceptions": sorted(stale, key=lambda p: (p[0].lower(), p[1]))}
 
 
 def check_classifications(args):
-  """CI guard: fail when a repo that had a category comes back without one."""
+  """CI guard: fail when a repo lost its category or, unexplained, a protocol."""
   if args.base == "-":
-    before = {r["full_name"]: r for r in csv.DictReader(sys.stdin)}
+    before = read_classifications(sys.stdin)
   else:
     before = load_classifications(args.base)
   after = load_classifications(args.cache)
 
   lost, arrived_empty = classification_regressions(before, after)
+  diff = classification_diff(before, after)
   # Why the category is empty is not knowable from the cache alone — it holds no
   # signal data — so the warning states only the fact. The enrich log is where
   # the reason is.
   for full_name in arrived_empty:
     print(f"::warning::{full_name} entered the listing without a category.")
-  # A warning, not a failure: the repo still renders under its main category,
-  # and blocking the monthly refresh on model drift would cost more than it saves.
-  for full_name, main in protocol_losses(before, after):
-    print(f"::warning::{full_name} lost its {main} category.")
   for full_name in bare_main_categories(after):
     print(f"::warning::{full_name} has a main category without a subcategory.")
+  # Reviewed outcomes and category moves are context for the PR reviewer, not
+  # problems: plain lines, so the run's only annotations stay the ones that
+  # need acting on.
+  counts = {"unexplained": 0, "masked": 0, "accepted": 0}
+  changed = primary = 0
+  for repo in diff["repos"]:
+    name = repo["full_name"]
+    for loss in repo["protocol_losses"]:
+      counts[loss["status"]] += 1
+      if loss["status"] == "unexplained":
+        print(f"::error::{name} lost its {loss['protocol']} category "
+              f"({repo['raw_before']} -> {repo['raw_after']}).")
+      elif loss["status"] == "masked":
+        print(f"ℹ️ {name} lost {loss['protocol']} in its raw categories; "
+              "CATEGORY_OVERRIDES keeps it.")
+      else:
+        print(f"ℹ️ {name} lost {loss['protocol']} (accepted: {loss['reason']})")
+    if repo["added"] or repo["removed"]:
+      changed += 1
+      moves = ([f"+ {', '.join(repo['added'])}"] if repo["added"] else []) + \
+              ([f"- {', '.join(repo['removed'])}"] if repo["removed"] else [])
+      print(f"ℹ️ {name}: {'; '.join(moves)}")
+    if repo["primary_changed"]:
+      primary += 1
+      print(f"ℹ️ {name}: primary category {repo['primary_before']} -> {repo['primary_after']}.")
+  for full_name, protocol in diff["stale_exceptions"]:
+    print(f"ℹ️ ACCEPTED_PROTOCOL_LOSSES excuses {full_name} for {protocol}, "
+          "but the repo is gone or carries it again.")
   for full_name in lost:
     print(f"::error::{full_name} lost the category it had.")
+  summary = (f"{len(after)} repo(s), {len(arrived_empty)} newcomer(s) without a category, "
+             f"{changed} category change(s), {primary} primary change(s), "
+             f"{counts['masked']} masked, {counts['accepted']} accepted, "
+             f"{counts['unexplained']} unexplained protocol loss(es)")
   if lost:
     print(f"❌ Classification regressed: {len(lost)} repo(s) newly lost their category.")
+  if counts["unexplained"]:
+    print(f"❌ Protocol classification regressed: {counts['unexplained']} unexplained "
+          "protocol loss(es). Pin the protocol in CATEGORY_OVERRIDES, or record a "
+          "reviewed exception in ACCEPTED_PROTOCOL_LOSSES.")
+  if lost or counts["unexplained"]:
+    print(f"Summary: {summary}.")
     sys.exit(1)
-  print(f"✅ No classification regression — {len(after)} repo(s), "
-        f"{len(arrived_empty)} newcomer(s) without a category.")
+  print(f"✅ No classification regression — {summary}.")
 
 
 def cached_labels(entry):
@@ -2072,7 +2212,8 @@ def main():
   p_render.set_defaults(func=render)
 
   p_check = sub.add_parser("check-classifications",
-                           help="CI guard: fail if a repo lost the category it had.")
+                           help="CI guard: fail if a repo lost the category it had, "
+                                "or a protocol category without a reviewed reason.")
   p_check.add_argument("--base", default="-",
                        help="Baseline cache to compare against; '-' reads stdin "
                             "(e.g. `git show HEAD:classifications.csv | ...`).")

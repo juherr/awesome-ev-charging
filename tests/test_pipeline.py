@@ -160,37 +160,229 @@ def test_the_guard_warns_on_a_bare_main_without_failing(tmp_path, capsys):
 
 # --- The CI guard: a repo that lost a protocol category ------------------------
 
-def test_a_repo_that_lost_a_protocol_category_is_reported():
+@pytest.fixture
+def curation(monkeypatch):
+    """Empty CATEGORY_OVERRIDES / ACCEPTED_PROTOCOL_LOSSES, filled per test.
+
+    The guard tests never depend on the real curated entries.
+    """
+    overrides, accepted = {}, {}
+    monkeypatch.setattr(pipeline, "CATEGORY_OVERRIDES", overrides)
+    monkeypatch.setattr(pipeline, "ACCEPTED_PROTOCOL_LOSSES", accepted)
+    return types.SimpleNamespace(overrides=overrides, accepted=accepted)
+
+
+def losses(diff, status=None):
+    """(full_name, protocol[, reason]) of the diff's protocol losses."""
+    return [(r["full_name"], loss["protocol"]) + ((loss["reason"],) if loss["reason"] else ())
+            for r in diff["repos"] for loss in r["protocol_losses"]
+            if status is None or loss["status"] == status]
+
+
+def entry(diff, full_name):
+    return next(r for r in diff["repos"] if r["full_name"] == full_name)
+
+
+def run_guard(tmp_path, before, after):
+    base = tmp_path / "base.csv"
+    cache = tmp_path / "classifications.csv"
+    pipeline.save_classifications(base, {r["full_name"]: r for r in before})
+    pipeline.save_classifications(cache, {r["full_name"]: r for r in after})
+    pipeline.check_classifications(types.SimpleNamespace(base=str(base), cache=str(cache)))
+
+
+def test_a_repo_that_lost_a_protocol_category_is_an_unexplained_loss(curation):
     """The #61 drift: a firmware that implements OCPP came back as `Other` only."""
     before = {"acme/fw": cached("acme/fw", "OCPP > Libraries"),
               "acme/meter": cached("acme/meter", "Eichrecht > Misc|Other > Battery")}
     after = {"acme/fw": cached("acme/fw", "Other > EVSE firmware"),
              "acme/meter": cached("acme/meter", "Other > Developer tools & libraries")}
-    assert pipeline.protocol_losses(before, after) == [("acme/fw", "OCPP"),
-                                                       ("acme/meter", "Eichrecht")]
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == losses(diff, "unexplained") == [("acme/fw", "OCPP"),
+                                                           ("acme/meter", "Eichrecht")]
+    fw = entry(diff, "acme/fw")
+    assert fw["raw_before"] == "OCPP > Libraries"
+    assert fw["raw_after"] == "Other > EVSE firmware"
+    assert fw["removed"] == ["OCPP > Libraries"]
+    assert fw["added"] == ["Other > EVSE firmware"]
 
 
-def test_a_changed_protocol_subcategory_or_a_lost_other_is_not_a_protocol_loss():
+def test_a_changed_protocol_subcategory_or_a_lost_other_is_not_a_protocol_loss(curation):
     before = {"acme/sim": cached("acme/sim", "OCPP > Server|Other > Home automation")}
     after = {"acme/sim": cached("acme/sim", "OCPP > Simulator")}
-    assert pipeline.protocol_losses(before, after) == []
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == []
+    sim = entry(diff, "acme/sim")
+    assert sim["removed"] == ["OCPP > Server", "Other > Home automation"]
+    assert sim["added"] == ["OCPP > Simulator"]
 
 
-def test_an_emptied_or_new_repo_is_not_a_protocol_loss():
+def test_an_emptied_or_new_repo_is_not_a_protocol_loss(curation):
+    """An emptied category is the lost-category check's business, and a
+    newcomer had nothing to lose: neither is a change to report here."""
     before = {"acme/lost": cached("acme/lost", "OCPP > Server")}
     after = {"acme/lost": cached("acme/lost", ""), "acme/new": cached("acme/new", "Other > Security")}
-    assert pipeline.protocol_losses(before, after) == []
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == []
+    assert [r["full_name"] for r in diff["repos"]] == ["acme/lost"]
 
 
-def test_the_guard_warns_on_a_protocol_loss_without_failing(tmp_path, capsys):
-    base = tmp_path / "base.csv"
-    cache = tmp_path / "classifications.csv"
-    pipeline.save_classifications(base, {"acme/fw": cached("acme/fw", "OCPP > Libraries")})
-    pipeline.save_classifications(cache, {"acme/fw": cached("acme/fw", "Other > EVSE firmware")})
-    pipeline.check_classifications(types.SimpleNamespace(base=str(base), cache=str(cache)))
+def test_an_override_masks_a_raw_protocol_loss(curation):
+    """A reviewed CATEGORY_OVERRIDES fix keeps the protocol on the page."""
+    curation.overrides["acme/fw"] = "OCPP > Libraries|Other > EVSE firmware"
+    before = {"acme/fw": cached("acme/fw", "OCPP > Libraries")}
+    after = {"acme/fw": cached("acme/fw", "Other > EVSE firmware")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == losses(diff, "masked") == [("acme/fw", "OCPP")]
+    fw = entry(diff, "acme/fw")
+    assert fw["added"] == fw["removed"] == []
+    assert fw["primary_changed"] is False
+    assert fw["raw_after"] == "Other > EVSE firmware"
+
+
+def test_alias_folding_adds_and_removes_nothing(curation):
+    """`Charging station map` and `route planner` fold onto one label."""
+    before = {"acme/map": cached("acme/map", "OCPI > Libraries|Other > Charging station map")}
+    after = {"acme/map": cached("acme/map", "OCPI > Libraries|Other > route planner")}
+    diff = pipeline.classification_diff(before, after)
+    # Listed for its raw difference, with nothing moved on the page.
+    amap = entry(diff, "acme/map")
+    assert amap["added"] == amap["removed"] == []
+    assert amap["before"] == amap["after"] == ["OCPI > Libraries", "Other > Maps & route planning"]
+    assert amap["primary_changed"] is False
+    assert losses(diff) == []
+
+
+def test_a_primary_category_change_is_detected(curation):
+    before = {"acme/sim": cached("acme/sim", "OCPP > Server|OCPI > Libraries")}
+    after = {"acme/sim": cached("acme/sim", "OCPI > Libraries|OCPP > Server")}
+    sim = entry(pipeline.classification_diff(before, after), "acme/sim")
+    assert sim["primary_before"] == "OCPP > Server"
+    assert sim["primary_after"] == "OCPI > Libraries"
+    assert sim["primary_changed"] is True
+    assert sim["added"] == sim["removed"] == []
+
+
+def test_a_protocol_first_reorder_is_not_a_primary_change(curation):
+    """The render sorts protocols ahead of `Other`, so the classifier's order
+    between the two moves nothing on the page."""
+    before = {"acme/ha": cached("acme/ha", "OCPP > Server|Other > Home automation")}
+    after = {"acme/ha": cached("acme/ha", "Other > Home automation|OCPP > Server")}
+    diff = pipeline.classification_diff(before, after)
+    assert all(not r["primary_changed"] and not r["added"] and not r["removed"]
+               for r in diff["repos"])
+
+
+def test_an_accepted_loss_is_reported_with_its_reason(curation):
+    curation.accepted["acme/client"] = {"OCPP": "A vendor API client, not OCPP."}
+    before = {"acme/client": cached("acme/client", "OCPP > Libraries")}
+    after = {"acme/client": cached("acme/client", "Other > Developer tools & libraries")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == losses(diff, "accepted") == [
+        ("acme/client", "OCPP", "A vendor API client, not OCPP.")]
+    assert diff["stale_exceptions"] == []
+
+
+def test_an_accepted_loss_excuses_only_the_named_protocol(curation):
+    curation.accepted["acme/client"] = {"OCPP": "A vendor API client, not OCPP."}
+    before = {"acme/client": cached("acme/client", "OCPP > Libraries|OCPI > Libraries")}
+    after = {"acme/client": cached("acme/client", "Other > Developer tools & libraries")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff, "accepted") == [("acme/client", "OCPP", "A vendor API client, not OCPP.")]
+    assert losses(diff, "unexplained") == [("acme/client", "OCPI")]
+
+
+def test_an_exception_is_stale_only_when_the_repo_or_the_loss_is_gone(curation):
+    """Next month the base no longer has the protocol either: an unchanged repo
+    still needs its exception, so it is not reported as stale."""
+    curation.accepted.update({
+        "acme/kept": {"OCPP": "Reviewed."},
+        "acme/back": {"OCPP": "Reviewed."},
+        "acme/gone": {"OCPI": "Reviewed."},
+    })
+    before = {"acme/kept": cached("acme/kept", "Other > Security"),
+              "acme/back": cached("acme/back", "Other > Security")}
+    after = {"acme/kept": cached("acme/kept", "Other > Security"),
+             "acme/back": cached("acme/back", "OCPP > Server|Other > Security")}
+    diff = pipeline.classification_diff(before, after)
+    assert diff["stale_exceptions"] == [("acme/back", "OCPP"), ("acme/gone", "OCPI")]
+
+
+def test_a_case_only_rename_is_the_same_repo(curation):
+    before = {"EcoG-io/pyslac": cached("EcoG-io/pyslac", "iso15118 > SLAC")}
+    after = {"ecog-io/pyslac": cached("ecog-io/pyslac", "")}
+    assert pipeline.classification_regressions(before, after) == (["ecog-io/pyslac"], [])
+    after = {"ecog-io/pyslac": cached("ecog-io/pyslac", "Other > Security")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff, "unexplained") == [("ecog-io/pyslac", "iso15118")]
+
+
+def test_a_case_only_rename_is_neither_a_regression_nor_a_newcomer(tmp_path, capsys, curation):
+    run_guard(tmp_path, [cached("EcoG-io/pyslac", "iso15118 > SLAC")],
+              [cached("ecog-io/pyslac", "iso15118 > SLAC")])
     out = capsys.readouterr().out
-    assert "::warning::acme/fw lost its OCPP category" in out
     assert "::error::" not in out
+    assert "::warning::" not in out
+
+
+def test_a_case_duplicate_keeps_the_classified_row(curation):
+    # Sorted, "Acme/fw" comes first: the classified row must win from either side.
+    before = {"Acme/fw": cached("Acme/fw", "OCPP > Libraries"),
+              "acme/fw": cached("acme/fw", "")}
+    after = {"acme/fw": cached("acme/fw", "OCPP > Libraries")}
+    assert pipeline.classification_diff(before, after)["repos"] == []
+    assert pipeline.classification_regressions(before, after) == ([], [])
+
+
+def test_the_guard_fails_on_an_unexplained_protocol_loss(tmp_path, capsys, curation):
+    with pytest.raises(SystemExit) as excinfo:
+        run_guard(tmp_path, [cached("acme/fw", "OCPP > Libraries")],
+                  [cached("acme/fw", "Other > EVSE firmware")])
+    assert excinfo.value.code == 1
+    out = capsys.readouterr().out
+    assert "::error::acme/fw lost its OCPP category" in out
+    assert "1 unexplained protocol loss" in out
+    assert "newly lost their category" not in out
+
+
+def test_the_guard_reports_masked_and_accepted_losses_without_failing(tmp_path, capsys, curation):
+    curation.overrides["acme/fw"] = "OCPP > Libraries"
+    curation.accepted["acme/client"] = {"OCPP": "A vendor API client, not OCPP."}
+    run_guard(tmp_path,
+              [cached("acme/fw", "OCPP > Libraries"), cached("acme/client", "OCPP > Libraries"),
+               cached("acme/sim", "OCPP > Server")],
+              [cached("acme/fw", "Other > EVSE firmware"),
+               cached("acme/client", "Other > Developer tools & libraries"),
+               cached("acme/sim", "OCPP > Simulator")])
+    out = capsys.readouterr().out
+    assert "::error::" not in out
+    assert "acme/fw lost OCPP in its raw categories; CATEGORY_OVERRIDES keeps it" in out
+    assert "acme/client lost OCPP (accepted: A vendor API client, not OCPP.)" in out
+    assert "acme/sim: + OCPP > Simulator; - OCPP > Server" in out
+    assert "1 masked, 1 accepted" in out
+
+
+def test_the_guard_reads_the_base_from_stdin(tmp_path, capsys, monkeypatch, curation):
+    import io
+    base = tmp_path / "base.csv"
+    pipeline.save_classifications(base, {"Acme/FW": cached("Acme/FW", "OCPP > Libraries")})
+    monkeypatch.setattr("sys.stdin", io.StringIO(base.read_text(encoding="utf-8")))
+    cache = tmp_path / "classifications.csv"
+    pipeline.save_classifications(cache, {"acme/fw": cached("acme/fw", "Other > EVSE firmware")})
+    with pytest.raises(SystemExit) as excinfo:
+        pipeline.check_classifications(types.SimpleNamespace(base="-", cache=str(cache)))
+    assert excinfo.value.code == 1
+    assert "::error::acme/fw lost its OCPP category" in capsys.readouterr().out
+
+
+def test_accepted_protocol_losses_are_keyed_lowercase_with_reasons():
+    for full_name, protocols in pipeline.ACCEPTED_PROTOCOL_LOSSES.items():
+        assert full_name == full_name.lower()
+        assert protocols
+        for protocol, reason in protocols.items():
+            # A misspelt main would excuse nothing and never read as stale.
+            assert protocol in pipeline.CATEGORY_TREE and protocol != "Other"
+            assert reason.strip()
 
 
 # --- Rendering: placement and subcategories outside the taxonomy --------------
