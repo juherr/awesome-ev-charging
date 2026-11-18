@@ -281,6 +281,10 @@ CATEGORY_OVERRIDES = {
   "dspace-group/dsv2gshark": "iso15118 > Message inspection",
   "zeloscloud/zelos-extension-v2g": "iso15118 > Message inspection",
   "uhi22/ccs32ebony": "iso15118 > Message inspection",
+  # Fault diagnosis from ISO 15118 / DIN 70121 captures (#93). The classifier
+  # proposed Other > Security, and a hand-pinned cache cell was already lost
+  # once to a description edit (#70).
+  "sukritjaaiproject/ev_charger_fault_detection_ai": "iso15118 > Message inspection|Other > Analytics & data",
   "ecog-io/pyslac": "iso15118 > SLAC",
   "cepsdev/v2g-guru-slac": "iso15118 > SLAC|iso15118 > Simulator",
   "everest/libcbv2g": "iso15118 > EXI codecs",
@@ -401,6 +405,11 @@ REPO_OVERRIDES = {
   # overwritten by the next re-classification; this survives it.
   "geiserx/pumperly": {
     "description": "An open-source route planner combining live fuel prices from 22 countries and EV charging station data with detour-aware corridor filtering.",
+  },
+  # awesome-lint's spell check requires "Progressive Web App"; the classifier
+  # writes it in lower case.
+  "dipakjad1993/chargetruth-os": {
+    "description": "Offline-first Progressive Web App for EV drivers that plans charging routes, scores charger reliability, and verifies plug compatibility.",
   },
 }
 
