@@ -10,6 +10,46 @@ tools, fixes to descriptions, and better categorization are all welcome.
 > the pipeline inputs instead (see below).
 
 There are two ways to contribute, depending on how hands-on you want to be.
+Before either, check that the resource fits the scope below.
+
+## Scope
+
+Awesome EV Charging is a catalogue for **developers and technical
+practitioners** of EV charging. It lists:
+
+- open-source EV charging projects;
+- developer tools and libraries;
+- protocol implementations (OCPP, OCPI, ISO 15118, OICP, …);
+- specifications, standards and technical documentation;
+- other public technical resources useful to developers.
+
+**Not everything has to be open source.** Commercial technical products are
+curated selectively when they are useful to a technical audience — a
+conformance test tool with public documentation, for example. Reference
+catalogues stay in scope too: the CSMS catalogue in [`csms.md`](csms.md) lists
+commercial platforms on purpose (see
+[Adding or correcting a CSMS entry](#adding-or-correcting-a-csms-entry)). The
+criterion is usefulness to developers, not whether something is free or paid.
+
+**Out of scope**, when they offer no meaningful technical resource:
+
+- consumer-facing charging apps;
+- eMSP subscriptions and charge cards;
+- charging or payment services;
+- marketing-only product websites.
+
+The "Add a link" template accepts a non-GitHub project URL so that public
+technical resources hosted elsewhere — a specification, documentation site, or
+a repository on another forge — can be suggested. It does **not** mean that any
+commercial product website will be listed.
+
+| Eligible | Not eligible |
+| --- | --- |
+| An OCPP or OCPI library, on any forge | A charge-point finder app for drivers |
+| A charging station or CSMS simulator | A charging subscription or charge card offer |
+| A protocol specification, schema or test suite | A payment or roaming service's landing page |
+| Public API documentation for a charging platform | A product page with no technical content |
+| A commercial CSMS documented in the CSMS catalogue | A vendor's marketing brochure |
 
 ## 1. The easy way — open an issue
 

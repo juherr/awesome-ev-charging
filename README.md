@@ -830,6 +830,8 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 
 Contributions are welcome! If you know of a tool or resource that is not on the list, please feel free to add it.
 
+The list targets developers: open-source projects, tools, libraries, protocol implementations, specifications and other public technical resources. Consumer charging apps, eMSP subscriptions, payment services and marketing-only product pages are out of scope — see [the scope](CONTRIBUTING.md#scope) for details.
+
 The easiest way to contribute is to [open an issue](https://github.com/juherr/awesome-ev-charging/issues/new/choose) using the "Add a link" template.
 
 You can also submit a pull request. Note that the project listing above is **generated** — descriptions and categories are edited in `classifications.csv`, not by hand in this file. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
