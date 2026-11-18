@@ -1,7 +1,9 @@
 """Checks on the vendored OSCP 2.0 material under oscp/OSCP-2.0/.
 
-That material is (c) Open Charge Alliance under CC BY-ND 4.0: it must stay
-byte-identical to the OCA download, defects included. These tests pin it with
+The specification PDF is (c) Open Charge Alliance under CC BY-ND 4.0 (p. 4).
+The JSON schemas carry no licence notice, so their licence is not established
+and nothing grants a right to modify them: they must stay byte-identical to
+the OCA download, defects included. These tests pin the material with
 a SHA-256 manifest, then turn the "Known defects" table of
 oscp/OSCP-2.0/README.md into checked facts: each defect is shown to break a
 message the specification allows, and the local patch the README recommends
@@ -55,8 +57,9 @@ VENDORED_SHA256 = {
 }
 
 LICENCE_NOTE = (
-  "oscp/OSCP-2.0/ is (c) Open Charge Alliance under CC BY-ND 4.0 and must not "
-  "be modified: restore the published files instead of updating this manifest"
+  "oscp/OSCP-2.0/ is (c) Open Charge Alliance; the schemas' licence is not "
+  "established and nothing grants a right to modify them, so they must stay "
+  "byte-identical: restore the published files instead of updating this manifest"
 )
 
 # The two schemas whose published $id does not match their file name.
