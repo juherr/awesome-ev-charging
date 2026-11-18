@@ -631,10 +631,6 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 
 #### Libraries
 
-##### C++
-
-- [vampirebyte/EVerest-libiso15118](https://github.com/vampirebyte/EVerest-libiso15118) - ISO 15118 protocol libraries including sessions (ISO 15118-2/-20), EXI encoding/decoding, and SLAC support, extracted from EVerest for standalone use (⭐ 1).
-
 ##### Python
 
 - [ecog-io/iso15118](https://github.com/ecog-io/iso15118) - A Python library implementing the ISO 15118 -2 and -20 communication protocols with runnable SECC and EVCC protocol simulators (⭐ 250).
