@@ -835,3 +835,5 @@ The list targets developers: open-source projects, tools, libraries, protocol im
 The easiest way to contribute is to [open an issue](https://github.com/juherr/awesome-ev-charging/issues/new/choose) using the "Add a link" template.
 
 You can also submit a pull request. Note that the project listing above is **generated** — descriptions and categories are edited in `classifications.csv`, not by hand in this file. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
+
+To reuse the data rather than the Markdown, the listing and the CSMS catalogue are also published as JSON: see [the public data contract](docs/public-data.md).
