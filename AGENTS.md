@@ -73,6 +73,13 @@ calling `build_repo_record` / `days_since_push` / `parse_categories` directly.
 `tests/test_oscp_schemas.py` pins the vendored CC BY-ND files under
 `oscp/OSCP-2.0/` with a SHA-256 manifest and proves each defect listed in
 its README, and that the local patches suffice, with `jsonschema` in memory.
+`tests/test_markdown_links.py` checks that every relative link, and every
+`https://github.com/juherr/awesome-ev-charging/(tree|blob)/main/…` link, in
+the tracked first-party Markdown resolves to a path `git ls-files` lists — a
+tracked file, or a directory holding one — compared case-sensitively as on the
+Linux runner, so a link that only works on macOS fails. Anchors are not
+checked, and links in code are skipped. The three verbatim OCA `ReadMe.md`
+files are exempt, as they are from markdownlint below.
 
 Markdown is linted by `npx markdownlint-cli2` (config in
 `.markdownlint-cli2.jsonc`): every tracked `*.md`, dot-directories and the
