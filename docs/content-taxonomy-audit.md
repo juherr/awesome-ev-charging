@@ -4,6 +4,24 @@ Reviewed on 2026-11-15. This record explains editorial decisions; it is not a
 second project registry. Project identity, descriptions and classifications stay
 in the existing pipeline inputs.
 
+## Current status
+
+The decisions below still hold. The
+[generation and validation record](#generation-and-validation-record) is a
+historical snapshot of the tree on 2026-11-15: its counts and warnings describe
+that run, not the current listing.
+
+- [PR #86](https://github.com/juherr/awesome-ev-charging/pull/86), merged on
+  2026-11-15, resolved the three unreviewed rows the record leaves under
+  `Other > Misc` or `Other > Other`. It excluded the three off-topic entries
+  that sat there, `Autoknigge/Autoknigge.de`, `EVerest/EVerest-archived` and
+  `jimmyjoseph-web3/ChargeFrog-Hedera`, through `EXCLUDED_REPOS` in
+  `pipeline.py`.
+- The same PR promoted active repos of categories that had no Selection entry,
+  among them `EVerest/libcbv2g` (EXI codecs), `ChargePi/oscp-go` (OSCP),
+  `zach401/acnportal` (grid simulation) and `OpenLEADR/openleadr-rs` (OpenADR),
+  and reported 247 passing tests.
+
 ## Existing coverage and gaps
 
 | Area | Existing coverage | Gap and decision |
@@ -119,6 +137,12 @@ or setup instructions are introduced by this change.
   public source access alone does not establish open-source licensing.
 
 ## Generation and validation record
+
+> **Historical snapshot (2026-11-15).** This section records the run as it
+> stood on that date and is kept unchanged as evidence. Its counts are not
+> current, and the three `Other > Misc` / `Other > Other` rows it reports as
+> retained for later curation have since been resolved: see
+> [Current status](#current-status).
 
 The initial local ingest retrieved 644 repository records. For this editorial change,
 the rendering input projects existing cached answers onto those real signals
