@@ -1,0 +1,15 @@
+{
+  "payloads": {
+    "csms": {
+      "file": "csms.json",
+      "inputs": {
+        "csms-certificates.csv": "87080e32e9a52a85be404c1a2852a56b4d23648d922d4609630bf4dc1e348c3a",
+        "csms-features.csv": "00ec7a13d153f45a9729e6a9a2c4e31f8d3e0d56bd3821de3ff3411f05860661",
+        "csms.csv": "0f42ef4ad1358a0c014bb336c2b4f74622e7381481d907e9af5ddc2063f27595"
+      },
+      "records": 285,
+      "sha256": "22fb3a8028a710dbed0ee6352c54fe9cec451fd43294a2345bb96b8dff8dc95a"
+    }
+  },
+  "schema_version": "1.0"
+}
