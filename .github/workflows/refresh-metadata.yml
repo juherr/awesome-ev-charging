@@ -173,10 +173,18 @@ jobs:
             git merge --ff-only origin/main
           fi
 
-      # Guardrail: a Copilot failure can return an empty category for a repo.
-      # Don't let that regression reach a PR. The comparison is per repo, not by
-      # count: a newly discovered repo with no README arrives without a category
-      # and never had one to lose, so it only warns.
+      # Guardrail: a Copilot failure can return an empty category for a repo,
+      # or drop a protocol category. Don't let either regression reach a PR.
+      # The comparison is per repo, not by count: a newly discovered repo with
+      # no README arrives without a category and never had one to lose, so it
+      # only warns. A protocol lost on the rendered page (after overrides) with
+      # no reviewed exception fails; masked and accepted losses are reported.
+      #
+      # It also writes a Markdown report, before any failure, which the next
+      # steps put in the job summary and the PR body. The baseline
+      # data/projects.json adds selection / dormant / to_refine movements to
+      # it; until one is committed (#98) the report says they were not
+      # reported, so the flag is only passed when HEAD holds the file.
       #
       # It runs *after* the fast-forward above, not before: the baseline is
       # `git show HEAD:classifications.csv`, so it has to read the base the PR
@@ -185,9 +193,53 @@ jobs:
       # classifications while this run was working, dropping them is exactly
       # the regression this guard exists to catch.
       - name: Guard against classification regressions
+        id: guard
         run: |
+          args=(--base - --report "$RUNNER_TEMP/classification-report.md")
+          if git cat-file -e HEAD:data/projects.json 2>/dev/null; then
+            git show HEAD:data/projects.json > "$RUNNER_TEMP/base-projects.json"
+            args+=(--base-projects "$RUNNER_TEMP/base-projects.json")
+          fi
           git show HEAD:classifications.csv \
-            | mise exec -- python pipeline.py check-classifications --base -
+            | mise exec -- python pipeline.py check-classifications "${args[@]}"
+
+      # The report matters most when the guard blocked the run, so publish it
+      # whatever the outcome, as long as the guard got far enough to write it.
+      - name: Publish the classification report
+        if: always()
+        run: |
+          report="$RUNNER_TEMP/classification-report.md"
+          if [ -f "$report" ]; then
+            cat "$report" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # GitHub caps a PR body at 65,536 characters; create-pull-request
+      # truncates a longer body itself (with a warning), so a report that
+      # follows a full re-classification still opens the PR.
+      - name: Build the refresh PR body
+        run: |
+          {
+            cat <<'EOF'
+          Automated monthly metadata refresh (`ingest → enrich → render`), plus a
+          refresh of the OCA CSMS certificate mirror (`csms fetch → render`).
+          Both renders also regenerate the public JSON export under `data/`
+          (`projects.json`, `csms.json`, `manifest.json`).
+
+          Only repos whose classifier inputs (description, topics, README)
+          changed since the last run were re-classified (Copilot); the rest
+          were reused from `classifications.csv`. Review the diff — broad reshuffling between the
+          Selection / Dormant / To refine blocks is expected as stars and
+          dormancy shift, not a bug. The classification report below lists
+          what changed, raw and as rendered.
+
+          The checks on this PR wait for approval: it was opened with the
+          built-in `GITHUB_TOKEN`, so GitHub creates its workflow runs as
+          `action_required`. Click **Approve workflows to run** in the merge
+          box before reviewing.
+
+          EOF
+            cat "$RUNNER_TEMP/classification-report.md"
+          } > "$RUNNER_TEMP/pr-body.md"
 
       - name: Open / update the refresh PR
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
@@ -219,21 +271,7 @@ jobs:
             Refreshes repos whose upstream metadata (stars, pushed_at,
             dormant/archived) changed this month.
           title: "chore(data): monthly listing refresh"
-          body: |
-            Automated monthly metadata refresh (`ingest → enrich → render`), plus a
-            refresh of the OCA CSMS certificate mirror (`csms fetch → render`).
-            Both renders also regenerate the public JSON export under `data/`
-            (`projects.json`, `csms.json`, `manifest.json`).
-
-            Only repos whose classifier inputs (description, topics, README)
-            changed since the last run were re-classified (Copilot); the rest
-            were reused from `classifications.csv`. Review the diff — broad reshuffling between the
-            Selection / Dormant / To refine blocks is expected as stars and
-            dormancy shift, not a bug.
-
-            The checks on this PR wait for approval: it was opened with the
-            built-in `GITHUB_TOKEN`, so GitHub creates its workflow runs as
-            `action_required`. Click **Approve workflows to run** in the merge
-            box before reviewing.
+          # Static text + the classification report, built in the step above.
+          body-path: ${{ runner.temp }}/pr-body.md
           labels: automated, data-refresh
           delete-branch: true
