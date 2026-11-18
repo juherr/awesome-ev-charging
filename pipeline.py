@@ -1404,13 +1404,175 @@ def classification_diff(before, after):
           "stale_exceptions": sorted(stale, key=lambda p: (p[0].lower(), p[1]))}
 
 
+NO_PROJECTS_BASELINE = "No projects.json baseline: curation movements not reported."
+
+
+def load_projects(path):
+  """{id: record} of a `projects.json` export; ValueError when it is not one."""
+  try:
+    with open(path, "r", encoding="utf-8") as f:
+      payload = json.load(f)
+  except (OSError, ValueError) as e:
+    raise ValueError(f"{path} is not readable JSON: {e}") from e
+  projects = payload.get("projects") if isinstance(payload, dict) else None
+  if not isinstance(projects, list) or not all(
+      isinstance(p, dict) and p.get("id") and p.get("curation") for p in projects):
+    raise ValueError(f"{path} is not a projects.json export "
+                     "(a `projects` list of records with `id` and `curation`).")
+  return {p["id"]: p for p in projects}
+
+
+def curation_movements(base, current):
+  """Selection / dormant / to_refine moves between two `load_projects` exports.
+
+  Fresh stars, pushes and dormancy move a repo between blocks; the
+  classification has no part in it, so these never fail the guard.
+  Returns {"moved": [(name, before, after)], "added": [(name, curation)],
+  "removed": [(name, curation)]}, sorted by id.
+  """
+  def name(record):
+    return record.get("full_name") or record["id"]
+  return {
+    "moved": [(name(current[i]), base[i]["curation"], current[i]["curation"])
+              for i in sorted(base.keys() & current.keys())
+              if base[i]["curation"] != current[i]["curation"]],
+    "added": [(name(current[i]), current[i]["curation"])
+              for i in sorted(current.keys() - base.keys())],
+    "removed": [(name(base[i]), base[i]["curation"])
+                for i in sorted(base.keys() - current.keys())],
+  }
+
+
+def _projects_comparison(args):
+  """(movements or None, error or None) for `--base-projects` / `--projects`.
+
+  A file that is absent (no baseline committed yet, issue #98, or no
+  `--base-projects` at all) is not an error: the workflow controls that, and
+  the report says the movements were not reported. A file that is present but
+  not an export is: it means a broken render or a broken baseline, and
+  skipping it would hide that.
+  """
+  base_path = getattr(args, "base_projects", None)
+  current_path = getattr(args, "projects", None) or os.path.join("data", PROJECTS_EXPORT)
+  if not base_path or not (os.path.exists(base_path) and os.path.exists(current_path)):
+    return None, None
+  try:
+    return curation_movements(load_projects(base_path), load_projects(current_path)), None
+  except ValueError as e:
+    return None, str(e)
+
+
+def _cell(value):
+  return str(value).replace("|", "\\|") or "(none)"
+
+
+def _arrow(before, after):
+  def side(value):
+    if isinstance(value, list):
+      value = ", ".join(value)
+    return value or "(none)"
+  return f"{side(before)} → {side(after)}"
+
+
+def classification_report(before, after, curation=None, curation_error=None):
+  """The guard's findings as a Markdown report, for the step summary and the PR.
+
+  Built from the same helpers the guard prints from, so the two agree. One
+  table per non-empty class; an empty class appears in the counts only.
+  Deterministic: sorted, no timestamp.
+  """
+  lost, arrived_empty = classification_regressions(before, after)
+  diff = classification_diff(before, after)
+  by_name = {r["full_name"].lower(): r for r in diff["repos"]}
+  after_rows = _fold_case(after)
+
+  def lost_row(full_name):
+    repo = by_name.get(full_name.lower())
+    if repo is None:
+      return [full_name, "(none)", "(none)"]
+    return [full_name, _arrow(repo["raw_before"], repo["raw_after"]),
+            _arrow(repo["before"], repo["after"])]
+
+  def losses(status):
+    rows = []
+    for repo in diff["repos"]:
+      for loss in repo["protocol_losses"]:
+        if loss["status"] == status:
+          row = [repo["full_name"], loss["protocol"],
+                 _arrow(repo["raw_before"], repo["raw_after"]),
+                 _arrow(repo["before"], repo["after"])]
+          rows.append(row + [loss["reason"]] if status == "accepted" else row)
+    return rows
+
+  protocol_columns = ["Repo", "Protocol", "Raw before → raw after",
+                      "Effective before → effective after"]
+  classes = [
+    ("Lost category", ["Repo", "Raw before → raw after", "Effective before → effective after"],
+     [lost_row(n) for n in lost]),
+    ("Unexplained protocol loss", protocol_columns, losses("unexplained")),
+    ("Masked by an override", protocol_columns, losses("masked")),
+    ("Accepted protocol loss", protocol_columns + ["Reason"], losses("accepted")),
+    ("Stale exception", ["Repo", "Protocol"], [list(p) for p in diff["stale_exceptions"]]),
+    ("Category change", ["Repo", "Added", "Removed", "Raw before → raw after"],
+     [[r["full_name"], ", ".join(r["added"]), ", ".join(r["removed"]),
+       _arrow(r["raw_before"], r["raw_after"])]
+      for r in diff["repos"] if r["added"] or r["removed"]]),
+    ("Primary category change", ["Repo", "Primary before → after"],
+     [[r["full_name"], _arrow(r["primary_before"], r["primary_after"])]
+      for r in diff["repos"] if r["primary_changed"]]),
+    ("Newcomer without a category", ["Repo"], [[n] for n in arrived_empty]),
+    ("Bare main category", ["Repo", "Raw categories"],
+     [[n, (after_rows[n.lower()][1].get("categories") or "").strip()]
+      for n in bare_main_categories(after)]),
+  ]
+  if curation is not None:
+    classes += [
+      ("Curation movement", ["Repo", "Before → after"],
+       [[n, _arrow(b, a)] for n, b, a in curation["moved"]]),
+      ("Project added to the export", ["Repo", "Curation"],
+       [list(p) for p in curation["added"]]),
+      ("Project removed from the export", ["Repo", "Curation"],
+       [list(p) for p in curation["removed"]]),
+    ]
+
+  def table(columns, rows):
+    return ["| " + " | ".join(_cell(c) for c in columns) + " |",
+            "| " + " | ".join("---" for _ in columns) + " |"] + \
+           ["| " + " | ".join(_cell(c) for c in row) + " |" for row in rows]
+
+  lines = ["# Classification report", ""]
+  lines += table(["Class", "Count"], [[title, len(rows)] for title, _, rows in classes])
+  lines.append("")
+  if curation_error:
+    lines += [f"Curation movements not reported: {curation_error}", ""]
+  elif curation is None:
+    lines += [NO_PROJECTS_BASELINE, ""]
+  for title, columns, rows in classes:
+    if rows:
+      lines += [f"## {title}", ""] + table(columns, rows) + [""]
+  return "\n".join(lines).rstrip("\n") + "\n"
+
+
 def check_classifications(args):
-  """CI guard: fail when a repo lost its category or, unexplained, a protocol."""
+  """CI guard: fail when a repo lost its category or, unexplained, a protocol.
+
+  With `--report`, the findings are also written as Markdown before any exit,
+  so a blocked run still leaves the report to review. With `--base-projects`,
+  the report adds the curation movements between that export and `--projects`;
+  those never fail the guard, but an export present on disk that cannot be read
+  does.
+  """
   if args.base == "-":
     before = read_classifications(sys.stdin)
   else:
     before = load_classifications(args.base)
   after = load_classifications(args.cache)
+
+  curation, curation_error = _projects_comparison(args)
+  report_path = getattr(args, "report", None)
+  if report_path:
+    with open(report_path, "w", encoding="utf-8", newline="") as f:
+      f.write(classification_report(before, after, curation, curation_error))
 
   lost, arrived_empty = classification_regressions(before, after)
   diff = classification_diff(before, after)
@@ -1461,7 +1623,13 @@ def check_classifications(args):
     print(f"❌ Protocol classification regressed: {counts['unexplained']} unexplained "
           "protocol loss(es). Pin the protocol in CATEGORY_OVERRIDES, or record a "
           "reviewed exception in ACCEPTED_PROTOCOL_LOSSES.")
-  if lost or counts["unexplained"]:
+  if curation is not None:
+    print(f"ℹ️ Curation: {len(curation['moved'])} movement(s), "
+          f"{len(curation['added'])} project(s) added to and "
+          f"{len(curation['removed'])} removed from the export.")
+  if curation_error:
+    print(f"::error::Curation movements not reported: {curation_error}")
+  if lost or counts["unexplained"] or curation_error:
     print(f"Summary: {summary}.")
     sys.exit(1)
   print(f"✅ No classification regression — {summary}.")
@@ -2219,6 +2387,15 @@ def main():
                             "(e.g. `git show HEAD:classifications.csv | ...`).")
   p_check.add_argument("--cache", default=CLASSIFICATIONS_PATH,
                        help="Cache produced by the run under test.")
+  p_check.add_argument("--report",
+                       help="Also write the findings as a Markdown report to this path "
+                            "(written before the guard exits, even when it fails).")
+  p_check.add_argument("--base-projects",
+                       help="Baseline projects.json export (e.g. from `git show "
+                            "HEAD:data/projects.json`); adds curation movements to the "
+                            "report. Absent file: movements not reported.")
+  p_check.add_argument("--projects", default=os.path.join("data", PROJECTS_EXPORT),
+                       help="Fresh projects.json export to compare --base-projects with.")
   p_check.set_defaults(func=check_classifications)
 
   args = parser.parse_args()
