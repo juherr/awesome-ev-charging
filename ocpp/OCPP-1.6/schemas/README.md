@@ -25,6 +25,14 @@ The schemas for the messages added by the
 [OCPP 1.6 security whitepaper](../../Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/)
 are a separate download.
 
-The material is © Open Charge Alliance and published under the
-[Creative Commons Attribution-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nd/4.0/legalcode),
-so the files are kept exactly as published.
+The two WSDL files in `soap/` carry their own notice: "Copyright © 2010 –
+2015 Open Charge Alliance. All rights reserved. This document is made
+available under the Creative Commons Attribution-NoDerivatives 4.0
+International Public License"
+([legal code](https://creativecommons.org/licenses/by-nd/4.0/legalcode)).
+
+The 56 JSON schemas in `json/` carry no copyright or licence notice, and
+neither the download bundle nor the OCA download pages state one. Their
+licence is not established. They are kept verbatim, as OCA ships them,
+pending confirmation from the Open Charge Alliance. See
+[the third-party assets inventory](../../../docs/third-party-assets.md).

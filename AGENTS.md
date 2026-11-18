@@ -72,7 +72,7 @@ writes to the durable cache — with the backend and the README fetch stubbed, s
 it needs no network and spawns no LLM CLI. Apart from that and the JSON
 export below, `pipeline.py` is untested; its pure functions can be exercised by importing `pipeline` and
 calling `build_repo_record` / `days_since_push` / `parse_categories` directly.
-`tests/test_oscp_schemas.py` pins the vendored CC BY-ND files under
+`tests/test_oscp_schemas.py` pins the vendored OCA files under
 `oscp/OSCP-2.0/` with a SHA-256 manifest and proves each defect listed in
 its README, and that the local patches suffice, with `jsonschema` in memory.
 The public JSON export is covered by three test files: `tests/test_public_export.py`

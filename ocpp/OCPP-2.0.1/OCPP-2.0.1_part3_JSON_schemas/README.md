@@ -20,6 +20,11 @@ OCA has not reissued them since 2020: the Edition 3 download
 byte for byte. OCA's [ReadMe](../ReadMe.md) says the same: Edition 4
 updated all documents except the schemas.
 
-The material is © Open Charge Alliance and published under the
+The schemas carry no copyright or licence notice, and neither the download
+bundle nor the OCA download pages state one. The Edition 4 PDFs of the same
+bundle are published under the
 [Creative Commons Attribution-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nd/4.0/legalcode),
-so the files are kept exactly as published.
+but each notice covers "this document" only. The licence of these files is
+not established. They are kept verbatim, as OCA ships them, pending
+confirmation from the Open Charge Alliance. See
+[the third-party assets inventory](../../../docs/third-party-assets.md).
