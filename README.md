@@ -631,7 +631,7 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 
 #### Libraries
 
-##### C
+##### C++
 
 - [vampirebyte/EVerest-libiso15118](https://github.com/vampirebyte/EVerest-libiso15118) - ISO 15118 protocol libraries including sessions (ISO 15118-2/-20), EXI encoding/decoding, and SLAC support, extracted from EVerest for standalone use (⭐ 1).
 

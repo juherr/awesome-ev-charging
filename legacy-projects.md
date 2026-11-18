@@ -447,7 +447,7 @@ Projects kept out of the main [README](README.md) list — which only features a
 
 ##### MoonBit
 
-- [cxh123-alt/OCPP](https://github.com/cxh123-alt/OCPP) - A MoonBit library implementing the OCPP 1.6J protocol stack with JSON-RPC envelope, message encoding/decoding, and charge point and central system state machines (OCPP 1.6, 2.0.1 · ⭐ 0).
+- [cxh123-alt/OCPP](https://github.com/cxh123-alt/OCPP) - A MoonBit library implementing the OCPP 1.6J protocol stack with JSON-RPC envelope, message encoding/decoding, and charge point and central system state machines (OCPP 1.6 · ⭐ 0).
 
 ##### Python
 
