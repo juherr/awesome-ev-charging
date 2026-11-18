@@ -75,7 +75,14 @@ calling `build_repo_record` / `days_since_push` / `parse_categories` directly.
 its README, and that the local patches suffice, with `jsonschema` in memory.
 
 Markdown is linted by `npx markdownlint-cli2` (config in
-`.markdownlint-cli2.jsonc`); `README.md` additionally by `npx awesome-lint`.
+`.markdownlint-cli2.jsonc`): every tracked `*.md`, dot-directories and the
+first-party files under the vendored directories included. Only the three
+verbatim OCA files `ocpp/OCPP-2.0/ReadMe.md`, `ocpp/OCPP-2.0.1/ReadMe.md` and
+`ocpp/OCPP-2.1/ReadMe.md` are exempt, by exact path: they are upstream bytes,
+never reformatted, and integrity and provenance checks still cover them. The
+live classifier prompt `.claude/agents/repo-classifier.md` keeps its bytes too,
+with three rules relaxed for it alone. `README.md` is additionally checked by
+`npx awesome-lint`.
 
 ## pipeline.py architecture
 
