@@ -1003,14 +1003,35 @@ def product_record(key, entry):
   }
 
 
+def disappeared_ids(previous_path, payload):
+  """Sorted ids of the previous `csms.json` that `payload` no longer carries.
+
+  A renamed, re-slugged or removed product drops its id, which breaks consumer
+  URLs keyed on it. A missing or unparseable previous file yields no ids: there
+  is nothing published to compare with, and the render must not fail on it.
+  """
+  try:
+    with open(previous_path, "r", encoding="utf-8") as f:
+      previous = {p["id"] for p in json.load(f)["products"]}
+  except (OSError, ValueError, KeyError, TypeError):
+    return []
+  return sorted(previous - {p["id"] for p in payload["products"]})
+
+
 def csms_payload(products):
   """The `csms.json` payload, sorted by id; fails on two products with one id."""
-  records = sorted((product_record(key, entry) for key, entry in products.items()),
-                   key=lambda p: p["id"])
-  duplicates = sorted({a["id"] for a, b in zip(records, records[1:]) if a["id"] == b["id"]})
+  pairs = sorted(((product_record(key, entry), bool(entry.get("slug")))
+                  for key, entry in products.items()), key=lambda p: p[0]["id"])
+  records = [record for record, _ in pairs]
+  ids = Counter(record["id"] for record in records)
+  duplicates = sorted(i for i, n in ids.items() if n > 1)
   if duplicates:
-    raise SystemExit(f"Two products export the same id {duplicates} — rename the "
-                     f"curated slug in {VENDORS_PATH}.")
+    if any(curated for record, curated in pairs if record["id"] in duplicates):
+      advice = f"rename the curated slug in {VENDORS_PATH}"
+    else:
+      advice = (f"give one of them a curated row with its own slug in {VENDORS_PATH}, "
+                f"or a PRODUCT_ALIASES entry in csms.py if they are one platform")
+    raise SystemExit(f"Two products export the same id {duplicates} — {advice}.")
   return {"schema_version": pipeline.PUBLIC_SCHEMA_VERSION, "products": records}
 
 
@@ -1061,6 +1082,10 @@ def cmd_render(args):
     write_atomic(path, content)
   if export_dir:
     export_path = os.path.join(export_dir, CSMS_EXPORT)
+    gone = disappeared_ids(export_path, payload)
+    if gone:
+      print(f"⚠️  {len(gone)} id(s) disappear from {export_path} (renamed, re-slugged "
+            f"or removed products; consumer URLs keyed on them break): {', '.join(gone)}")
     pipeline.write_public_json(export_path, payload)
     pipeline.write_manifest(export_dir, "csms", export_path,
                             [args.certs, args.vendors, args.features],

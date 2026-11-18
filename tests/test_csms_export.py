@@ -93,8 +93,19 @@ def test_a_certified_product_with_a_curated_row_takes_the_slug():
 
 
 def test_a_derived_id_colliding_with_a_curated_slug_fails():
-  with pytest.raises(SystemExit, match="acme-ltd-acme-csms"):
+  with pytest.raises(SystemExit, match="acme-ltd-acme-csms") as error:
     export([cert()], [vendor(slug="acme-ltd-acme-csms", product="Other", company="Else")])
+  assert "rename the curated slug" in str(error.value)
+
+
+def test_two_colliding_derived_ids_ask_for_a_slug_or_an_alias():
+  # `Acme_CSMS` and `Acme-CSMS` are two merge keys but fold to one derived id.
+  with pytest.raises(SystemExit, match="acme-ltd-acme-csms") as error:
+    export([cert(product="Acme_CSMS", number="OCA.1"),
+            cert(product="Acme-CSMS", number="OCA.2")])
+  message = str(error.value)
+  assert "rename the curated slug" not in message
+  assert "slug" in message and "PRODUCT_ALIASES" in message
 
 
 def test_two_curated_rows_landing_on_one_entry_fail():
@@ -227,7 +238,7 @@ def test_certified_and_documented_features_stay_apart():
 
 # --- The CLI flag ------------------------------------------------------------------
 
-def render_files(tmp_path, export_dir=None):
+def render_files(tmp_path, export_dir=None, vendor_rows=()):
   """Run cmd_render on fixture files in `tmp_path`, returning the args."""
   certs = tmp_path / "certs.csv"
   with open(certs, "w", newline="", encoding="utf-8") as f:
@@ -235,7 +246,10 @@ def render_files(tmp_path, export_dir=None):
     writer.writeheader()
     writer.writerow(cert())
   vendors = tmp_path / "vendors.csv"
-  vendors.write_text(",".join(csms.VENDOR_FIELDS) + "\n", encoding="utf-8")
+  with open(vendors, "w", newline="", encoding="utf-8") as f:
+    writer = __import__("csv").DictWriter(f, fieldnames=csms.VENDOR_FIELDS)
+    writer.writeheader()
+    writer.writerows(vendor_rows)
   features = tmp_path / "features.csv"
   features.write_text(",".join(csms.FEATURE_FIELDS) + "\n", encoding="utf-8")
   for name, begin, end in (("csms.md", csms.CSMS_MARKER_BEGIN, csms.CSMS_MARKER_END),
@@ -256,6 +270,40 @@ def test_render_without_the_flag_writes_no_json(tmp_path, monkeypatch):
   assert not (tmp_path / "data").exists()
   assert sorted(p.name for p in tmp_path.iterdir()) == [
     "certs.csv", "csms.md", "features.csv", "features.md", "vendors.csv"]
+
+
+def warnings_in(capsys):
+  return [line for line in capsys.readouterr().out.splitlines() if "⚠️" in line]
+
+
+def test_render_warns_when_a_curated_slug_makes_a_published_id_disappear(
+    tmp_path, monkeypatch, capsys):
+  monkeypatch.chdir(tmp_path)
+  render_files(tmp_path, "data")
+  assert warnings_in(capsys) == []
+  render_files(tmp_path, "data", vendor_rows=[vendor(
+    slug="acme", product="Acme CSMS", company="Acme Ltd", oca_company="Acme Ltd",
+    oca_product="Acme CSMS")])
+  warnings = warnings_in(capsys)
+  assert len(warnings) == 1
+  assert "acme-ltd-acme-csms" in warnings[0] and "'acme'" not in warnings[0]
+
+
+def test_disappeared_ids_are_sorted_and_new_ids_are_not_reported(tmp_path):
+  previous = tmp_path / "csms.json"
+  previous.write_text(json.dumps({"products": [{"id": "b"}, {"id": "kept"}, {"id": "a"}]}),
+                      encoding="utf-8")
+  payload = {"products": [{"id": "kept"}, {"id": "new"}]}
+  assert csms.disappeared_ids(str(previous), payload) == ["a", "b"]
+
+
+def test_render_without_a_previous_export_warns_nothing(tmp_path, monkeypatch, capsys):
+  monkeypatch.chdir(tmp_path)
+  render_files(tmp_path, "data")
+  assert warnings_in(capsys) == []
+  (tmp_path / "data" / "csms.json").write_text("{not json", encoding="utf-8")
+  render_files(tmp_path, "data")
+  assert warnings_in(capsys) == []
 
 
 def test_the_markdown_is_identical_with_and_without_the_flag(tmp_path, monkeypatch):
@@ -303,6 +351,10 @@ def test_committed_csms_json_matches_a_fresh_export(monkeypatch):
     committed = f.read()
   assert committed == fresh, \
     "data/csms.json is stale — re-run `python csms.py render --export-dir data`"
+
+
+def test_re_rendering_the_committed_data_reports_no_disappeared_id(monkeypatch):
+  assert csms.disappeared_ids(CSMS_JSON, fresh_committed_payload(monkeypatch)) == []
 
 
 def test_committed_manifest_entry_matches_a_fresh_export(monkeypatch):

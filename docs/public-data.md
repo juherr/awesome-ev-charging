@@ -140,7 +140,14 @@ One record per product, sorted by `id`.
 | `api` | `true` or null | An API exists (documentation possibly login-gated). Also `true` when `api_docs` is set |
 | `api_docs` | string or null | URL of public API documentation |
 | `pricing`, `pricing_url`, `changelog`, `hq_country`, `hq_city`, `company_founded`, `first_release`, `latest_version`, `latest_version_date`, `license`, `deployment`, `status`, `notes` | string or null | Curated text from `csms.csv`, copied as written |
-| `sources` | array | URLs behind the curated values, in file order |
+| `sources` | array | Where the curated values come from, in file order: an `http(s)://` URL, or `contributor:<login>` (see below) |
+
+Most `sources` entries are URLs. The one other form is `contributor:<login>`,
+a fact a maintainer (`<login>` is their GitHub login) knows from their own
+research but cannot cite publicly; the record's `notes` say so. It is not a
+link: render it as text, or as a link to `https://github.com/<login>` if you
+want one, never as a URL on its own. Treat any other value without a scheme
+the same way.
 
 ### Certified versus documented features
 
@@ -211,6 +218,22 @@ not know, so a minor bump does not break you.
 
 To pin a version, read the files from a tag or a commit SHA rather than
 `main`.
+
+### Id stability
+
+An `id` is not guaranteed for the lifetime of a record, and its changes do not
+bump `schema_version`: they change data, not the format.
+
+- `projects.json`: the id is the lowercased `full_name`, so it changes when a
+  repository is renamed or transferred.
+- `csms.json`: a product with no curated row carries an id derived from its
+  company and product name. When a curated row is later added to
+  `csms.csv` for that product, its id **switches to the row's `slug`**, and the
+  derived id disappears from the file. `python csms.py render --export-dir`
+  compares the new file with the one it replaces and prints a warning listing
+  every id that disappears, whether the product was renamed, re-slugged or
+  removed. If you key URLs or storage on `id`, keep a redirect from the old id
+  when it vanishes.
 
 ## Sample queries
 
