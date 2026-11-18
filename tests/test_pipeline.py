@@ -7,6 +7,7 @@ themselves are exercised through a stubbed `subprocess.run`.
 
 import csv
 import pathlib
+import re
 import types
 from datetime import datetime, timedelta, timezone
 
@@ -441,21 +442,21 @@ def test_the_report_lists_each_class_with_raw_and_effective_categories(tmp_path,
     assert count(report, "Newcomer without a category") == "| Newcomer without a category | 1 |"
     assert count(report, "Bare main category") == "| Bare main category | 1 |"
 
-    assert "| acme/empty | OCPI > Libraries → (none) | OCPI > Libraries → (none) |" \
+    assert "| `acme/empty` | OCPI > Libraries → (none) | OCPI > Libraries → (none) |" \
         in section(report, "Lost category")
-    assert ("| acme/fw | OCPP | OCPP > Libraries → Other > EVSE firmware\\|Other > Security"
+    assert ("| `acme/fw` | OCPP | OCPP > Libraries → Other > EVSE firmware\\|Other > Security"
             " | OCPP > Libraries → Other > EVSE firmware, Other > Security |") \
         in section(report, "Unexplained protocol loss")
-    assert "| acme/sim | OCPP |" in section(report, "Masked by an override")
-    assert "| acme/client | OCPP |" in section(report, "Accepted protocol loss")
-    assert "A vendor API client, not OCPP. |" in section(report, "Accepted protocol loss")
-    assert "| acme/move | OCPP > Server → OCPI > Libraries |" \
+    assert "| `acme/sim` | OCPP |" in section(report, "Masked by an override")
+    assert "| `acme/client` | OCPP |" in section(report, "Accepted protocol loss")
+    assert "`A vendor API client, not OCPP.` |" in section(report, "Accepted protocol loss")
+    assert "| `acme/move` | OCPP > Server → OCPI > Libraries |" \
         in section(report, "Primary category change")
     # An empty cell reads `|  |`, which markdownlint's MD060 rejects.
-    assert "| acme/move | OCPI > Libraries | (none) |" in section(report, "Category change")
+    assert "| `acme/move` | OCPI > Libraries | (none) |" in section(report, "Category change")
     assert "|  |" not in report
-    assert "| acme/new |" in section(report, "Newcomer without a category")
-    assert "| acme/bare | Other |" in section(report, "Bare main category")
+    assert "| `acme/new` |" in section(report, "Newcomer without a category")
+    assert "| `acme/bare` | Other |" in section(report, "Bare main category")
     # Nothing was stale: the class is counted, not given an empty table.
     assert "## Stale exception" not in report
     assert "No projects.json baseline: curation movements not reported." in report
@@ -466,7 +467,7 @@ def test_the_report_counts_stale_exceptions(tmp_path, curation):
     report = guard_report(tmp_path, [cached("acme/x", "OCPP > Server")],
                           [cached("acme/x", "OCPP > Server")])
     assert count(report, "Stale exception") == "| Stale exception | 1 |"
-    assert "| acme/gone | OCPP |" in section(report, "Stale exception")
+    assert "| `acme/gone` | OCPP |" in section(report, "Stale exception")
 
 
 def test_the_report_escapes_pipes_in_every_cell(tmp_path, curation):
@@ -477,8 +478,57 @@ def test_the_report_escapes_pipes_in_every_cell(tmp_path, curation):
     assert "OCPP > Misc\\|Other > Security → Other > Security" in table
     assert "Client \\| not a server." in table
     for line in table.split("\n"):
-        if line.startswith("| acme/client"):
+        if line.startswith("| `acme/client`"):
             assert line.replace("\\|", "").count("|") == 6
+
+
+def outside_code_spans(markdown):
+    """`markdown` with every inline code span removed, as CommonMark reads them:
+    a run of N backticks closes on the next run of exactly N."""
+    return re.sub(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", "", markdown, flags=re.S)
+
+
+def unescaped_pipes(line):
+    return line.replace("\\|", "").count("|")
+
+
+EVIL = "[x](https://evil) <img src=x> @someone `tick` ``ticks"
+
+
+def test_the_report_neutralises_untrusted_text(tmp_path, curation):
+    """Categories come from an LLM and names from GitHub; the report is published
+    unescaped in the PR body and the job summary, so neither may open a link, an
+    image, HTML or a mention there."""
+    name = "acme/" + EVIL + " | x\\"
+    before = [cached(name, "Evil<b> > Server|OCPP > Server"),
+              cached("acme/bare", "OCPP > Server")]
+    after = [cached(name, "OCPP > Server|Other > " + EVIL + "\nline"),
+             cached("acme/bare", "`Other` @someone")]
+    report = guard_report(tmp_path, before, after, expect_exit=True)
+
+    outside = outside_code_spans(report)
+    for marker in ("](", "<img", "<b>", "@someone", "evil", "tick"):
+        assert marker not in outside
+    # A known label stays readable; an unknown one is flagged, then quoted.
+    assert "OCPP > Server" in outside
+    assert "(unknown label) ```Other > [x](https://evil)" in report
+    lines = report.split("\n")
+    for i, line in enumerate(lines):
+        if line.startswith("| ") and lines[i - 1] == "":
+            header = unescaped_pipes(line)
+            j = i + 1
+            while j < len(lines) and lines[j].startswith("|"):
+                assert unescaped_pipes(lines[j]) == header, lines[j]
+                j += 1
+
+
+def test_the_bare_main_row_shows_the_bare_duplicate(tmp_path, curation):
+    """An older cache may hold two spellings of one repo; the bare one is the
+    one reported, so its row must show its own categories."""
+    before = [cached("Acme/fw", "OCPP > Server")]
+    after = [cached("Acme/fw", "OCPP > Server"), cached("acme/fw", "Other")]
+    report = guard_report(tmp_path, before, after)
+    assert "| `acme/fw` | Other |" in section(report, "Bare main category")
 
 
 def test_the_report_is_deterministic(tmp_path, curation):
@@ -492,7 +542,7 @@ def test_the_report_is_deterministic(tmp_path, curation):
     first = runs[0][1]
     assert runs[0][0].read_bytes() == runs[1][0].read_bytes()
     assert first.endswith("\n") and not first.endswith("\n\n")
-    assert first.index("| A/one |") < first.index("| b/two |")
+    assert first.index("| `A/one` |") < first.index("| `b/two` |")
 
 
 def test_the_report_is_markdownlint_shaped(tmp_path, curation):
@@ -540,11 +590,11 @@ def test_the_report_lists_curation_movements(tmp_path, capsys, curation):
     assert count(report, "Project removed from the export") \
         == "| Project removed from the export | 1 |"
     moves = section(report, "Curation movement")
-    assert "| acme/down | selection → dormant |" in moves
-    assert "| acme/up | to_refine → selection |" in moves
+    assert "| `acme/down` | `selection` → `dormant` |" in moves
+    assert "| `acme/up` | `to_refine` → `selection` |" in moves
     assert "acme/same" not in report
-    assert "| acme/new | to_refine |" in section(report, "Project added to the export")
-    assert "| acme/gone | dormant |" in section(report, "Project removed from the export")
+    assert "| `acme/new` | `to_refine` |" in section(report, "Project added to the export")
+    assert "| `acme/gone` | `dormant` |" in section(report, "Project removed from the export")
     assert "No projects.json baseline" not in report
     # Fresh metadata moves blocks: that never fails the guard.
     assert "✅" in capsys.readouterr().out

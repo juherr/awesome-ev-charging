@@ -1463,15 +1463,50 @@ def _projects_comparison(args):
 
 
 def _cell(value):
-  return str(value).replace("|", "\\|") or "(none)"
+  """Untrusted text as one inline code span, safe in a GFM table cell.
+
+  The report is published unescaped (PR body, job summary), and its values
+  come from the classifier's output, GitHub or an export: inside a code span
+  no link, image, HTML or @mention renders. The fence is one backtick longer
+  than any run in the value, padded when the value starts or ends with one;
+  line breaks become spaces. `|` is escaped as `\\|`, which GFM tables resolve
+  before the span is parsed, so it reads as `|`. A `\\` needs no escape: code
+  spans take it literally, and the closing fence always separates it from the
+  next cell's `|`.
+  """
+  text = re.sub(r"\r\n|\r|\n", " ", str(value))
+  if not text:
+    return "(none)"
+  fence = "`" * (max((len(run) for run in re.findall(r"`+", text)), default=0) + 1)
+  pad = " " if text.startswith("`") or text.endswith("`") else ""
+  return f"{fence}{pad}{text}{pad}{fence}".replace("|", "\\|")
 
 
-def _arrow(before, after):
-  def side(value):
-    if isinstance(value, list):
-      value = ", ".join(value)
-    return value or "(none)"
-  return f"{side(before)} → {side(after)}"
+def _known_label(label):
+  """True when `Main` or `Main > Sub` is in CATEGORY_TREE once aliases apply."""
+  main, sep, sub = (part.strip() for part in label.partition(">"))
+  if main not in CATEGORY_TREE:
+    return False
+  return not sep or _canon_sub(main, sub) in CATEGORY_TREE[main]
+
+
+def _report_label(label):
+  """A category label: verbatim when the taxonomy knows it, else flagged and quoted."""
+  label = label.strip()
+  return label if _known_label(label) else f"(unknown label) {_cell(label)}"
+
+
+def _labels(value):
+  """A raw pipe-joined `categories` string, a list of effective labels, or None."""
+  if not value:
+    return "(none)"
+  if isinstance(value, list):
+    return ", ".join(_report_label(v) for v in value) or "(none)"
+  return "\\|".join(_report_label(c) for c in value.split("|") if c.strip()) or "(none)"
+
+
+def _arrow(before, after, render=_labels):
+  return f"{render(before)} → {render(after)}"
 
 
 def classification_report(before, after, curation=None, curation_error=None):
@@ -1484,13 +1519,12 @@ def classification_report(before, after, curation=None, curation_error=None):
   lost, arrived_empty = classification_regressions(before, after)
   diff = classification_diff(before, after)
   by_name = {r["full_name"].lower(): r for r in diff["repos"]}
-  after_rows = _fold_case(after)
 
   def lost_row(full_name):
     repo = by_name.get(full_name.lower())
     if repo is None:
-      return [full_name, "(none)", "(none)"]
-    return [full_name, _arrow(repo["raw_before"], repo["raw_after"]),
+      return [_cell(full_name), "(none)", "(none)"]
+    return [_cell(full_name), _arrow(repo["raw_before"], repo["raw_after"]),
             _arrow(repo["before"], repo["after"])]
 
   def losses(status):
@@ -1498,10 +1532,10 @@ def classification_report(before, after, curation=None, curation_error=None):
     for repo in diff["repos"]:
       for loss in repo["protocol_losses"]:
         if loss["status"] == status:
-          row = [repo["full_name"], loss["protocol"],
+          row = [_cell(repo["full_name"]), _report_label(loss["protocol"]),
                  _arrow(repo["raw_before"], repo["raw_after"]),
                  _arrow(repo["before"], repo["after"])]
-          rows.append(row + [loss["reason"]] if status == "accepted" else row)
+          rows.append(row + [_cell(loss["reason"])] if status == "accepted" else row)
     return rows
 
   protocol_columns = ["Repo", "Protocol", "Raw before → raw after",
@@ -1512,33 +1546,37 @@ def classification_report(before, after, curation=None, curation_error=None):
     ("Unexplained protocol loss", protocol_columns, losses("unexplained")),
     ("Masked by an override", protocol_columns, losses("masked")),
     ("Accepted protocol loss", protocol_columns + ["Reason"], losses("accepted")),
-    ("Stale exception", ["Repo", "Protocol"], [list(p) for p in diff["stale_exceptions"]]),
+    ("Stale exception", ["Repo", "Protocol"],
+     [[_cell(n), _report_label(p)] for n, p in diff["stale_exceptions"]]),
     ("Category change", ["Repo", "Added", "Removed", "Raw before → raw after"],
-     [[r["full_name"], ", ".join(r["added"]), ", ".join(r["removed"]),
+     [[_cell(r["full_name"]), _labels(r["added"]), _labels(r["removed"]),
        _arrow(r["raw_before"], r["raw_after"])]
       for r in diff["repos"] if r["added"] or r["removed"]]),
     ("Primary category change", ["Repo", "Primary before → after"],
-     [[r["full_name"], _arrow(r["primary_before"], r["primary_after"])]
+     [[_cell(r["full_name"]), _arrow(r["primary_before"], r["primary_after"])]
       for r in diff["repos"] if r["primary_changed"]]),
-    ("Newcomer without a category", ["Repo"], [[n] for n in arrived_empty]),
+    ("Newcomer without a category", ["Repo"], [[_cell(n)] for n in arrived_empty]),
+    # `after[n]`, not the case-folded row: with two spellings of one repo,
+    # the folded row is the classified one, not the bare one reported here.
     ("Bare main category", ["Repo", "Raw categories"],
-     [[n, (after_rows[n.lower()][1].get("categories") or "").strip()]
+     [[_cell(n), _labels((after[n].get("categories") or "").strip())]
       for n in bare_main_categories(after)]),
   ]
   if curation is not None:
     classes += [
       ("Curation movement", ["Repo", "Before → after"],
-       [[n, _arrow(b, a)] for n, b, a in curation["moved"]]),
+       [[_cell(n), _arrow(b, a, _cell)] for n, b, a in curation["moved"]]),
       ("Project added to the export", ["Repo", "Curation"],
-       [list(p) for p in curation["added"]]),
+       [[_cell(n), _cell(c)] for n, c in curation["added"]]),
       ("Project removed from the export", ["Repo", "Curation"],
-       [list(p) for p in curation["removed"]]),
+       [[_cell(n), _cell(c)] for n, c in curation["removed"]]),
     ]
 
+  # Every data cell above went through `_cell` or `_label`; headers and counts are ours.
   def table(columns, rows):
-    return ["| " + " | ".join(_cell(c) for c in columns) + " |",
+    return ["| " + " | ".join(columns) + " |",
             "| " + " | ".join("---" for _ in columns) + " |"] + \
-           ["| " + " | ".join(_cell(c) for c in row) + " |" for row in rows]
+           ["| " + " | ".join(str(c) for c in row) + " |" for row in rows]
 
   lines = ["# Classification report", ""]
   lines += table(["Class", "Count"], [[title, len(rows)] for title, _, rows in classes])
