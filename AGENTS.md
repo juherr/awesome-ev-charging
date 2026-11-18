@@ -58,9 +58,9 @@ git show HEAD:classifications.csv | python pipeline.py check-classifications --b
 `--token` is optional; without it GitHub's unauthenticated rate limits apply.
 `gh auth token` supplies one when the gh CLI is authenticated.
 
-`mise run test` (alias `t`) runs the pytest suite in `tests/`, which covers
-`csms.py` only: the controlled feature vocabulary, certificate derivation,
-product/company identity, merge precedence, table rendering, the curated-CSV
+`mise run test` (alias `t`) runs the pytest suite in `tests/`.
+`tests/test_csms.py` covers `csms.py`: the controlled feature vocabulary,
+certificate derivation, product/company identity, merge precedence, table rendering, the curated-CSV
 validations and render determinism. It needs no network — the one GitHub call
 `merge` can make is monkeypatched — and it also validates the committed CSVs, so
 a bad curated row fails there as well as at render time. `tests/test_pipeline.py`
@@ -86,7 +86,10 @@ Markdown is linted by `npx markdownlint-cli2` (config in
 first-party files under the vendored directories included. Only the three
 verbatim OCA files `ocpp/OCPP-2.0/ReadMe.md`, `ocpp/OCPP-2.0.1/ReadMe.md` and
 `ocpp/OCPP-2.1/ReadMe.md` are exempt, by exact path: they are upstream bytes,
-never reformatted, and integrity and provenance checks still cover them. The
+never reformatted. The exemption covers style only: they stay in the
+provenance and licence inventory of `docs/third-party-assets.md`, and byte
+pinning of vendored directories is tracked in
+[#97](https://github.com/juherr/awesome-ev-charging/issues/97). The
 live classifier prompt `.claude/agents/repo-classifier.md` keeps its bytes too,
 with three rules relaxed for it alone. `README.md` is additionally checked by
 `npx awesome-lint`.

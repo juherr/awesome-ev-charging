@@ -16,8 +16,10 @@
 
     // Verbatim upstream bytes from the Open Charge Alliance, distributed under
     // the rights holder's terms (see docs/third-party-assets.md). They are never
-    // reformatted, so their formatting is not ours to lint. Only the style check
-    // skips them: integrity and provenance checks still apply to them.
+    // reformatted, so their formatting is not ours to lint. The exemption covers
+    // style only: they stay in the provenance and licence inventory of
+    // docs/third-party-assets.md. Byte pinning of vendored directories is
+    // tracked in https://github.com/juherr/awesome-ev-charging/issues/97.
     // VENDORED_VERBATIM_MARKDOWN in tests/test_markdown_links.py lists the
     // same three files: keep both in step.
     "ocpp/OCPP-2.0/ReadMe.md",
@@ -51,9 +53,9 @@
       // The body of this agent file is the live classifier prompt, sent to the
       // model as is: every byte of it is text the model reads, so it is not
       // reshaped for style. It opens with prose (MD041), shows the output
-      // contract with a `<one factual sentence>` placeholder (MD033) and a
-      // list glued to its `Categories:` label, exactly as the model must
-      // answer (MD032). Only these three rules are relaxed, for this file.
+      // contract with a `<one factual sentence>` placeholder (MD033), and its
+      // lists are glued to their labels (`Rules:`, `Categories:`), exactly as
+      // the model reads and must answer them (MD032). Only these three rules are relaxed, for this file.
       "filter": [".claude/agents/repo-classifier.md"],
       "config": { "MD032": false, "MD033": false, "MD041": false },
       "combine": "merge"
