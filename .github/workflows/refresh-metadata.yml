@@ -108,9 +108,12 @@ jobs:
             --in repos.csv --out repos.enriched.csv \
             --classifier copilot "${args[@]}"
 
-      - name: Render — inject listing into README + standalone
-        run: mise exec -- python pipeline.py render --readme README.md
-
+      # The CSMS steps run before the project render because both renders
+      # write data/manifest.json, each refreshing its own entry. The drop
+      # step below restores the manifest from HEAD on a CSMS failure; run
+      # after the project render, it would erase the projects entry that
+      # render had just written.
+      #
       # The OCA registry is scraped from an undocumented endpoint, so `fetch`
       # refuses to write a mirror that is short or smaller than the committed
       # one. That guard lives in csms.py, which knows both counts — so it also
@@ -118,25 +121,33 @@ jobs:
       #
       # Both steps are non-blocking: the CSMS catalogue is secondary to the
       # project listing, and a registry outage must not cost the whole monthly
-      # refresh. If either fails, the next step restores both files so the PR
-      # never carries a new mirror alongside a table rendered from the old one.
+      # refresh. If either fails, the next step restores the mirror, both
+      # Markdown views and the CSMS export (data/csms.json, data/manifest.json)
+      # so the PR never carries a new mirror alongside a table or an export
+      # rendered from the old one.
       - name: CSMS — refresh the OCA certificate mirror
         id: csms_fetch
         continue-on-error: true
         run: mise exec -- python csms.py fetch --out csms-certificates.csv
 
-      - name: CSMS — re-render csms.md
+      - name: CSMS — re-render csms.md + data/csms.json
         id: csms_render
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: mise exec -- python csms.py render --token "$GH_TOKEN"
+        run: mise exec -- python csms.py render --token "$GH_TOKEN" --export-dir data
 
       - name: Drop partial CSMS changes if either step failed
         if: steps.csms_fetch.outcome == 'failure' || steps.csms_render.outcome == 'failure'
         run: |
           echo "::warning::CSMS refresh failed — leaving the committed catalogue untouched."
-          git checkout -- csms-certificates.csv csms.md csms-features.md
+          git checkout -- csms-certificates.csv csms.md csms-features.md \
+            data/csms.json data/manifest.json
+
+      # After the CSMS steps (see above): adds its own `projects` entry to the
+      # manifest the CSMS render left, or restored.
+      - name: Render — inject listing into README + standalone + data/projects.json
+        run: mise exec -- python pipeline.py render --readme README.md --export-dir data
 
       # The PR branch is cut from the *local* main — the tree checked out when
       # the job started, up to half an hour earlier — and pushed with the
@@ -199,16 +210,20 @@ jobs:
             csms-certificates.csv
             csms.md
             csms-features.md
+            data/**
           commit-message: |
             chore(data): monthly listing refresh
 
-            Automated ingest + enrich + render, plus the OCA CSMS mirror.
+            Automated ingest + enrich + render, plus the OCA CSMS mirror
+            and the public JSON export under data/.
             Refreshes repos whose upstream metadata (stars, pushed_at,
             dormant/archived) changed this month.
           title: "chore(data): monthly listing refresh"
           body: |
             Automated monthly metadata refresh (`ingest → enrich → render`), plus a
             refresh of the OCA CSMS certificate mirror (`csms fetch → render`).
+            Both renders also regenerate the public JSON export under `data/`
+            (`projects.json`, `csms.json`, `manifest.json`).
 
             Only repos whose classifier inputs (description, topics, README)
             changed since the last run were re-classified (Copilot); the rest
