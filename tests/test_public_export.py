@@ -335,3 +335,11 @@ def test_a_manifest_entry_survives_an_update_of_another_key(tmp_path):
     }
     raw = (data / "manifest.json").read_text(encoding="utf-8")
     assert raw == json.dumps(second, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def test_a_bare_relative_path_is_written_in_place_without_a_temp_file(tmp_path):
+    """`isolated` chdirs to tmp_path, so the file lands in the working directory."""
+    payload = {"schema_version": pipeline.PUBLIC_SCHEMA_VERSION, "b": [1], "a": "é"}
+    pipeline.write_public_json("x.json", payload)
+    assert (tmp_path / "x.json").read_text(encoding="utf-8") == pipeline.dump_public_json(payload)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["x.json"]

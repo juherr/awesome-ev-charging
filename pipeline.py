@@ -2039,14 +2039,32 @@ def dump_public_json(obj):
   return json.dumps(obj, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
+def write_atomic(path, text):
+  """Write a file via a temporary sibling, so readers never see it half-written.
+
+  A process killed mid-write would otherwise leave a truncated file behind for
+  the next reader. The temporary file is unique per call — a fixed name would
+  let two writers aimed at the same path corrupt each other's — and lives in
+  the destination directory so the replace stays on one filesystem, which is
+  what makes it atomic. On failure the temporary file is removed.
+  """
+  directory = os.path.dirname(path) or "."
+  fd, tmp = tempfile.mkstemp(dir=directory, prefix=os.path.basename(path) + ".",
+                             suffix=".tmp")
+  try:
+    with os.fdopen(fd, "w", newline="", encoding="utf-8") as f:
+      f.write(text)
+    os.replace(tmp, path)
+  except BaseException:
+    if os.path.exists(tmp):
+      os.unlink(tmp)
+    raise
+
+
 def write_public_json(path, obj):
   """Write `obj` as public JSON through a temp file and an atomic rename."""
-  directory = os.path.dirname(os.path.abspath(path))
-  os.makedirs(directory, exist_ok=True)
-  fd, tmp = tempfile.mkstemp(dir=directory, prefix=f"{os.path.basename(path)}.", suffix=".tmp")
-  with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
-    f.write(dump_public_json(obj))
-  os.replace(tmp, path)
+  os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+  write_atomic(path, dump_public_json(obj))
 
 
 def _sha256(path):
