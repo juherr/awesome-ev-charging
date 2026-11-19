@@ -3,7 +3,9 @@
 @AGENTS.md
 
 The import above is the shared guidance — repository layout, commands,
-`pipeline.py` and `csms.py` architecture, conventions. **Read it first.** This
+conventions, and summaries of `pipeline.py` and `csms.py` whose architecture
+lives in `docs/pipeline-architecture.md` and `docs/csms-architecture.md`.
+**Read it first.** This
 file adds only what is specific to Claude Code, so anything you learn that holds
 for every agent belongs in `AGENTS.md`, not here.
 
