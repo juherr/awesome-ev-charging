@@ -20,6 +20,10 @@ Edition 4 ships the same 22 files as edition 3
 (`OCPP-1.6-security-whitepaper-edition-3-2.zip`), byte for byte. The core
 OCPP 1.6 schemas are in [`ocpp/OCPP-1.6/schemas`](../../../OCPP-1.6/schemas/).
 
-The material is © Open Charge Alliance and published under the
+The schemas carry no copyright or licence notice, and the download bundle
+holds no licence file. The whitepaper PDF of the same bundle is published
+under the
 [Creative Commons Attribution-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nd/4.0/legalcode),
-so the files are kept exactly as published.
+but its notice covers "this document" only. The licence of these files is
+not established. They are kept verbatim, as OCA ships them. See
+[the third-party assets inventory](../../../../docs/third-party-assets.md).

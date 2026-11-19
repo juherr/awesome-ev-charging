@@ -12,7 +12,22 @@ The repository convention applies: an empty or "unknown" value means we could
 not verify it, never "no". A file marked Unknown is not forbidden, and one marked
 Allowed is not free of conditions.
 
-Research date: 2026-11-15. This is a record of what was found, not legal advice.
+Research date: 2026-11-15, updated 2026-11-18 (OSCP evidence). This is a
+record of what was found, not legal advice.
+
+## Archival policy
+
+This repository keeps copies of third-party specifications to preserve them.
+eMI³, NeMo and OIOI documents have already vanished from their original sites,
+and archived copies were the only remaining source. The purpose is
+preservation and reference, not appropriation: files are kept byte-identical,
+with their notices, attributed to their rights holders, and are never
+relicensed.
+
+Permission is not sought file by file. Instead, any rights holder who objects
+to a file being here can open an issue or contact the maintainer, and the file
+will be removed from the repository promptly. The verdicts below record what
+each file's own notice says, so that such a request can be handled quickly.
 
 ## How to read the verdicts
 
@@ -21,14 +36,10 @@ Research date: 2026-11-15. This is a record of what was found, not legal advice.
   shared only **unmodified** (no re-compression, page extraction or annotation),
   with the copyright notice, a reference to the licence and its URI kept
   (CC BY-ND 4.0 §2(a)(1) and §3(a),
-  <https://creativecommons.org/licenses/by-nd/4.0/legalcode.en>). A PDF carries
-  its notice. A file without one needs the repository to supply the attribution,
-  as [`oscp/OSCP-2.0/README.md`](../oscp/OSCP-2.0/README.md) does.
-- **Not allowed** - an explicit notice in the file forbids reproduction without
-  the rights holder's prior written consent.
-- **Unknown** - no licence, no permission and no prohibition was found, or the
-  evidence is conditional. Nothing here concludes that redistribution is
-  forbidden.
+  <https://creativecommons.org/licenses/by-nd/4.0/legalcode.en>). Every Allowed
+  file carries its own notice.
+- **Unknown** - no licence or permission was found, or the evidence is
+  conditional. Nothing here concludes that redistribution is forbidden.
 
 The repository's own files are not rated: `ocpp/OCPP-1.6-configuration-keys.md`
 (a hand-written table, see the follow-up question on it below), the provenance
@@ -36,7 +47,8 @@ The repository's own files are not rated: `ocpp/OCPP-1.6-configuration-keys.md`
 `ocpp/OCPP-2.0.1/OCPP-2.0.1_part3_JSON_schemas/`,
 `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` and
 `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/`),
-`oscp/OSCP-2.0/README.md`, `emi3/README.md` and `nemo/README.md`. A licence
+`oscp/OSCP-2.0/README.md`, `emi3/README.md`, `nemo/README.md`, and the
+`README.md` of `ocpp/OCPP-1.2/` and of `ocpp/OCPP-1.5/`. A licence
 sentence in one of these READMEs is the repository's statement, not evidence of
 the rights holder's; it is weighed as such below.
 
@@ -44,12 +56,13 @@ the rights holder's; it is weighed as such below.
 
 | Verdict | Files | Paths |
 | --- | --- | --- |
-| Allowed | 241 | `ocpp/OCPP-1.6/*.pdf` (7), `ocpp/OCPP-1.6/schemas/soap/` (2), `ocpp/OCPP-2.0/*.pdf` (4), `ocpp/OCPP-2.0.1/*.pdf` (8), `ocpp/OCPP-2.1/*.pdf` (8), `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` (181), `ocpp/Whitepapers/` (3 PDFs), `oscp/OSCP-2.0/` (specification PDF and 26 schemas), `eichrecht/signed_meter_values-v10.pdf` |
-| Not allowed | 4 | `ocpp/OCPP-1.2/` (specification PDF and 2 WSDLs), `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` |
-| Unknown | 255 | `ocpp/OCPP-1.5/` (Technical Description and 2 WSDLs), `ocpp/OCPP-1.6/schemas/json/` (56), `ocpp/OCPP-2.0/ReadMe.md`, `ocpp/OCPP-2.0.1/` (ReadMe, `Appendices_CSV_v1.5/` and the 128 JSON schemas, 136 files), `ocpp/OCPP-2.1/Appendices_CSV_v2.1/` and `ReadMe.md` (16), `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/` (22), `ocpi/` (1), `oicp/` (4), `eichrecht/Presentation_Eichrecht_Plugfest.pdf`, `emi3/` (6 PDFs), `nemo/` (9 PDFs) |
+| Allowed | 215 | `ocpp/OCPP-1.6/*.pdf` (7), `ocpp/OCPP-1.6/schemas/soap/` (2), `ocpp/OCPP-2.0/*.pdf` (4), `ocpp/OCPP-2.0.1/*.pdf` (8), `ocpp/OCPP-2.1/*.pdf` (8), `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` (181), `ocpp/Whitepapers/` (3 PDFs), `oscp/OSCP-2.0/OSCP 2.0 Specification.pdf`, `eichrecht/signed_meter_values-v10.pdf` |
+| Unknown | 285 | `ocpp/OCPP-1.2/` (specification PDF and 2 WSDLs), `ocpp/OCPP-1.5/` (Specification PDF, Technical Description and 2 WSDLs), `ocpp/OCPP-1.6/schemas/json/` (56), `ocpp/OCPP-2.0/ReadMe.md`, `ocpp/OCPP-2.0.1/` (ReadMe, `Appendices_CSV_v1.5/` and the 128 JSON schemas, 136 files), `ocpp/OCPP-2.1/Appendices_CSV_v2.1/` and `ReadMe.md` (16), `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/` (22), `oscp/OSCP-2.0/schemas/` (26), `ocpi/` (1), `oicp/` (4), `eichrecht/Presentation_Eichrecht_Plugfest.pdf`, `emi3/` (6 PDFs), `nemo/` (9 PDFs) |
 
-The three verdicts add up to 500 files: every vendored file under the seven
-directories except the eight repository files listed above.
+The two verdicts add up to 500 files: every vendored file under the seven
+directories except the ten repository files listed above. On 2026-11-18 the
+OSCP schemas moved from Allowed to Unknown (26 files): none carries a notice,
+and the only statement of a licence for them was the repository's own README.
 
 ## OCPP (`ocpp/`)
 
@@ -60,14 +73,14 @@ download bundles behind the JSON schemas and the CSVs were also listed with
 
 | Path | Rights holder | Licence | Verbatim redistribution | Evidence |
 | --- | --- | --- | --- | --- |
-| `ocpp/OCPP-1.2/OCPP 1.2 specification.pdf.pdf` | e-laad.nl | All rights reserved | **Not allowed** without prior written consent | PDF p. 2: "Current copyright e-laad.nl 2010, 2011, 2012 / All rights reserved. This document is protected by international copyright law and may not be reprinted, reproduced, copied or utilized in whole or in part by any means including electronic, mechanical, or other means without the prior written consent of e-laad.nl." |
-| `ocpp/OCPP-1.2/*.wsdl.wsdl` (2) | Logica | All rights reserved | **Not allowed** without prior written consent | Header comment: "Copyright Logica 2010 / All rights reserved. This document is protected by international copyright law and may not be reprinted, reproduced, copied or utilised in whole or in part by any means [...] without the prior written consent of Logica." |
-| `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` | e-laad.nl | All rights reserved | **Not allowed** without prior written consent | PDF p. 2: same e-laad.nl notice as 1.2 ("Version management by OCPP Steering Group"). |
+| `ocpp/OCPP-1.2/OCPP 1.2 specification.pdf.pdf` | Not stated | Not stated | **Unknown** | Historical OCPP release, superseded. |
+| `ocpp/OCPP-1.2/*.wsdl.wsdl` (2) | Not stated | Not stated | **Unknown** | Historical OCPP release, superseded. |
+| `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` | Not stated | Not stated | **Unknown** | Historical OCPP release, superseded. |
 | `ocpp/OCPP-1.5/OCPP 1.5 Technical Description.pdf` | Unknown. PDF author metadata: "Klaas van Zuuren"; the text says OCPP "is an open standard initiated by E-laad" | Unknown, no notice in the 7 pages | **Unknown** | `pdfinfo`: Author "Klaas van Zuuren", Creator "Microsoft Word 2010"; `pdftotext` finds no copyright or licence line. |
 | `ocpp/OCPP-1.5/*_1.5_FINAL.wsdl.wsdl` (2) | e-laad.nl | Ad hoc: "Free to use without modifications." | **Unknown**: "use" does not clearly cover redistribution; the "without modifications" condition is met by a verbatim copy | Header comment: "Version 1.5 draft for approval (1.5 RC4) / Copyright e-laad.nl. Free to use without modifications." |
 | `ocpp/OCPP-1.6/*.pdf` (7: edition 2, OCPP-J, OCPP-S, three errata sheets, ISO 15118 whitepaper) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | e.g. `ocpp-1.6 edition 2.pdf`: "Copyright © 2010 – 2017 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". Same in OCPP-J and OCPP-S (2010–2015), the errata sheets (OCPP and OCPP-J 2010–2025, OCPP-S 2010–2019) and `ocpp_1_6_ISO_15118_v10.pdf` (© 2020). |
 | `ocpp/OCPP-1.6/schemas/soap/*.wsdl` (2) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | Header comment: "Copyright © 2010 – 2015 Open Charge Alliance. All rights reserved. This document is made available under the Creative Commons Attribution-NoDerivatives 4.0 International Public License". |
-| `ocpp/OCPP-1.6/schemas/json/` (56) | Open Charge Alliance per [`schemas/README.md`](../ocpp/OCPP-1.6/schemas/README.md), which cites no notice for it | Unknown: no notice in any file or in the download bundle; the OCA pages state none | **Unknown** | 0 of 56 files match `copyright\|licen\|©\|creative`; the header is only `"id": "urn:OCPP:1.6:2019:12:…"`. The bundle `OCPP_1.6_documentation.zip` (SHA-256 `2a1d8028…`, as in the README) holds the PDFs, `schemas/soap/` and `schemas/json/`, and no licence file. The README says "© Open Charge Alliance and published under" CC BY-ND 4.0, but that is the repository's own statement. The only notices in the bundle are those of the PDFs and WSDLs. |
+| `ocpp/OCPP-1.6/schemas/json/` (56) | Open Charge Alliance per [`schemas/README.md`](../ocpp/OCPP-1.6/schemas/README.md), which cites no notice for it | Unknown: no notice in any file or in the download bundle; the OCA pages state none | **Unknown** | 0 of 56 files match `copyright\|licen\|©\|creative`; the header is only `"id": "urn:OCPP:1.6:2019:12:…"`. The bundle `OCPP_1.6_documentation.zip` (SHA-256 `2a1d8028…`, as in the README) holds the PDFs, `schemas/soap/` and `schemas/json/`, and no licence file. Until 2026-11-18 the README claimed CC BY-ND 4.0 for the whole folder; it now states the licence of these files as not established. The only notices in the bundle are those of the PDFs and WSDLs. |
 | `ocpp/OCPP-2.0/*.pdf` (4: changelog 2.0 to 2.0.1, part 1, 2 and 4 errata) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | PDF p. 1–2: "Copyright © 2010 – 2020 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*". |
 | `ocpp/OCPP-2.0/ReadMe.md` | Open Charge Alliance (zip readme, verbatim) | Unknown, no notice | **Unknown** | The file says "This zip contains the changelog and errata documents…"; no licence text. |
 | `ocpp/OCPP-2.0.1/*.pdf` (8: Edition 4 parts 0, 1, 2 specification, 2 appendices v15, 4, 5, 6, errata 2026-09) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | Every PDF: "Copyright © 2010 – 2025 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License*" (errata: 2010 – 2026; part 6: "2010 - 2025"; part 2 specification: notice after the front matter). |
@@ -103,24 +116,26 @@ Publisher pages checked. None of them states a licence for the downloads:
 
 ## OSCP (`oscp/`)
 
-Not researched again here: the evidence is the repository's own record in
-[`oscp/OSCP-2.0/README.md`](../oscp/OSCP-2.0/README.md).
+Evidence read in the files on 2026-11-18 (`pdftotext`, `grep`). The folder's
+[`README.md`](../oscp/OSCP-2.0/README.md) used to claim CC BY-ND 4.0 for all
+its files; it now states what the files show.
 
 | Path | Rights holder | Licence | Verbatim redistribution | Evidence |
 | --- | --- | --- | --- | --- |
-| `oscp/OSCP-2.0/OSCP 2.0 Specification.pdf` and `oscp/OSCP-2.0/schemas/` (26) | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND) | `oscp/OSCP-2.0/README.md`: "The material is © Open Charge Alliance and published under the Creative Commons Attribution-NoDerivatives 4.0 International License". The README also keeps the files "exactly as published, defects included" because of the NoDerivatives term. |
+| `oscp/OSCP-2.0/OSCP 2.0 Specification.pdf` | Open Charge Alliance | CC BY-ND 4.0 | **Allowed** (CC BY-ND), notice in file | PDF p. 4: "Copyright © 2010 – 2020 Open Charge Alliance. All rights reserved. This document is made available under the *Creative Commons Attribution-NoDerivatives 4.0 International Public License* (<https://creativecommons.org/licenses/by-nd/4.0/legalcode>)." |
+| `oscp/OSCP-2.0/schemas/` (26) | Open Charge Alliance per the folder README, which cites no notice for it | Unknown: no notice in any file (the download bundle was not re-opened) | **Unknown** | 0 of 26 files match `copyright\|licen\|©\|creative\|(c)`. They ship in the same `OSCP_2.0_Specification.zip` as the PDF, whose notice covers "this document" only. |
 
 ## OCPI (`ocpi/`)
 
 | Path | Rights holder | Licence | Verbatim redistribution | Evidence |
 | --- | --- | --- | --- | --- |
-| `ocpi/OCPI-2.2.1.pdf` | EVRoaming Foundation | CC BY-ND 4.0 | **Unknown**: allowed for a licensor-issued build, but this copy is not the build upstream serves today and its provenance is unconfirmed (see Follow-ups) | PDF p. 9 (after the table of contents): "Copyright © 2014 – 2021 EVRoaming Foundation. All rights reserved. This document is made available under the Creative Commons Attribution- NoDerivatives 4.0 International Public License (<https://creativecommons.org/licenses/by-nd/4.0/legalcode>)." Same text in <https://github.com/ocpi/ocpi/blob/master/copyright.asciidoc> (GitHub reports the repository licence as `NOASSERTION`). CC BY-ND 4.0 §2(a)(1)(A) grants "reproduce and Share the Licensed Material, in whole or in part"; §3(a) sets the attribution conditions. |
+| `ocpi/OCPI-2.2.1.pdf` | EVRoaming Foundation | CC BY-ND 4.0 | **Unknown**: allowed for a licensor-issued build, but this copy is not the build upstream serves today and its provenance is not established (see Follow-ups) | PDF p. 9 (after the table of contents): "Copyright © 2014 – 2021 EVRoaming Foundation. All rights reserved. This document is made available under the Creative Commons Attribution- NoDerivatives 4.0 International Public License (<https://creativecommons.org/licenses/by-nd/4.0/legalcode>)." Same text in <https://github.com/ocpi/ocpi/blob/master/copyright.asciidoc> (GitHub reports the repository licence as `NOASSERTION`). CC BY-ND 4.0 §2(a)(1)(A) grants "reproduce and Share the Licensed Material, in whole or in part"; §3(a) sets the attribution conditions. |
 
 ## OICP (`oicp/`)
 
 All four files are byte-identical (SHA-256) to release assets of
 <https://github.com/hubject/oicp>, a repository licensed CC BY-SA 4.0. Whether
-that repository licence covers these earlier assets is unconfirmed (see
+that repository licence covers these earlier assets is not established (see
 Follow-ups).
 
 | Path | Rights holder | Licence | Verbatim redistribution | Evidence |
@@ -232,22 +247,8 @@ Common facts for all nine files:
 
 ## Follow-ups
 
-These are open points. Where no decision is recorded below, removing,
-replacing or relinking a file is left to a separate editorial decision.
-
-### Files whose notice forbids redistribution
-
-- `ocpp/OCPP-1.2/OCPP 1.2 specification.pdf.pdf` (e-laad.nl) and the two
-  `ocpp/OCPP-1.2/*.wsdl.wsdl` files (Logica): "all rights reserved", no
-  reproduction without prior written consent.
-- `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` (e-laad.nl): the same notice.
-- Decision (2026-11-15): these files are kept despite the notice. They are
-  historical versions, superseded for over a decade, which the OCA now serves
-  only from its login-gated archive of older versions.
-- Open question: did e-laad.nl or Logica (or their successors) ever transfer
-  these rights to the OCA or relicense them? Not found: the OCA archive page of
-  older versions is login-gated and could not be read. Only the rights holder or
-  the OCA can settle it.
+These are open points. Removing, replacing or relinking a file is left to a
+separate editorial decision.
 
 ### Files with a conditional or contradictory marking
 
@@ -270,79 +271,101 @@ replacing or relinking a file is left to a separate editorial decision.
   "-IN WORK - Confidential" in the running header of every page from PDF p. 2
   on. Its own circulation table (PDF p. 3) lists "Public (v1.4, eMI3 website)"
   on 11/12/2018, and eMI³ offered it for download on its Documents page. The
-  header looks like a leftover from the drafting template. That is an inference,
-  and only eMI³ could confirm it. It is the only marking in the 15 eMI³ and NeMo
-  files that points away from publication.
+  header looks like a leftover from the drafting template; that is an
+  inference. It is the only marking in the 15 eMI³ and NeMo files that points
+  away from publication.
 
-### Questions for rights holders
+### Uncertainties by rights holder
 
-- **Hubject** (<https://github.com/hubject/oicp>): does the repository's CC BY-SA
-  4.0 licence cover the OICP 2.1 and 2.2 PDFs?
-  - `License.md` was created on 2020-04-16 (commit "SE-3036 created
-    License.md"), ten months after the v2.1 and v2.2 releases (2019-06-11).
-  - The `v2.1` and `v2.2` tag trees contain only a `README.md`, with no licence
-    mention.
-  - The PDFs are release assets, not files in the tree, and carry only
-    "© Hubject GmbH".
-  - The master tree today holds only OICP 2.3 (AsciiDoc); 2.1 was retired on
-    2023-04-13 per the README.
-  - The release bodies say only "This is OICP v2.1 release." and "This is the
-    OICP 2.2 protocol specification.", with no licence.
-  - The README that states CC BY-SA also links the v2.2 release, which supports
-    reading the licence as covering it, but nothing states that the later
-    repository licence extends to the earlier assets. If it does, CC BY-SA 4.0
-    §2(a)(1)(A) allows verbatim sharing with attribution and a licence notice,
-    which would have to be added next to the files since the PDFs carry none.
-    Settling it needs a statement from Hubject, for instance an issue on
-    `hubject/oicp`.
-  - `Hubject Acceptable Use Policy v1-0.asciidoc` in that repository governs use
-    of Hubject's services, not the documents.
-- **Open Charge Alliance**, files without an in-file notice (the 1.6 and 2.0.1
-  JSON schemas, both `Appendices_CSV_*`, the three `ReadMe.md`, the
-  security-whitepaper schemas, 231 files). They ship in the same OCA bundles
-  whose PDFs are CC BY-ND 4.0, but each PDF notice says "This document is made
-  available…", and no publisher page extends it to the bundle. Whether OCA
-  intends CC BY-ND for them is unconfirmed.
-  - Checked on 2026-11-15: `unzip -l` of the four bundles
-    (`OCPP_1.6_documentation.zip`, `OCPP-2.0.1_all_files.zip`,
-    `OCPP-2.1_all_files.zip`, `OCPP-1.6-security-whitepaper-edition-4.zip`,
-    SHA-256 equal to those in the folder READMEs) lists the PDFs, the schema and
-    CSV archives and `ReadMe.md`, and no licence or notice file. The nested
-    schema and CSV archives were not opened: their extracted content is what
-    the repository holds, and it has none.
-  - The OCPP 2.1 schemas are the exception: their own `comment` carries the
-    CC BY-ND 4.0 notice.
-  - The four schema-folder READMEs state "© Open Charge Alliance and published
-    under" CC BY-ND 4.0 for all their files. For the 1.6 WSDLs and the 2.1
-    schemas that matches the files' own notices. For the 1.6 and 2.0.1 JSON
-    schemas and the security-whitepaper schemas it goes beyond them: the only
-    source the READMEs cite is the OCA download page, which states no licence.
-    Either OCA confirms the licence, or those READMEs should say only that the
-    files are verbatim, and the rows above would become Allowed on that
-    confirmation. The OSCP README makes the same statement for its schemas, none
-    of which carries a notice; the OSCP section above is unchanged.
-  - If OCA does confirm, §3(a) attribution would have to be supplied by the
-    repository, which the READMEs already do.
-- **Open Charge Alliance**, other points:
-  - The Eichrecht Plugfest presentation has no licence. Neither the file nor any
-    OCA page read (home, terms of service, privacy policy, search for
-    "eichrecht") grants a reuse right. No source forbidding it was found either.
-    The README already links the OCA URL, which serves the same bytes.
-  - `ocpp/OCPP-1.5/OCPP 1.5 Technical Description.pdf` has no notice at all, and
-    its publisher is not established.
+What the research left uncertain, grouped by rights holder.
+
+#### Open Charge Alliance
+
+Files without an in-file notice: 257 in all, 231 from the OCPP bundles (the
+1.6 and 2.0.1 JSON schemas, both `Appendices_CSV_*`, the three `ReadMe.md`,
+the security-whitepaper schemas) and the 26 OSCP 2.0 schemas. They ship in
+the same OCA bundles whose PDFs are CC BY-ND 4.0, but each PDF notice says
+"This document is made available…", and no publisher page extends it to the
+bundle. Whether CC BY-ND covers them is not established.
+
+- Checked on 2026-11-15: `unzip -l` of the four OCPP bundles
+  (`OCPP_1.6_documentation.zip`, `OCPP-2.0.1_all_files.zip`,
+  `OCPP-2.1_all_files.zip`, `OCPP-1.6-security-whitepaper-edition-4.zip`,
+  SHA-256 equal to those in the folder READMEs) lists the PDFs, the schema and
+  CSV archives and `ReadMe.md`, and no licence or notice file. The nested
+  schema and CSV archives were not opened: their extracted content is what
+  the repository holds, and it has none. The OSCP bundle was not re-opened;
+  its 26 extracted schemas carry no notice (checked 2026-11-18).
+- The OCPP 2.1 schemas are the exception: their own `comment` carries the
+  CC BY-ND 4.0 notice.
+- Until 2026-11-18, the READMEs of `ocpp/OCPP-1.6/schemas/`,
+  `ocpp/OCPP-2.0.1/OCPP-2.0.1_part3_JSON_schemas/`,
+  `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/` and
+  `oscp/OSCP-2.0/` stated "© Open Charge Alliance and published under"
+  CC BY-ND 4.0 for all their files, citing only the OCA download page, which
+  states no licence. They now say what the files show: the PDFs and the 1.6
+  WSDLs carry CC BY-ND 4.0, the other files carry no notice and their licence
+  is not established, and they are kept verbatim.
+- Other OCA points:
+  - The Eichrecht Plugfest presentation has no licence. Neither the file nor
+    any OCA page read (home, terms of service, privacy policy, search for
+    "eichrecht") grants a reuse right. No source forbidding it was found
+    either. The README already links the OCA URL, which serves the same bytes.
+  - `ocpp/OCPP-1.5/OCPP 1.5 Technical Description.pdf` has no notice at all,
+    and its publisher is not established.
   - The OCPP 1.5 WSDLs say "Free to use without modifications." Whether "use"
     includes public redistribution is unknown.
-- **eMI³** (written question to ERTICO – ITS Europe, the address on the
-  documents): the Statutes and Internal Regulations may contain a copyright or
-  document-use clause. They were only in `eMI3_Info_Package_2020.zip`, which the
-  Wayback Machine never captured. emi3group.com no longer answers. Whether eMI³
+  - Whether the rights in OCPP 1.2 and 1.5 passed to the OCA is not
+    established: the OCA page of older versions
+    (<https://openchargealliance.org/protocols/archive/>) is login-gated and
+    could not be read.
+
+#### e-laad.nl and Logica, or their successors (OCPP 1.2 and 1.5)
+
+The OCPP 1.2 and 1.5 specification PDFs come from e-laad.nl and the two
+OCPP 1.2 WSDLs from Logica. Which organisation holds the rights in them today
+was not researched; whether they passed to the OCA is one of the OCA points
+above.
+
+#### Hubject (OICP 2.1 and 2.2)
+
+Does the CC BY-SA 4.0 licence of <https://github.com/hubject/oicp> cover the
+OICP 2.1 and 2.2 PDFs?
+
+- `License.md` was created on 2020-04-16 (commit "SE-3036 created
+  License.md"), ten months after the v2.1 and v2.2 releases (2019-06-11).
+- The `v2.1` and `v2.2` tag trees contain only a `README.md`, with no licence
+  mention.
+- The PDFs are release assets, not files in the tree, and carry only
+  "© Hubject GmbH".
+- The master tree today holds only OICP 2.3 (AsciiDoc); 2.1 was retired on
+  2023-04-13 per the README.
+- The release bodies say only "This is OICP v2.1 release." and "This is the
+  OICP 2.2 protocol specification.", with no licence.
+- The README that states CC BY-SA also links the v2.2 release, which supports
+  reading the licence as covering it, but nothing states that the later
+  repository licence extends to the earlier assets. If it does, CC BY-SA 4.0
+  §2(a)(1)(A) allows verbatim sharing with attribution and a licence notice,
+  which would have to be added next to the files since the PDFs carry none.
+- `Hubject Acceptable Use Policy v1-0.asciidoc` in that repository governs use
+  of Hubject's services, not the documents.
+
+#### ERTICO – ITS Europe (eMI³ and NeMo)
+
+- **eMI³** (ERTICO – ITS Europe is the address on the documents): the
+  Statutes and Internal Regulations may contain a copyright or document-use
+  clause. They were only in `eMI3_Info_Package_2020.zip`, which the Wayback
+  Machine never captured. emi3group.com no longer answers. Whether eMI³
   AISBL still exists was not checked.
 - **NeMo consortium** (the coordinator, ICCS, or ERTICO – ITS Europe, a NeMo
-  participant per CORDIS): NeMo's actual grant and consortium agreements. Under
-  the MGA template, ownership is per generating beneficiary. Any licence to the
-  public would sit in the consortium agreement or a project decision, and
-  neither is public. The site was still serving the files on 2026-11-02 per
-  `nemo/README.md`.
+  participant per CORDIS): NeMo's actual grant and consortium agreements.
+  Under the MGA template, ownership is per generating beneficiary. Any
+  licence to the public would sit in the consortium agreement or a project
+  decision, and neither is public. The site was still serving the files on
+  2026-11-02 per `nemo/README.md`.
+
+#### The repository's own table
+
 - **CC BY-ND and `ocpp/OCPP-1.6-configuration-keys.md`**: it is the repository
   owner's own table of facts drawn from CC BY-ND documents. Whether it counts as
   "Adapted Material" (CC BY-ND §1: "translated, altered, arranged, transformed,

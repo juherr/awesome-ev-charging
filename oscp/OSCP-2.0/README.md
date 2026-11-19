@@ -11,10 +11,16 @@ extracted to `schemas/`.
 | SHA-256 | `742eaa48e3cfcbd56f81c957a01c298c5048295e40be129a2dea2d6a52f2f853` |
 | Retrieved | 2026-11-15 |
 
-The material is © Open Charge Alliance and published under the
-[Creative Commons Attribution-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nd/4.0/legalcode).
-The NoDerivatives term rules out redistributing a modified copy, so the files
-below are kept exactly as published, defects included.
+The specification PDF carries its own notice (PDF p. 4): "Copyright © 2010 –
+2020 Open Charge Alliance. All rights reserved. This document is made
+available under the Creative Commons Attribution-NoDerivatives 4.0
+International Public License"
+([legal code](https://creativecommons.org/licenses/by-nd/4.0/legalcode)).
+The 26 JSON schemas carry no copyright or licence notice, and the PDF's notice
+covers "this document" only, so their licence is not established. No right to
+modify them is established either: they are kept exactly as published,
+defects included. See
+[the third-party assets inventory](../../docs/third-party-assets.md).
 
 ## Known defects in the published schemas
 
