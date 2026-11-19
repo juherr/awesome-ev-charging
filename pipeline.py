@@ -11,6 +11,7 @@ Run `python pipeline.py <stage> --help` for stage options.
 import argparse
 import csv
 import hashlib
+import io
 import json
 import os
 import re
@@ -1235,19 +1236,15 @@ def read_classifications(f):
 def save_classifications(path, cache):
   """Persist the LLM cache, sorted by full_name for stable, minimal git diffs.
 
-  Written to a sibling temp file and swapped in, because `enrich` rewrites it
-  after every answer: a run killed mid-write must not truncate the cache. The
-  temp file is unique per save, so two overlapping saves cannot truncate each
-  other's file before the swap.
+  Goes through `write_atomic` because `enrich` rewrites it after every answer:
+  a run killed mid-write must not truncate the cache it has paid for.
   """
-  fd, tmp = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(path)),
-                             prefix=f"{os.path.basename(path)}.", suffix=".tmp")
-  with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
-    writer = csv.DictWriter(f, fieldnames=CLASSIFICATION_FIELDS)
-    writer.writeheader()
-    for full_name in sorted(cache, key=str.lower):
-      writer.writerow({k: cache[full_name].get(k, "") for k in CLASSIFICATION_FIELDS})
-  os.replace(tmp, path)
+  buf = io.StringIO(newline="")
+  writer = csv.DictWriter(buf, fieldnames=CLASSIFICATION_FIELDS)
+  writer.writeheader()
+  for full_name in sorted(cache, key=str.lower):
+    writer.writerow({k: cache[full_name].get(k, "") for k in CLASSIFICATION_FIELDS})
+  write_atomic(path, buf.getvalue())
 
 
 def _fold_case(cache):

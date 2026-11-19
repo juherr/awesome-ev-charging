@@ -1070,6 +1070,50 @@ def test_each_save_writes_its_own_temp_file(tmp_path, monkeypatch):
     assert set(pipeline.load_classifications(path)) == {"acme/b"}
 
 
+def test_a_failed_save_leaves_the_previous_cache_and_no_temp_file(tmp_path, monkeypatch):
+    """`enrich` saves after every answer: a save that dies mid-way must keep
+    the last good cache and must not litter the directory with a temp file."""
+    path = tmp_path / "classifications.csv"
+    pipeline.save_classifications(path, {"acme/a": cached("acme/a", "OCPP > Misc")})
+    before = path.read_bytes()
+
+    calls = []
+
+    def failing_writerow(self, row):
+        calls.append(row)
+        if len(calls) > 1:
+            raise OSError("disk full")
+        return real_writerow(self, row)
+
+    real_writerow = csv.DictWriter.writerow
+    monkeypatch.setattr(pipeline.csv.DictWriter, "writerow", failing_writerow)
+    with pytest.raises(OSError, match="disk full"):
+        pipeline.save_classifications(path, {
+            "acme/a": cached("acme/a", "OCPP > Misc"),
+            "acme/b": cached("acme/b", "OCPP > Misc"),
+        })
+
+    assert path.read_bytes() == before
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["classifications.csv"]
+
+
+def test_save_classifications_keeps_crlf_and_unicode_byte_for_byte(tmp_path):
+    """The cache is CSV with `\\r\\n` row ends; a line break inside a field and
+    non-ASCII text must come out as written, not translated."""
+    path = tmp_path / "classifications.csv"
+    pipeline.save_classifications(path, {
+        "zeta/b": cached("zeta/b", "Other > Misc", description="Bornes électriques ⚡"),
+        "Acme/a": cached("Acme/a", "OCPP > Misc", description="line one\r\nline two"),
+    })
+    assert pipeline.CLASSIFICATION_FIELDS == [
+        "full_name", "pushed_at", "categories", "description", "signals"]
+    assert path.read_bytes() == (
+        "full_name,pushed_at,categories,description,signals\r\n"
+        'Acme/a,2026-01-01T00:00:00Z,OCPP > Misc,"line one\r\nline two",\r\n'
+        "zeta/b,2026-01-01T00:00:00Z,Other > Misc,Bornes électriques ⚡,\r\n"
+    ).encode("utf-8")
+
+
 def test_an_empty_classification_is_cached(tmp_path):
     """No README, no description, no topics: the emptiness is the answer.
 
