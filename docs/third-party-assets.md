@@ -12,8 +12,8 @@ The repository convention applies: an empty or "unknown" value means we could
 not verify it, never "no". A file marked Unknown is not forbidden, and one marked
 Allowed is not free of conditions.
 
-Research date: 2026-11-15, updated 2026-11-18 (OSCP evidence, decision on the
-OCPP 1.2 and 1.5 files). This is a record of what was found, not legal advice.
+Research date: 2026-11-15, updated 2026-11-18 (OSCP evidence). This is a
+record of what was found, not legal advice.
 
 ## Archival policy
 
@@ -37,9 +37,7 @@ each file's own notice says, so that such a request can be handled quickly.
   with the copyright notice, a reference to the licence and its URI kept
   (CC BY-ND 4.0 §2(a)(1) and §3(a),
   <https://creativecommons.org/licenses/by-nd/4.0/legalcode.en>). Every Allowed
-  file carries its own notice. Should a rights holder confirm the licence for
-  files without one, the repository would have to supply the attribution next
-  to them.
+  file carries its own notice.
 - **Not allowed** - an explicit notice in the file forbids reproduction without
   the rights holder's prior written consent.
 - **Unknown** - no licence, no permission and no prohibition was found, or the
@@ -53,8 +51,7 @@ The repository's own files are not rated: `ocpp/OCPP-1.6-configuration-keys.md`
 `ocpp/OCPP-2.1/OCPP-2.1_part3_JSON_schemas/` and
 `ocpp/Whitepapers/OCPP-1.6-security-whitepaper-edition-4/schema/`),
 `oscp/OSCP-2.0/README.md`, `emi3/README.md`, `nemo/README.md`, and the
-`README.md` that records the notices and the 2026-11-18 decision in
-`ocpp/OCPP-1.2/` and `ocpp/OCPP-1.5/`. A licence
+`README.md` of `ocpp/OCPP-1.2/` and of `ocpp/OCPP-1.5/`. A licence
 sentence in one of these READMEs is the repository's statement, not evidence of
 the rights holder's; it is weighed as such below.
 
@@ -136,13 +133,13 @@ its files; it now states what the files show.
 
 | Path | Rights holder | Licence | Verbatim redistribution | Evidence |
 | --- | --- | --- | --- | --- |
-| `ocpi/OCPI-2.2.1.pdf` | EVRoaming Foundation | CC BY-ND 4.0 | **Unknown**: allowed for a licensor-issued build, but this copy is not the build upstream serves today and its provenance is unconfirmed (see Follow-ups) | PDF p. 9 (after the table of contents): "Copyright © 2014 – 2021 EVRoaming Foundation. All rights reserved. This document is made available under the Creative Commons Attribution- NoDerivatives 4.0 International Public License (<https://creativecommons.org/licenses/by-nd/4.0/legalcode>)." Same text in <https://github.com/ocpi/ocpi/blob/master/copyright.asciidoc> (GitHub reports the repository licence as `NOASSERTION`). CC BY-ND 4.0 §2(a)(1)(A) grants "reproduce and Share the Licensed Material, in whole or in part"; §3(a) sets the attribution conditions. |
+| `ocpi/OCPI-2.2.1.pdf` | EVRoaming Foundation | CC BY-ND 4.0 | **Unknown**: allowed for a licensor-issued build, but this copy is not the build upstream serves today and its provenance is not established (see Follow-ups) | PDF p. 9 (after the table of contents): "Copyright © 2014 – 2021 EVRoaming Foundation. All rights reserved. This document is made available under the Creative Commons Attribution- NoDerivatives 4.0 International Public License (<https://creativecommons.org/licenses/by-nd/4.0/legalcode>)." Same text in <https://github.com/ocpi/ocpi/blob/master/copyright.asciidoc> (GitHub reports the repository licence as `NOASSERTION`). CC BY-ND 4.0 §2(a)(1)(A) grants "reproduce and Share the Licensed Material, in whole or in part"; §3(a) sets the attribution conditions. |
 
 ## OICP (`oicp/`)
 
 All four files are byte-identical (SHA-256) to release assets of
 <https://github.com/hubject/oicp>, a repository licensed CC BY-SA 4.0. Whether
-that repository licence covers these earlier assets is unconfirmed (see
+that repository licence covers these earlier assets is not established (see
 Follow-ups).
 
 | Path | Rights holder | Licence | Verbatim redistribution | Evidence |
@@ -254,45 +251,8 @@ Common facts for all nine files:
 
 ## Follow-ups
 
-These are open points. Where no decision is recorded below, removing,
-replacing or relinking a file is left to a separate editorial decision.
-
-### Files whose notice forbids redistribution
-
-Decision record, 2026-11-18 (repository owner). It confirms the
-decision of 2026-11-15.
-
-- **Decision:** the four files are **kept as an archive**, byte for byte,
-  with their notices, under the [Archival policy](#archival-policy). Nothing
-  is deleted or modified. The OCA now serves these superseded versions only
-  from its login-gated archive
-  (<https://openchargealliance.org/protocols/archive/>), so no public
-  official link could replace them.
-- **Removal on request:** as for every vendored file, the rights holder
-  (e-laad.nl, Logica, a successor of either, or the OCA if the rights were
-  transferred to it) can open an issue to have them removed. Removal would
-  mean deleting the files and pointing the README entries at the OCA archive
-  page.
-- **Verdict unchanged:** the files stay rated **Not allowed** in the tables
-  above. The decision is editorial; it is not a permission.
-- **Next to the files:** [`ocpp/OCPP-1.2/README.md`](../ocpp/OCPP-1.2/README.md)
-  and [`ocpp/OCPP-1.5/README.md`](../ocpp/OCPP-1.5/README.md) restate the
-  notices and this decision.
-
-| File | Owner (per notice) | Source URL | Scope | Licence or permission | Date | Decision | Required attribution |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `ocpp/OCPP-1.2/OCPP 1.2 specification.pdf.pdf` | e-laad.nl | Not recorded; the OCA archive above now holds the old versions | Whole file | None: "All rights reserved", no reproduction without prior written consent | 2026-11-18 | Kept; removal on request | None granted; the in-file notice is kept intact |
-| `ocpp/OCPP-1.2/CentralSystemService.wsdl.wsdl`, `ocpp/OCPP-1.2/ChargePointService.wsdl.wsdl` | Logica | Not recorded | Whole files | None: "All rights reserved", no reproduction without prior written consent | 2026-11-18 | Kept; removal on request | None granted; the header comment is kept intact |
-| `ocpp/OCPP-1.5/OCPP 1.5 Specification.pdf` | e-laad.nl | Not recorded; the OCA archive above now holds the old versions | Whole file | None: same notice as OCPP 1.2 | 2026-11-18 | Kept; removal on request | None granted; the in-file notice is kept intact |
-
-"Not recorded": the commit that added the files (`700fcb4`, 2022-12-06)
-names no source URL.
-
-Open question: did e-laad.nl or Logica (or their successors) ever transfer
-these rights to the OCA or relicense them? Not found: the OCA archive page of
-older versions is login-gated and could not be read. Only the rights holder or
-the OCA can settle it; it is recorded under
-[Open questions](#open-questions-not-sent-see-archival-policy) below.
+These are open points. Removing, replacing or relinking a file is left to a
+separate editorial decision.
 
 ### Files with a conditional or contradictory marking
 
@@ -315,16 +275,13 @@ the OCA can settle it; it is recorded under
   "-IN WORK - Confidential" in the running header of every page from PDF p. 2
   on. Its own circulation table (PDF p. 3) lists "Public (v1.4, eMI3 website)"
   on 11/12/2018, and eMI³ offered it for download on its Documents page. The
-  header looks like a leftover from the drafting template. That is an inference,
-  and only eMI³ could confirm it. It is the only marking in the 15 eMI³ and NeMo
-  files that points away from publication.
+  header looks like a leftover from the drafting template; that is an
+  inference. It is the only marking in the 15 eMI³ and NeMo files that points
+  away from publication.
 
-### Open questions (not sent, see Archival policy)
+### Uncertainties by rights holder
 
-What remains uncertain, grouped by the organisation that could settle it.
-Under the [Archival policy](#archival-policy), none of these questions is
-sent to a rights holder: they record the research, so that a removal
-request or a statement from a rights holder can be handled quickly.
+What the research left uncertain, grouped by rights holder.
 
 #### Open Charge Alliance
 
@@ -333,7 +290,7 @@ Files without an in-file notice: 257 in all, 231 from the OCPP bundles (the
 the security-whitepaper schemas) and the 26 OSCP 2.0 schemas. They ship in
 the same OCA bundles whose PDFs are CC BY-ND 4.0, but each PDF notice says
 "This document is made available…", and no publisher page extends it to the
-bundle. Whether OCA intends CC BY-ND for them is unconfirmed.
+bundle. Whether CC BY-ND covers them is not established.
 
 - Checked on 2026-11-15: `unzip -l` of the four OCPP bundles
   (`OCPP_1.6_documentation.zip`, `OCPP-2.0.1_all_files.zip`,
@@ -352,10 +309,8 @@ bundle. Whether OCA intends CC BY-ND for them is unconfirmed.
   CC BY-ND 4.0 for all their files, citing only the OCA download page, which
   states no licence. They now say what the files show: the PDFs and the 1.6
   WSDLs carry CC BY-ND 4.0, the other files carry no notice and their licence
-  is not established, and they are kept verbatim pending OCA's confirmation.
-  If OCA confirms CC BY-ND 4.0, the rows above become Allowed, and the
-  repository supplies the §3(a) attribution in those READMEs.
-- Other points for OCA:
+  is not established, and they are kept verbatim.
+- Other OCA points:
   - The Eichrecht Plugfest presentation has no licence. Neither the file nor
     any OCA page read (home, terms of service, privacy policy, search for
     "eichrecht") grants a reuse right. No source forbidding it was found
@@ -364,13 +319,13 @@ bundle. Whether OCA intends CC BY-ND for them is unconfirmed.
     and its publisher is not established.
   - The OCPP 1.5 WSDLs say "Free to use without modifications." Whether "use"
     includes public redistribution is unknown.
-  - Whether the rights in OCPP 1.2 and 1.5 passed to the OCA (see
-    [Files whose notice forbids redistribution](#files-whose-notice-forbids-redistribution)).
+  - Whether the rights in OCPP 1.2 and 1.5 passed to the OCA is not
+    established: the OCA page of older versions
+    (<https://openchargealliance.org/protocols/archive/>) is login-gated and
+    could not be read.
 
 #### e-laad.nl and Logica, or their successors (OCPP 1.2 and 1.5)
 
-The research and the decision are in
-[Files whose notice forbids redistribution](#files-whose-notice-forbids-redistribution).
 The notices name e-laad.nl (the OCPP 1.2 and 1.5 specification PDFs) and
 Logica (the two OCPP 1.2 WSDLs). Which organisation holds those rights today
 was not researched; whether they passed to the OCA is one of the OCA points
@@ -396,8 +351,6 @@ OICP 2.1 and 2.2 PDFs?
   repository licence extends to the earlier assets. If it does, CC BY-SA 4.0
   §2(a)(1)(A) allows verbatim sharing with attribution and a licence notice,
   which would have to be added next to the files since the PDFs carry none.
-  Settling it needs a statement from Hubject, for instance an issue on
-  `hubject/oicp`.
 - `Hubject Acceptable Use Policy v1-0.asciidoc` in that repository governs use
   of Hubject's services, not the documents.
 
@@ -415,7 +368,7 @@ OICP 2.1 and 2.2 PDFs?
   decision, and neither is public. The site was still serving the files on
   2026-11-02 per `nemo/README.md`.
 
-#### Not a question for a rights holder
+#### The repository's own table
 
 - **CC BY-ND and `ocpp/OCPP-1.6-configuration-keys.md`**: it is the repository
   owner's own table of facts drawn from CC BY-ND documents. Whether it counts as

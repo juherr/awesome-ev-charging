@@ -25,6 +25,5 @@ holds no licence file. The whitepaper PDF of the same bundle is published
 under the
 [Creative Commons Attribution-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nd/4.0/legalcode),
 but its notice covers "this document" only. The licence of these files is
-not established. They are kept verbatim, as OCA ships them, pending
-confirmation from the Open Charge Alliance. See
+not established. They are kept verbatim, as OCA ships them. See
 [the third-party assets inventory](../../../../docs/third-party-assets.md).

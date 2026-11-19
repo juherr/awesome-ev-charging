@@ -19,7 +19,7 @@ International Public License"
 The 26 JSON schemas carry no copyright or licence notice, and the PDF's notice
 covers "this document" only, so their licence is not established. No right to
 modify them is established either: they are kept exactly as published,
-defects included, pending confirmation from the Open Charge Alliance. See
+defects included. See
 [the third-party assets inventory](../../docs/third-party-assets.md).
 
 ## Known defects in the published schemas

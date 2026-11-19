@@ -33,6 +33,5 @@ International Public License"
 
 The 56 JSON schemas in `json/` carry no copyright or licence notice, and
 neither the download bundle nor the OCA download pages state one. Their
-licence is not established. They are kept verbatim, as OCA ships them,
-pending confirmation from the Open Charge Alliance. See
+licence is not established. They are kept verbatim, as OCA ships them. See
 [the third-party assets inventory](../../../docs/third-party-assets.md).
