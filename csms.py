@@ -30,7 +30,6 @@ import io
 import json
 import os
 import re
-import tempfile
 import time
 import unicodedata
 from collections import Counter, defaultdict
@@ -310,26 +309,9 @@ def canonical_product(company, designation):
 
 # --- HTTP with on-disk cache -------------------------------------------------
 
-def write_atomic(path, text):
-  """Write a file via a temporary sibling, so readers never see it half-written.
-
-  Both the cache and the committed mirror are read back by later runs; a process
-  killed mid-write would otherwise leave a truncated file behind. The temporary
-  file is unique per call — a fixed name would let two writers aimed at the same
-  path corrupt each other's — and lives in the destination directory so the
-  replace stays on one filesystem, which is what makes it atomic.
-  """
-  directory = os.path.dirname(path) or "."
-  fd, tmp = tempfile.mkstemp(dir=directory, prefix=os.path.basename(path) + ".",
-                             suffix=".tmp")
-  try:
-    with os.fdopen(fd, "w", newline="", encoding="utf-8") as f:
-      f.write(text)
-    os.replace(tmp, path)
-  except BaseException:
-    if os.path.exists(tmp):
-      os.unlink(tmp)
-    raise
+# Both the cache and the committed mirror are read back by later runs, so
+# neither may be left half-written.
+write_atomic = pipeline.write_atomic
 
 
 def post_json_cached(url, payload, ttl=pipeline.CACHE_TTL):

@@ -8,6 +8,7 @@ lands.
 """
 
 import copy
+import functools
 import hashlib
 import json
 import os
@@ -18,7 +19,7 @@ from jsonschema import Draft202012Validator
 
 import csms
 import pipeline
-from test_public_export import render, row
+from export_helpers import render, row
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
@@ -29,6 +30,7 @@ def load(*parts):
     return json.load(f)
 
 
+@functools.cache
 def validator(name):
   schema = load(DATA, "schema", name)
   Draft202012Validator.check_schema(schema)

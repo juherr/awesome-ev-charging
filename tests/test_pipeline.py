@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 import pipeline
+from export_helpers import write_csv
 
 # The autouse `no_network` fixture stubs this; its own tests need the real one.
 real_fetch_readme_content = pipeline.fetch_readme_content
@@ -755,11 +756,7 @@ def test_a_subcategory_outside_the_taxonomy_is_reported():
 
 def test_render_warns_about_a_subcategory_outside_the_taxonomy(tmp_path, capsys):
     enriched = tmp_path / "repos.enriched.csv"
-    fields = pipeline.CSV_FIELDS + ["categories", "ocpp_versions", "ocpi_versions"]
-    with open(enriched, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
-        writer.writeheader()
-        writer.writerow({**repo("a/jobs", promoted="2"), "categories": "Other > Job portal"})
+    write_csv(enriched, [{**repo("a/jobs", promoted="2"), "categories": "Other > Job portal"}])
     pipeline.render(types.SimpleNamespace(infile=str(enriched), out=str(tmp_path / "legacy.md"),
                                           readme=None))
     assert "::warning::Other > Job portal is not in CATEGORY_TREE" in capsys.readouterr().out

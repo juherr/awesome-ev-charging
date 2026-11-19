@@ -6,6 +6,7 @@ the one GitHub call `merge` can make. The last section checks the committed
 committed CSVs, so a curated edit merged without a re-render fails here.
 """
 
+import csv
 import json
 import os
 import subprocess
@@ -238,18 +239,17 @@ def test_certified_and_documented_features_stay_apart():
 
 # --- The CLI flag ------------------------------------------------------------------
 
+def _write_csv(path, fields, rows):
+  with open(path, "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=fields)
+    writer.writeheader()
+    writer.writerows(rows)
+
+
 def render_files(tmp_path, export_dir=None, vendor_rows=()):
   """Run cmd_render on fixture files in `tmp_path`, returning the args."""
-  certs = tmp_path / "certs.csv"
-  with open(certs, "w", newline="", encoding="utf-8") as f:
-    writer = __import__("csv").DictWriter(f, fieldnames=csms.CERT_FIELDS)
-    writer.writeheader()
-    writer.writerow(cert())
-  vendors = tmp_path / "vendors.csv"
-  with open(vendors, "w", newline="", encoding="utf-8") as f:
-    writer = __import__("csv").DictWriter(f, fieldnames=csms.VENDOR_FIELDS)
-    writer.writeheader()
-    writer.writerows(vendor_rows)
+  _write_csv(tmp_path / "certs.csv", csms.CERT_FIELDS, [cert()])
+  _write_csv(tmp_path / "vendors.csv", csms.VENDOR_FIELDS, vendor_rows)
   features = tmp_path / "features.csv"
   features.write_text(",".join(csms.FEATURE_FIELDS) + "\n", encoding="utf-8")
   for name, begin, end in (("csms.md", csms.CSMS_MARKER_BEGIN, csms.CSMS_MARKER_END),
