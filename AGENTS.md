@@ -58,9 +58,9 @@ git show HEAD:classifications.csv | python pipeline.py check-classifications --b
 `--token` is optional; without it GitHub's unauthenticated rate limits apply.
 `gh auth token` supplies one when the gh CLI is authenticated.
 
-`mise run test` (alias `t`) runs the pytest suite in `tests/`, which covers
-`csms.py` only: the controlled feature vocabulary, certificate derivation,
-product/company identity, merge precedence, table rendering, the curated-CSV
+`mise run test` (alias `t`) runs the pytest suite in `tests/`.
+`tests/test_csms.py` covers `csms.py`: the controlled feature vocabulary,
+certificate derivation, product/company identity, merge precedence, table rendering, the curated-CSV
 validations and render determinism. It needs no network — the one GitHub call
 `merge` can make is monkeypatched — and it also validates the committed CSVs, so
 a bad curated row fails there as well as at render time. `tests/test_pipeline.py`
@@ -73,9 +73,30 @@ calling `build_repo_record` / `days_since_push` / `parse_categories` directly.
 `tests/test_oscp_schemas.py` pins the vendored CC BY-ND files under
 `oscp/OSCP-2.0/` with a SHA-256 manifest and proves each defect listed in
 its README, and that the local patches suffice, with `jsonschema` in memory.
+`tests/test_markdown_links.py` checks that every relative link, and every
+`https://github.com/juherr/awesome-ev-charging/(tree|blob)/main/…` link, in
+every tracked Markdown file resolves to a path `git ls-files` lists — a
+tracked file, or a directory holding one — compared case-sensitively as on the
+Linux runner, so a link that only works on macOS fails. It reads Markdown links
+and images, reference definitions, `href` / `src` in inline HTML and
+`<https://…>` autolinks. Anchors are not checked, and links in code or in HTML
+comments are skipped. The three verbatim OCA `ReadMe.md`
+files are checked too, though markdownlint below skips them: a link that only
+an edit of their bytes could fix goes in `VENDORED_LINK_EXCEPTIONS` as an exact
+`(file, target)` pair (empty today), never by skipping the file.
 
 Markdown is linted by `npx markdownlint-cli2` (config in
-`.markdownlint-cli2.jsonc`); `README.md` additionally by `npx awesome-lint`.
+`.markdownlint-cli2.jsonc`): every tracked `*.md`, dot-directories and the
+first-party files under the vendored directories included. Only the three
+verbatim OCA files `ocpp/OCPP-2.0/ReadMe.md`, `ocpp/OCPP-2.0.1/ReadMe.md` and
+`ocpp/OCPP-2.1/ReadMe.md` are exempt, by exact path: they are upstream bytes,
+never reformatted. The exemption covers style only: they stay in the
+provenance and licence inventory of `docs/third-party-assets.md`, and byte
+pinning of vendored directories is tracked in
+[#97](https://github.com/juherr/awesome-ev-charging/issues/97). The
+live classifier prompt `.claude/agents/repo-classifier.md` keeps its bytes too,
+with three rules relaxed for it alone. `README.md` is additionally checked by
+`npx awesome-lint`.
 
 ## pipeline.py architecture
 

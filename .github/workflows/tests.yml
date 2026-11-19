@@ -6,24 +6,17 @@ name: tests
 # classification layer — the refresh guard and what enrich caches. It needs no
 # network and no secret: it validates the committed CSVs, renders from in-memory
 # fixtures, and stubs the classifier backends.
+#
+# Every pull request runs the suite, with no `paths:` filter. The link test
+# (tests/test_markdown_links.py) checks that each Markdown link resolves to a
+# tracked path, and any tracked path can be a link target: a PR that renames
+# or deletes a PDF, an image or a directory breaks a link without touching a
+# single Markdown file. No path list can name every target in advance, and a
+# filtered run would only catch the breakage on main, after the merge.
 on:
   push:
     branches: [main]
   pull_request:
-    paths:
-      - "**/*.py"
-      # Globs, not the three names we happen to have: the suite validates the
-      # catalogue as a whole, so a future csms-*.csv has to trip it without
-      # anyone remembering to extend this list. The generated views are checked
-      # against a fresh render, so a hand-edit between the markers counts too.
-      - "csms*.csv"
-      - "csms*.md"
-      # The vendored OSCP files are pinned by tests/test_oscp_schemas.py.
-      - "oscp/**"
-      - "requirements*.txt"
-      - "mise.toml"
-      - "pytest.ini"
-      - ".github/workflows/tests.yml"
 
 permissions:
   contents: read

@@ -352,6 +352,31 @@ the product lacks it.
   regenerates those — re-check them after a `csms.py fetch` that moves the
   numbers.
 
+## Owned and vendored Markdown
+
+The repository holds two kinds of Markdown, and they follow different rules.
+
+- **Owned Markdown** is everything we write: the README, this guide, `docs/`,
+  the CSMS pages, the agent and skill files, and our own READMEs inside the
+  specification directories (`emi3/`, `nemo/`, `oscp/`, the JSON-schema notes
+  under `ocpp/`). It follows the rules in `.markdownlint-cli2.jsonc`, and a
+  finding fails CI: run `npx markdownlint-cli2` before you push.
+- **Vendored upstream Markdown** is a file copied from a rights holder, such as
+  the Open Charge Alliance's `ReadMe.md` under `ocpp/OCPP-2.0/`,
+  `ocpp/OCPP-2.0.1/` and `ocpp/OCPP-2.1/`. Its bytes stay verbatim: never
+  reformat it, not even to satisfy a linter. Each such file is exempted by its
+  exact path in `.markdownlint-cli2.jsonc`, never by a directory glob. The
+  exemption covers style only: the file stays in the provenance and licence
+  inventory of [`docs/third-party-assets.md`](docs/third-party-assets.md), like
+  every other vendored file.
+
+Internal links in every tracked Markdown file, vendored ones included —
+relative links, and links into this repository on github.com — are checked by
+`tests/test_markdown_links.py`: each must resolve to a tracked file or
+directory, with the exact case. A link that only an edit of vendored bytes
+could fix is listed as an exact `(file, target)` pair in
+`VENDORED_LINK_EXCEPTIONS` there, never by skipping the file.
+
 ## Golden rules
 
 - ✅ Never edit between the `GENERATED` markers in `README.md`, `csms.md` or

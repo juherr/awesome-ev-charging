@@ -1,3 +1,5 @@
+<!-- markdownlint-configure-file { "MD033": { "allowed_elements": ["br"] } } -->
+
 # OCPP 1.6 Configuration Keys
 
 Reference of the OCPP 1.6 configuration keys, grouped by feature profile (plus the
@@ -19,7 +21,7 @@ key when it implements the corresponding profile.
 ## Core Profile
 
 | Key | Required/Optional | Accessibility | Type |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | AllowOfflineTxForUnknownId | Optional | RW | boolean |
 | AuthorizationCacheEnabled | Optional | RW | boolean |
 | AuthorizeRemoteTxRequests | Required | RW | boolean |
@@ -58,7 +60,7 @@ key when it implements the corresponding profile.
 ## Smart Charging Profile
 
 | Key | Required/Optional | Accessibility | Type |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | ChargeProfileMaxStackLevel | Required | R | integer |
 | ChargingScheduleAllowedChargingRateUnit | Required | R | csl :<br>Current<br>Power |
 | ChargingScheduleMaxPeriods | Required | R | integer |
@@ -68,7 +70,7 @@ key when it implements the corresponding profile.
 ## Local Auth List Management Profile
 
 | Key | Required/Optional | Accessibility | Type |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | LocalAuthListEnabled | Required | RW | boolean |
 | LocalAuthListMaxLength | Required | R | integer |
 | SendLocalListMaxLength | Required | R | integer |
@@ -76,13 +78,13 @@ key when it implements the corresponding profile.
 ## Reservation Profile
 
 | Key | Required/Optional | Accessibility | Type |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | ReserveConnectorZeroSupported | Optional | R | boolean |
 
 ## Security Profile (OCPP ext 1.3)
 
 | Key | Required/Optional | Accessibility | Type |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | AdditionalRootCertificateCheck | Optional | R | boolean |
 | CertificateSignedMaxChainSize | Optional | R | integer |
 | CertificateStoreMaxLength | Optional | R | integer |
@@ -92,6 +94,6 @@ key when it implements the corresponding profile.
 ## OCPP-J (transport)
 
 | Key | Required/Optional | Accessibility | Type |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | AuthorizationKey | Optional | W | string |
 | WebSocketPingInterval | Optional | RW | integer |
