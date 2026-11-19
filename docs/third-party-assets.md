@@ -64,6 +64,12 @@ directories except the ten repository files listed above. On 2026-11-18 the
 OSCP schemas moved from Allowed to Unknown (26 files): none carries a notice,
 and the only statement of a licence for them was the repository's own README.
 
+These 500 files are pinned byte for byte by `tests/vendored_assets.sha256`
+(SHA-256, checked by `tests/test_vendored_assets.py`, which also checks the
+counts above against it). Adding, removing or replacing a vendored file
+means recording it in this inventory, counts included, and regenerating the
+manifest with `python tests/vendored_manifest.py --write`.
+
 ## OCPP (`ocpp/`)
 
 Evidence was read in the files first (`pdftotext`, file headers), then on
