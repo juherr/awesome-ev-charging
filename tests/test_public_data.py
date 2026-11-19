@@ -8,6 +8,7 @@ lands.
 """
 
 import copy
+import functools
 import hashlib
 import json
 import os
@@ -29,6 +30,7 @@ def load(*parts):
     return json.load(f)
 
 
+@functools.cache
 def validator(name):
   schema = load(DATA, "schema", name)
   Draft202012Validator.check_schema(schema)
