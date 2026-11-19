@@ -184,9 +184,11 @@ jobs:
       # steps put in the job summary and the PR body. The baseline
       # data/projects.json adds selection / dormant / to_refine movements to
       # it; until one is committed (#98) the report says they were not
-      # reported, so the flag is only passed when HEAD holds the file. The
-      # movements are informational: a missing fresh export or an unreadable
-      # file is a warning and a report line, never a failure.
+      # reported, so the flag is only passed when HEAD holds the file and
+      # `git show` can read it. The movements are informational: a baseline
+      # that cannot be read from HEAD is a warning and the run goes on
+      # without the flag; a missing fresh export or an unreadable file is a
+      # warning and a report line. None of them is ever a failure.
       #
       # pipefail: without it a failing `git show` would feed an empty baseline,
       # every repo would read as a newcomer and the guard would pass green.
@@ -202,9 +204,14 @@ jobs:
         run: |
           set -o pipefail
           args=(--base - --report "$RUNNER_TEMP/classification-report.md")
+          base_projects="$RUNNER_TEMP/base-projects.json"
           if git cat-file -e HEAD:data/projects.json 2>/dev/null; then
-            git show HEAD:data/projects.json > "$RUNNER_TEMP/base-projects.json"
-            args+=(--base-projects "$RUNNER_TEMP/base-projects.json")
+            if git show HEAD:data/projects.json > "$base_projects"; then
+              args+=(--base-projects "$base_projects")
+            else
+              echo "::warning::Could not read data/projects.json from HEAD; curation movements are not reported."
+              rm -f "$base_projects"
+            fi
           fi
           git show HEAD:classifications.csv \
             | mise exec -- python pipeline.py check-classifications "${args[@]}"
