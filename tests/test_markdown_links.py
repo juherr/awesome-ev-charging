@@ -1,4 +1,4 @@
-"""Every internal link in the repository's own Markdown resolves to a tracked path.
+"""Every internal link in the tracked Markdown resolves to a tracked path.
 
 An internal link is a relative link (`docs/x.md`, `../csms.md`, an image) or an
 absolute link into this repository on github.com
@@ -26,8 +26,9 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Verbatim upstream Markdown from the Open Charge Alliance. Their bytes are
-# never edited, so a broken link in them is not ours to fix. Keep this list in
-# step with the exact-path exemptions in .markdownlint-cli2.jsonc.
+# never edited, and markdownlint skips them by the exact-path exemptions in
+# .markdownlint-cli2.jsonc: keep this list in step. Their links are checked
+# like any other file's.
 VENDORED_VERBATIM_MARKDOWN = frozenset(
     {
         "ocpp/OCPP-2.0/ReadMe.md",
@@ -35,6 +36,12 @@ VENDORED_VERBATIM_MARKDOWN = frozenset(
         "ocpp/OCPP-2.1/ReadMe.md",
     }
 )
+
+# Broken links that only an edit of vendored bytes could fix, as
+# `(file, target)` pairs. Empty today. Should a re-vendoring break a link in
+# one of the files above, add that exact pair here rather than editing the
+# file or skipping it whole.
+VENDORED_LINK_EXCEPTIONS = frozenset()
 
 # What link_path returns for a relative link that climbs above the root.
 ESCAPES_ROOT = "<escapes the repository root>"
@@ -236,10 +243,15 @@ def is_tracked(path, tracked):
     return any(candidate.startswith(prefix) for candidate in tracked)
 
 
-def broken_links(source, text, tracked):
-    """`file:line -> target` for every internal link that does not resolve."""
+def broken_links(source, text, tracked, exceptions=frozenset()):
+    """`file:line -> target` for every internal link that does not resolve.
+
+    A `(source, target)` pair listed in `exceptions` is not reported.
+    """
     broken = []
     for number, target in extract_links(text):
+        if (source, target) in exceptions:
+            continue
         path = link_path(source, target)
         if path is not None and not is_tracked(path, tracked):
             broken.append(f"{source}:{number} -> {target}")
@@ -262,12 +274,8 @@ def tracked_paths():
     return frozenset(_git_ls_files())
 
 
-def first_party_markdown():
-    return sorted(
-        name
-        for name in _git_ls_files("*.md")
-        if name not in VENDORED_VERBATIM_MARKDOWN
-    )
+def tracked_markdown():
+    return sorted(_git_ls_files("*.md"))
 
 
 # --- Unit tests: link extraction --------------------------------------------
@@ -501,19 +509,31 @@ def test_broken_links_lists_every_failure_with_its_line():
     ]
 
 
+def test_broken_links_skips_only_the_excepted_file_and_target():
+    text = "[a](nope.md)\n[b](gone.md)\n"
+    exceptions = frozenset({("README.md", "nope.md")})
+    assert broken_links("README.md", text, TRACKED, exceptions) == [
+        "README.md:2 -> gone.md",
+    ]
+    assert broken_links("docs/x.md", text, TRACKED, exceptions) == [
+        "docs/x.md:1 -> nope.md",
+        "docs/x.md:2 -> gone.md",
+    ]
+
+
 # --- The real repository ----------------------------------------------------
 
 
-def test_first_party_markdown_list_is_not_empty():
-    files = first_party_markdown()
+def test_markdown_list_includes_the_vendored_oca_files():
+    files = tracked_markdown()
     assert "README.md" in files
     assert "CONTRIBUTING.md" in files
-    for exempt in VENDORED_VERBATIM_MARKDOWN:
-        assert exempt not in files
+    for vendored in VENDORED_VERBATIM_MARKDOWN:
+        assert vendored in files
 
 
-@pytest.mark.parametrize("md_file", first_party_markdown())
+@pytest.mark.parametrize("md_file", tracked_markdown())
 def test_internal_links_resolve(md_file):
     text = (REPO_ROOT / md_file).read_text(encoding="utf-8")
-    broken = broken_links(md_file, text, tracked_paths())
+    broken = broken_links(md_file, text, tracked_paths(), VENDORED_LINK_EXCEPTIONS)
     assert not broken, "broken internal links:\n" + "\n".join(broken)

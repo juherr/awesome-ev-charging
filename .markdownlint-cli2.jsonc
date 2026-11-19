@@ -21,7 +21,7 @@
     // docs/third-party-assets.md. Byte pinning of vendored directories is
     // tracked in https://github.com/juherr/awesome-ev-charging/issues/97.
     // VENDORED_VERBATIM_MARKDOWN in tests/test_markdown_links.py lists the
-    // same three files: keep both in step.
+    // same three files: keep both in step. That test still checks their links.
     "ocpp/OCPP-2.0/ReadMe.md",
     "ocpp/OCPP-2.0.1/ReadMe.md",
     "ocpp/OCPP-2.1/ReadMe.md"

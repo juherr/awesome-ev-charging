@@ -370,9 +370,12 @@ The repository holds two kinds of Markdown, and they follow different rules.
   inventory of [`docs/third-party-assets.md`](docs/third-party-assets.md), like
   every other vendored file.
 
-Internal links in owned Markdown — relative links, and links into this
-repository on github.com — are checked by `tests/test_markdown_links.py`: each
-must resolve to a tracked file or directory, with the exact case.
+Internal links in every tracked Markdown file, vendored ones included —
+relative links, and links into this repository on github.com — are checked by
+`tests/test_markdown_links.py`: each must resolve to a tracked file or
+directory, with the exact case. A link that only an edit of vendored bytes
+could fix is listed as an exact `(file, target)` pair in
+`VENDORED_LINK_EXCEPTIONS` there, never by skipping the file.
 
 ## Golden rules
 

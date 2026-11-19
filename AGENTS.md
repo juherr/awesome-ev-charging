@@ -75,13 +75,15 @@ calling `build_repo_record` / `days_since_push` / `parse_categories` directly.
 its README, and that the local patches suffice, with `jsonschema` in memory.
 `tests/test_markdown_links.py` checks that every relative link, and every
 `https://github.com/juherr/awesome-ev-charging/(tree|blob)/main/…` link, in
-the tracked first-party Markdown resolves to a path `git ls-files` lists — a
+every tracked Markdown file resolves to a path `git ls-files` lists — a
 tracked file, or a directory holding one — compared case-sensitively as on the
 Linux runner, so a link that only works on macOS fails. It reads Markdown links
 and images, reference definitions, `href` / `src` in inline HTML and
 `<https://…>` autolinks. Anchors are not checked, and links in code or in HTML
 comments are skipped. The three verbatim OCA `ReadMe.md`
-files are exempt, as they are from markdownlint below.
+files are checked too, though markdownlint below skips them: a link that only
+an edit of their bytes could fix goes in `VENDORED_LINK_EXCEPTIONS` as an exact
+`(file, target)` pair (empty today), never by skipping the file.
 
 Markdown is linted by `npx markdownlint-cli2` (config in
 `.markdownlint-cli2.jsonc`): every tracked `*.md`, dot-directories and the
