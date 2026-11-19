@@ -1505,9 +1505,14 @@ def _known_label(label):
 
 
 def _report_label(label):
-  """A category label: verbatim when the taxonomy knows it, else flagged and quoted."""
+  """A category label: plain when the taxonomy knows it, else flagged and quoted.
+
+  A known label is flattened to one line: `_known_label` strips around `>`,
+  so a raw cell such as "OCPP\\n> Simulator" is known, and its line break
+  would split the table row.
+  """
   label = label.strip()
-  return label if _known_label(label) else f"(unknown label) {_cell(label)}"
+  return " ".join(label.split()) if _known_label(label) else f"(unknown label) {_cell(label)}"
 
 
 def _labels(value):

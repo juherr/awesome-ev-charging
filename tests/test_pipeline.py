@@ -522,6 +522,22 @@ def test_the_report_neutralises_untrusted_text(tmp_path, curation):
                 j += 1
 
 
+def test_a_known_label_spanning_lines_keeps_each_row_on_one_line(tmp_path, curation):
+    """`_known_label` strips around `>`, so a raw cell such as "OCPP\\n> Simulator"
+    is known, and returned verbatim its newline split the table row."""
+    report = guard_report(tmp_path, [cached("acme/x", "OCPP > Server")],
+                          [cached("acme/x", "OCPP\n> Simulator|OCPP > Server")])
+    assert "OCPP > Server → OCPP > Simulator\\|OCPP > Server" in report
+    lines = report.split("\n")
+    for i, line in enumerate(lines):
+        if line.startswith("| ") and lines[i - 1] == "":
+            header = unescaped_pipes(line)
+            j = i + 1
+            while j < len(lines) and lines[j] != "":
+                assert lines[j].startswith("|") and unescaped_pipes(lines[j]) == header, lines[j]
+                j += 1
+
+
 def test_the_bare_main_row_shows_the_bare_duplicate(tmp_path, curation):
     """An older cache may hold two spellings of one repo; the bare one is the
     one reported, so its row must show its own categories."""
