@@ -1416,9 +1416,10 @@ def load_projects(path):
     raise ValueError(f"{path} is not readable JSON: {e}") from e
   projects = payload.get("projects") if isinstance(payload, dict) else None
   if not isinstance(projects, list) or not all(
-      isinstance(p, dict) and p.get("id") and p.get("curation") for p in projects):
+      isinstance(p, dict) and isinstance(p.get("id"), str) and p["id"] and p.get("curation")
+      for p in projects):
     raise ValueError(f"{path} is not a projects.json export "
-                     "(a `projects` list of records with `id` and `curation`).")
+                     "(a `projects` list of records with a string `id` and `curation`).")
   return {p["id"]: p for p in projects}
 
 
