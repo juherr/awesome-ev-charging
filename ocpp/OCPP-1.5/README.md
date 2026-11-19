@@ -12,8 +12,10 @@ The notices differ per file:
 | `OCPP_*Service_1.5_FINAL.wsdl.wsdl` (2) | "Copyright e-laad.nl. Free to use without modifications." |
 
 No consent is on record for the specification PDF. Decision of
-2026-11-18: it is kept, unmodified, as a historical reference, and will be
-removed on request from the rights holder. The other three files are kept
-verbatim. See
+2026-11-18: it is kept, unmodified, as an archive, under the repository's
+[archival policy](../../docs/third-party-assets.md#archival-policy). The other
+three files are kept verbatim too. A rights holder who objects to any of them
+can [open an issue](https://github.com/juherr/awesome-ev-charging/issues/new)
+to have it removed. See
 [the third-party assets inventory](../../docs/third-party-assets.md#files-whose-notice-forbids-redistribution)
-for the evidence, the rationale and the questions drafted for the rights holders.
+for the evidence and the open questions.

@@ -15,6 +15,20 @@ Allowed is not free of conditions.
 Research date: 2026-11-15, updated 2026-11-18 (OSCP evidence, decision on the
 OCPP 1.2 and 1.5 files). This is a record of what was found, not legal advice.
 
+## Archival policy
+
+This repository keeps copies of third-party specifications to preserve them.
+eMI³, NeMo and OIOI documents have already vanished from their original sites,
+and archived copies were the only remaining source. The purpose is
+preservation and reference, not appropriation: files are kept byte-identical,
+with their notices, attributed to their rights holders, and are never
+relicensed.
+
+Permission is not sought file by file. Instead, any rights holder who objects
+to a file being here can open an issue or contact the maintainer, and the file
+will be removed from the repository promptly. The verdicts below record what
+each file's own notice says, so that such a request can be handled quickly.
+
 ## How to read the verdicts
 
 - **Allowed** - a notice in the file, or a licence stated by the rights holder,
@@ -248,18 +262,17 @@ replacing or relinking a file is left to a separate editorial decision.
 Decision record, 2026-11-18 (repository owner). It confirms the
 decision of 2026-11-15.
 
-- **Decision:** the four files are **kept**, byte for byte, with their
-  notices. Nothing is deleted or modified.
-- **Rationale:** they are historical versions of OCPP, superseded for over a
-  decade, kept as a reference for the protocol's history. For the current
-  versions (1.6, 2.0.1, 2.1), the specification PDFs are CC BY-ND 4.0, and no
-  file carries a notice forbidding redistribution. The OCA now serves the old versions only from its login-gated
-  archive (<https://openchargealliance.org/protocols/archive/>), so no public
+- **Decision:** the four files are **kept as an archive**, byte for byte,
+  with their notices, under the [Archival policy](#archival-policy). Nothing
+  is deleted or modified. The OCA now serves these superseded versions only
+  from its login-gated archive
+  (<https://openchargealliance.org/protocols/archive/>), so no public
   official link could replace them.
-- **Removal on request:** the files will be removed on a request from the
-  rights holder (e-laad.nl, Logica, a successor of either, or the OCA if the
-  rights were transferred to it). Removal would mean deleting the files and
-  pointing the README entries at the OCA archive page.
+- **Removal on request:** as for every vendored file, the rights holder
+  (e-laad.nl, Logica, a successor of either, or the OCA if the rights were
+  transferred to it) can open an issue to have them removed. Removal would
+  mean deleting the files and pointing the README entries at the OCA archive
+  page.
 - **Verdict unchanged:** the files stay rated **Not allowed** in the tables
   above. The decision is editorial; it is not a permission.
 - **Next to the files:** [`ocpp/OCPP-1.2/README.md`](../ocpp/OCPP-1.2/README.md)
@@ -278,7 +291,8 @@ names no source URL.
 Open question: did e-laad.nl or Logica (or their successors) ever transfer
 these rights to the OCA or relicense them? Not found: the OCA archive page of
 older versions is login-gated and could not be read. Only the rights holder or
-the OCA can settle it. The questions to ask are drafted below.
+the OCA can settle it; it is recorded under
+[Open questions](#open-questions-not-sent-see-archival-policy) below.
 
 ### Files with a conditional or contradictory marking
 
@@ -305,15 +319,12 @@ the OCA can settle it. The questions to ask are drafted below.
   and only eMI³ could confirm it. It is the only marking in the 15 eMI³ and NeMo
   files that points away from publication.
 
-### Questions for rights holders
+### Open questions (not sent, see Archival policy)
 
-Each recipient below has the research behind the question, then a text ready
-to send. **Sending them is the maintainer's job**: none had been sent as of
-2026-11-18. Contact addresses are not recorded here; the maintainer confirms
-the right recipient and channel before sending, then records the date and
-the answer in this file. Each text asks for three things: the licence that
-applies, whether a verbatim copy may be redistributed, and the attribution
-required.
+What remains uncertain, grouped by the organisation that could settle it.
+Under the [Archival policy](#archival-policy), none of these questions is
+sent to a rights holder: they record the research, so that a removal
+request or a statement from a rights holder can be handled quickly.
 
 #### Open Charge Alliance
 
@@ -356,99 +367,14 @@ bundle. Whether OCA intends CC BY-ND for them is unconfirmed.
   - Whether the rights in OCPP 1.2 and 1.5 passed to the OCA (see
     [Files whose notice forbids redistribution](#files-whose-notice-forbids-redistribution)).
 
-```text
-Subject: Redistribution of OCPP and OSCP files without a licence notice
-
-Dear Open Charge Alliance,
-
-I maintain awesome-ev-charging (https://github.com/juherr/awesome-ev-charging),
-a public, non-commercial list of EV charging protocol resources. It keeps
-verbatim copies of several OCA downloads next to the list, unmodified.
-
-The specification PDFs, the OCPP 1.6 SOAP WSDLs and the OCPP 2.1 JSON
-schemas carry the CC BY-ND 4.0 notice, and we redistribute them under it.
-The following files ship in the same downloads but carry no notice of their
-own:
-
-- OCPP 1.6: the 56 JSON schemas (OCPP_1.6_documentation.zip, schemas/json/)
-- OCPP 2.0.1: the 128 JSON schemas (Part 3), the CSV appendices v1.5 and
-  ReadMe.md (OCPP-2.0.1_all_files.zip)
-- OCPP 2.1: the CSV appendices v2.1 and ReadMe.md (OCPP-2.1_all_files.zip)
-- OCPP 2.0: ReadMe.md of the changelog and errata download
-- OCPP 1.6 Security Whitepaper edition 4: the 22 JSON schemas
-  (JSON_schemas.zip)
-- OSCP 2.0: the 26 JSON schemas (OSCP_2.0_Specification.zip, schemas.zip)
-
-Could you tell us:
-
-1. Which licence applies to these files? Is it CC BY-ND 4.0, like the
-   documents they ship with?
-2. May we keep redistributing verbatim copies of them?
-3. Which attribution do you require? We would state it in the README next
-   to the files.
-
-Three related points, if you can answer them:
-
-4. The "Eichrecht Whitepaper - OCPP Plugfest" presentation (2024) carries
-   "Open Charge Alliance (c) 2014-2021" and no licence. May we keep a
-   verbatim copy, or should we link to your site only?
-5. Did the rights in the OCPP 1.2 and 1.5 documents (e-laad.nl, Logica)
-   pass to the OCA? If so, may we keep these historical versions?
-6. Who published "OCPP 1.5 Technical Description" (no notice), and do the
-   OCPP 1.5 WSDLs' words "Free to use without modifications" cover
-   redistribution?
-
-Until we hear from you, the files stay unmodified and our documentation
-describes their licence as not established. We will remove any file you
-ask us to remove.
-
-Kind regards,
-[maintainer name]
-```
-
 #### e-laad.nl and Logica, or their successors (OCPP 1.2 and 1.5)
 
 The research and the decision are in
 [Files whose notice forbids redistribution](#files-whose-notice-forbids-redistribution).
 The notices name e-laad.nl (the OCPP 1.2 and 1.5 specification PDFs) and
 Logica (the two OCPP 1.2 WSDLs). Which organisation holds those rights today
-was not researched: the maintainer identifies the successor of each before
-sending, or asks the OCA first (question 5 above).
-
-```text
-Subject: Historical OCPP 1.2 and 1.5 documents in a public repository
-
-Dear [rights holder],
-
-I maintain awesome-ev-charging (https://github.com/juherr/awesome-ev-charging),
-a public, non-commercial list of EV charging protocol resources. For
-historical reference, it keeps unmodified copies of these documents:
-
-- "OCPP 1.2 specification" (PDF), "Copyright e-laad.nl 2010, 2011, 2012,
-  All rights reserved"
-- CentralSystemService.wsdl and ChargePointService.wsdl for OCPP 1.2,
-  "Copyright Logica 2010, All rights reserved"
-- "OCPP 1.5 Specification" (PDF), with the same e-laad.nl notice
-
-Their notices forbid reproduction without your prior written consent, which
-we do not have. These versions have been superseded for over a decade, and
-the Open Charge Alliance now serves them only from an archive behind a sign-in, so
-there is no public copy we could link to instead.
-
-Could you tell us:
-
-1. Do you still hold the rights in these documents, or were they
-   transferred (for instance to the Open Charge Alliance)?
-2. Do you consent to us keeping these verbatim copies, with their notices,
-   for historical reference?
-3. If you consent, which attribution do you require?
-
-If you would rather we did not host them, tell us and we will remove them
-and point readers to the Open Charge Alliance archive.
-
-Kind regards,
-[maintainer name]
-```
+was not researched; whether they passed to the OCA is one of the OCA points
+above.
 
 #### Hubject (OICP 2.1 and 2.2)
 
@@ -475,38 +401,6 @@ OICP 2.1 and 2.2 PDFs?
 - `Hubject Acceptable Use Policy v1-0.asciidoc` in that repository governs use
   of Hubject's services, not the documents.
 
-The text below is written as an issue on `hubject/oicp`.
-
-```text
-Title: Licence of the OICP 2.1 and 2.2 PDF release assets
-
-Hello,
-
-awesome-ev-charging (https://github.com/juherr/awesome-ev-charging), a
-public, non-commercial list of EV charging protocol resources, keeps
-unmodified copies of four PDFs published as release assets of this
-repository:
-
-- OICP-CPO-2.1.pdf and OICP-EMP-2.1.pdf (release v2.1)
-- OICP-CPO-2.2.pdf and OICP-EMP-2.2.pdf (release v2.2)
-
-They are byte-identical to the assets. Each carries "(c) Hubject GmbH" and
-no licence. License.md (CC BY-SA 4.0) was added on 2020-04-16, after both
-releases (2019-06-11), and the v2.1 and v2.2 tags contain no licence file.
-
-Could you confirm:
-
-1. Does the repository's CC BY-SA 4.0 licence cover these release assets?
-2. If not, may we keep redistributing verbatim copies of them?
-3. Which attribution do you require? We would state it next to the files.
-
-If you would rather we linked to the releases only, tell us and we will
-remove the copies.
-
-Thank you,
-[maintainer name]
-```
-
 #### ERTICO – ITS Europe (eMI³ and NeMo)
 
 - **eMI³** (ERTICO – ITS Europe is the address on the documents): the
@@ -520,49 +414,6 @@ Thank you,
   licence to the public would sit in the consortium agreement or a project
   decision, and neither is public. The site was still serving the files on
   2026-11-02 per `nemo/README.md`.
-- The same text can go to ICCS for NeMo if ERTICO cannot answer for the
-  consortium.
-
-```text
-Subject: Redistribution of eMI3 standards and NeMo deliverables
-
-Dear ERTICO - ITS Europe,
-
-I maintain awesome-ev-charging (https://github.com/juherr/awesome-ev-charging),
-a public, non-commercial list of EV charging protocol resources. It keeps
-unmodified copies of documents linked to two initiatives ERTICO took part
-in, and we would like to confirm that we may.
-
-eMI3 (documents addressed "eMI3 AISBL c/o ERTICO - ITS Europe"):
-- eMI3 standard v1.0 Part 1 and Part 2, Terms and Definitions v1.0
-- eMI3 standard v1.1 Part 1, Terms and Definitions v1.4
-- eMI3 statement on QoS (2020)
-
-They were offered as public downloads on emi3group.com, which no longer
-answers, and carry no copyright or licence notice. Terms and Definitions
-v1.4 is marked "Public (v1.4, eMI3 website)" in its circulation table but
-"IN WORK - Confidential" in its page header.
-
-NeMo (H2020 grant 713794): seven public deliverables (D1.1, D1.3, D2.3,
-D3.2, D3.3, D6.3, D7.1), the Common Information Models edition and the
-Service Creation Tools manual. They carry no copyright or licence notice.
-
-Could you tell us:
-
-1. Who holds the rights in these documents today, and does any licence
-   (for instance in the eMI3 Statutes or the NeMo consortium agreement)
-   cover their redistribution?
-2. May we keep redistributing verbatim copies of them?
-3. Which attribution do you require?
-4. Is the "Confidential" header of eMI3 Terms and Definitions v1.4 a
-   leftover from the drafting template?
-
-If you would rather we linked to the original or archived pages only, tell
-us and we will remove the copies.
-
-Kind regards,
-[maintainer name]
-```
 
 #### Not a question for a rights holder
 

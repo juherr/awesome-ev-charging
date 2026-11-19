@@ -59,6 +59,8 @@ For a comparison of the roaming protocols, see [EV roaming protocol differences]
 
 Some of the specifications below are vendored in this repository; the rights holder and licence of each vendored file are recorded in [docs/third-party-assets.md](docs/third-party-assets.md).
 
+> **Archive notice.** The specification files in this repository are kept as an archive: several have already disappeared from their publishers' sites (eMI³, NeMo, OIOI), and copies like these were the only ones left. They are stored verbatim, with their original notices, and remain the property of their rights holders; the CC0 licence of this list does not cover them. If you hold rights to one of these files and object to its presence here, please [open an issue](https://github.com/juherr/awesome-ev-charging/issues/new) and it will be removed promptly.
+
 ### OCPP (Open Charge Point Protocol)
 
 The **Open Charge Point Protocol (OCPP)** is a communication protocol between electric vehicle charging stations and a central management system.

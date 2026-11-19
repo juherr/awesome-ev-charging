@@ -8,7 +8,11 @@ reproduction without prior written consent: e-laad.nl for
 `OCPP 1.2 specification.pdf.pdf`, Logica for the two `*.wsdl.wsdl` files. No
 such consent is on record.
 
-Decision of 2026-11-18: the files are kept, unmodified, as a historical
-reference. They will be removed on request from the rights holder. See
+Decision of 2026-11-18: the files are kept, unmodified, as an archive, under
+the repository's
+[archival policy](../../docs/third-party-assets.md#archival-policy). A rights
+holder who objects can
+[open an issue](https://github.com/juherr/awesome-ev-charging/issues/new) to
+have them removed. See
 [the third-party assets inventory](../../docs/third-party-assets.md#files-whose-notice-forbids-redistribution)
-for the notices, the rationale and the questions drafted for the rights holders.
+for the notices and the open questions.
