@@ -36,8 +36,8 @@ description = "Stage 2 — classify repos from repos.csv via the skill agent (in
 run = 'python pipeline.py enrich --token "$(gh auth token 2>/dev/null)" --in repos.csv --out repos.enriched.csv'
 
 [tasks.csms]
-description = "Refresh the OCA certificate mirror and re-render csms.md"
+description = "Refresh the OCA certificate mirror, re-render csms.md and data/csms.json"
 run = [
   'python csms.py fetch',
-  'python csms.py render --token "$(gh auth token 2>/dev/null)"',
+  'python csms.py render --export-dir data --token "$(gh auth token 2>/dev/null)"',
 ]

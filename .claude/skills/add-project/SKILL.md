@@ -143,7 +143,7 @@ grep "<owner>/<repo>" classifications.csv
 ### 5. Render → inject into README + standalone
 
 ```bash
-python pipeline.py render --readme README.md
+python pipeline.py render --readme README.md --export-dir data
 ```
 
 Verify the entry landed:
@@ -190,7 +190,8 @@ Requested in issue #<N>. <one-line description>. Classified as <Main > Sub>.
 Closes #<N>"
 
 # 2) the regenerated listing (includes unrelated refresh drift)
-git add classifications.csv README.md legacy-projects.md
+git add classifications.csv README.md legacy-projects.md \
+  data/projects.json data/manifest.json
 git commit -m "chore(data): refresh project listing (adds <repo>)
 
 Re-ran enrich + render. Injects <repo> (<Main > Sub>) and refreshes N
@@ -223,6 +224,7 @@ outward-facing actions need confirmation.
 
 - ✅ Never edit `README.md` between the `GENERATED` markers by hand.
 - ✅ Only commit `classifications.csv`, `README.md`,
-  `legacy-projects.md`, and (if changed) `pipeline.py`.
+  `legacy-projects.md`, `data/projects.json`, `data/manifest.json`, and (if
+  changed) `pipeline.py`.
 - ✅ Never pass `--refresh` when you want to keep hand-pinned classifications.
 - ✅ No Claude/AI references in commit messages.

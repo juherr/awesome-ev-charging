@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/juherr/awesome-ev-charging/blob/main/data/schema/projects.schema.json",
+  "title": "Awesome EV Charging projects",
+  "description": "data/projects.json, written by `python pipeline.py render --export-dir data`. null means unknown, never no.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "projects"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "projects": {"type": "array", "items": {"$ref": "#/$defs/project"}}
+  },
+  "$defs": {
+    "nullableString": {"type": ["string", "null"]},
+    "stringList": {"type": "array", "items": {"type": "string"}},
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["main", "sub"],
+      "properties": {
+        "main": {"type": "string"},
+        "sub": {"type": ["string", "null"]}
+      }
+    },
+    "versions": {
+      "description": "Protocol versions detected in the README; null when none was detected.",
+      "type": ["array", "null"],
+      "minItems": 1,
+      "items": {"type": "string"}
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "full_name", "url", "host", "description", "primary_category",
+        "categories", "ocpp_versions", "ocpi_versions", "language", "license",
+        "stars", "forks", "archived", "dormant", "deprecated", "curation",
+        "pushed_at", "updated_at", "topics", "discovered_via"
+      ],
+      "properties": {
+        "id": {"description": "Lowercased full_name; stable and unique.", "type": "string"},
+        "full_name": {"type": "string"},
+        "url": {"$ref": "#/$defs/nullableString"},
+        "host": {"enum": ["github", "codeberg", "other", null]},
+        "description": {"$ref": "#/$defs/nullableString"},
+        "primary_category": {
+          "oneOf": [{"$ref": "#/$defs/category"}, {"type": "null"}]
+        },
+        "categories": {"type": "array", "items": {"$ref": "#/$defs/category"}},
+        "ocpp_versions": {"$ref": "#/$defs/versions"},
+        "ocpi_versions": {"$ref": "#/$defs/versions"},
+        "language": {"$ref": "#/$defs/nullableString"},
+        "license": {"$ref": "#/$defs/nullableString"},
+        "stars": {"type": ["integer", "null"]},
+        "forks": {"type": ["integer", "null"]},
+        "archived": {"type": ["boolean", "null"]},
+        "dormant": {
+          "description": "null when no last commit was read and the repo is not archived.",
+          "type": ["boolean", "null"]
+        },
+        "deprecated": {
+          "description": "true when the description flags it; null otherwise. Never false.",
+          "enum": [true, null]
+        },
+        "curation": {"enum": ["selection", "dormant", "to_refine"]},
+        "pushed_at": {"$ref": "#/$defs/nullableString"},
+        "updated_at": {"$ref": "#/$defs/nullableString"},
+        "topics": {"$ref": "#/$defs/stringList"},
+        "discovered_via": {"$ref": "#/$defs/stringList"}
+      }
+    }
+  }
+}

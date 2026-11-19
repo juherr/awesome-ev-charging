@@ -21,6 +21,7 @@ import tempfile
 import time
 from collections import defaultdict
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 import requests
 
@@ -1556,6 +1557,16 @@ def _row_categories(row):
   """Parse the pipe-joined `categories` column into [(main, sub), ...].
 
   A CATEGORY_OVERRIDES entry (keyed by full_name) replaces the classifier's value.
+  A row without any category falls into the README's "Uncategorized" bucket.
+  """
+  return _effective_categories(row) or [("Uncategorized", None)]
+
+
+def _effective_categories(row):
+  """The categories a row renders under, without the "Uncategorized" fallback.
+
+  Empty when neither the classifier nor CATEGORY_OVERRIDES gives one: the
+  public export says "unknown" there rather than invent a bucket.
   """
   raw = CATEGORY_OVERRIDES.get((row.get("full_name") or "").lower())
   if raw is None:
@@ -1578,7 +1589,7 @@ def _row_categories(row):
   # category goes before "Other" whatever order the classifier used: an OCPP
   # implementation that is also a Home Assistant integration belongs in OCPP.
   out.sort(key=lambda p: p[0] == "Other")
-  return out or [("Uncategorized", None)]
+  return out
 
 
 def unknown_subcategories(rows):
@@ -1627,6 +1638,167 @@ def _is_deprecated(row):
 def _inactive(row):
   """Belongs in the Dormant section: stale/archived (dormant) or deprecated."""
   return row.get("dormant") == "true" or _is_deprecated(row)
+
+
+def _curation(row):
+  """The block a row renders in: `selection` (README), `dormant` or `to_refine`.
+
+  Curated (promotion >= 0) and active goes to the README; curated but dormant
+  or deprecated to the Dormant section; uncurated to To refine. The Markdown
+  and the public export both read it, so they cannot disagree.
+  """
+  if _promotion(row) < 0:
+    return "to_refine"
+  return "dormant" if _inactive(row) else "selection"
+
+
+# --- Public JSON export ------------------------------------------------------
+
+PUBLIC_SCHEMA_VERSION = "1.0"
+PROJECTS_EXPORT = "projects.json"
+MANIFEST_EXPORT = "manifest.json"
+
+_HOSTS = {"github.com": "github", "codeberg.org": "codeberg"}
+
+
+def dump_public_json(obj):
+  """The one serialisation of every public JSON file: byte-stable for equal input."""
+  return json.dumps(obj, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def write_public_json(path, obj):
+  """Write `obj` as public JSON through a temp file and an atomic rename."""
+  directory = os.path.dirname(os.path.abspath(path))
+  os.makedirs(directory, exist_ok=True)
+  fd, tmp = tempfile.mkstemp(dir=directory, prefix=f"{os.path.basename(path)}.", suffix=".tmp")
+  with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
+    f.write(dump_public_json(obj))
+  os.replace(tmp, path)
+
+
+def _sha256(path):
+  with open(path, "rb") as f:
+    return hashlib.sha256(f.read()).hexdigest()
+
+
+def _relative(path, start="."):
+  """`path` relative to `start`, with `/` separators whatever the platform."""
+  return os.path.relpath(path, start).replace(os.sep, "/")
+
+
+def write_manifest(export_dir, key, payload_path, input_paths, record_count):
+  """Record one payload in `export_dir/manifest.json`, keeping the other entries.
+
+  `manifest.json` is `{"schema_version": "1.0", "payloads": {key: entry}}`, one
+  entry per payload (`projects`, `csms`), so each render refreshes its own
+  entry only. An entry is `{"file", "sha256", "records", "inputs"}`: `file` is
+  relative to `export_dir`; `inputs` maps each input path, relative to the
+  current directory (the repository root when run as documented), to its
+  SHA-256. No timestamp and no git revision, so the manifest is as
+  byte-stable as the payloads it describes.
+  """
+  manifest_path = os.path.join(export_dir, MANIFEST_EXPORT)
+  payloads = {}
+  if os.path.exists(manifest_path):
+    with open(manifest_path, "r", encoding="utf-8") as f:
+      payloads = json.load(f).get("payloads") or {}
+  payloads[key] = {
+    "file": _relative(payload_path, export_dir),
+    "sha256": _sha256(payload_path),
+    "records": record_count,
+    "inputs": {_relative(p): _sha256(p) for p in input_paths},
+  }
+  write_public_json(manifest_path, {"schema_version": PUBLIC_SCHEMA_VERSION,
+                                    "payloads": payloads})
+
+
+def _text_or_none(value):
+  value = (value or "").strip()
+  return value or None
+
+
+def _int_or_none(value):
+  value = (str(value) if value is not None else "").strip()
+  return int(value) if value else None
+
+
+def _bool_or_none(value):
+  """`"true"`/`"false"` as a bool; anything else is unknown, never `False`."""
+  return {"true": True, "false": False}.get((value or "").strip().lower())
+
+
+def _split(value, sep):
+  return [part.strip() for part in (value or "").split(sep) if part.strip()]
+
+
+def _versions(value):
+  """Detected versions in column order, or None: none detected is not "none"."""
+  return _split(value, ",") or None
+
+
+def _host(url):
+  if not url:
+    return None
+  return _HOSTS.get((urlparse(url).hostname or "").lower(), "other")
+
+
+def _license(value):
+  """The licence name; `N/A` (no licence detected, or Codeberg) is unknown."""
+  value = _text_or_none(value)
+  return None if value == "N/A" else value
+
+
+def _dormant(row):
+  """The dormancy signal, or None when no last commit was read and the repo is
+  not archived: `build_repo_record` writes "false" then, which is not a fact."""
+  if _text_or_none(row.get("pushed_at")) is None and row.get("archived") != "true":
+    return None
+  return _bool_or_none(row.get("dormant"))
+
+
+def _deprecated(row):
+  """True when the description flags it, else None: a description without
+  deprecation wording is no evidence the project is maintained."""
+  return True if _is_deprecated(row) else None
+
+
+def project_record(row):
+  """One public record from a rendered row (overrides already applied)."""
+  categories = [{"main": main, "sub": sub} for main, sub in _effective_categories(row)]
+  url = _text_or_none(row.get("html_url"))
+  return {
+    "id": row["full_name"].lower(),
+    "full_name": row["full_name"],
+    "url": url,
+    "host": _host(url),
+    "description": _text_or_none(row.get("description")),
+    "primary_category": categories[0] if categories else None,
+    "categories": categories,
+    "ocpp_versions": _versions(row.get("ocpp_versions")),
+    "ocpi_versions": _versions(row.get("ocpi_versions")),
+    "language": _text_or_none(row.get("language")),
+    "license": _license(row.get("license")),
+    "stars": _int_or_none(row.get("stars")),
+    "forks": _int_or_none(row.get("forks")),
+    "archived": _bool_or_none(row.get("archived")),
+    "dormant": _dormant(row),
+    "deprecated": _deprecated(row),
+    "curation": _curation(row),
+    "pushed_at": _text_or_none(row.get("pushed_at")),
+    "updated_at": _text_or_none(row.get("updated_at")),
+    "topics": sorted(_split(row.get("topics"), "|")),
+    "discovered_via": sorted(_split(row.get("source"), "+")),
+  }
+
+
+def projects_payload(rows):
+  """The `projects.json` payload, sorted by id; fails on two rows with one id."""
+  records = sorted((project_record(r) for r in rows), key=lambda p: (p["id"], p["full_name"]))
+  for previous, record in zip(records, records[1:]):
+    if previous["id"] == record["id"]:
+      raise SystemExit(f"❌ Two rows export the same id {record['id']!r}: "
+                       f"{previous['full_name']} and {record['full_name']}.")
+  return {"schema_version": PUBLIC_SCHEMA_VERSION, "projects": records}
 
 
 def _render_line(row, main=None, show_language=True):
@@ -1798,10 +1970,14 @@ def render(args):
   for label, names in unknown_subcategories(rows).items():
     print(f"::warning::{label} is not in CATEGORY_TREE ({', '.join(names)}).")
 
-  in_list = [r for r in rows if _promotion(r) >= 0]
-  selection = [r for r in in_list if not _inactive(r)]
-  dormant = [r for r in in_list if _inactive(r)]
-  refine = [r for r in rows if _promotion(r) < 0]
+  # Built before any write, so a duplicate id leaves no half-written render.
+  export_dir = getattr(args, "export_dir", None)
+  payload = projects_payload(rows) if export_dir else None
+
+  tiers = [(r, _curation(r)) for r in rows]
+  selection = [r for r, tier in tiers if tier == "selection"]
+  dormant = [r for r, tier in tiers if tier == "dormant"]
+  refine = [r for r, tier in tiers if tier == "to_refine"]
 
   # Main list (README): only actively-maintained, curated "best" items, as the
   # awesome guidelines require. No H1/`## Selection` wrapper — the top level is
@@ -1837,6 +2013,14 @@ def render(args):
                             README_MARKER_BEGIN, README_MARKER_END)
     _inject_between_markers(args.readme, _build_toc(args.readme),
                             README_TOC_BEGIN, README_TOC_END)
+  if export_dir:
+    # The enriched CSV is the only file render reads; it is git-ignored, so its
+    # checksum in the manifest is provenance, not something a consumer can fetch.
+    projects_path = os.path.join(export_dir, PROJECTS_EXPORT)
+    write_public_json(projects_path, payload)
+    write_manifest(export_dir, "projects", projects_path, [args.infile],
+                   len(payload["projects"]))
+    print(f"✅ Wrote {projects_path} ({len(payload['projects'])} projects)")
 
   promoted = sum(1 for r in selection if _promotion(r) == 2)
   print(f"✅ Wrote {args.out}" + (f" + injected into {args.readme}" if getattr(args, "readme", None) else ""))
@@ -1883,6 +2067,8 @@ def main():
                         help="Output path for the secondary listing (dormant + to-refine).")
   p_render.add_argument("--readme", help="Also inject the rendered body between the "
                         "markers in this file (e.g. README.md).")
+  p_render.add_argument("--export-dir", help="Also write the public JSON export "
+                        f"({PROJECTS_EXPORT} + {MANIFEST_EXPORT}) to this directory (e.g. data).")
   p_render.set_defaults(func=render)
 
   p_check = sub.add_parser("check-classifications",

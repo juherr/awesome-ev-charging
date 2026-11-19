@@ -56,6 +56,7 @@ VENDORS_PATH = "csms.csv"
 FEATURES_PATH = "csms-features.csv"
 CSMS_MD_PATH = "csms.md"
 FEATURES_MD_PATH = "csms-features.md"
+CSMS_EXPORT = "csms.json"  # written into `render --export-dir`
 # `render` replaces the text between these markers, so the prose around each table
 # (intro, caveats, legend) stays hand-authored.
 CSMS_MARKER_BEGIN = "<!-- BEGIN GENERATED CSMS -->"
@@ -624,6 +625,7 @@ def group_certificates(certs):
       derive_features(row["certificate_type"], row["protocol_version"])[0])
     # Keep every certificate: merging designations must not hide one.
     entry["certificates"].append({
+      "number": row["certificate_no"],
       "version": version,
       "type": row["certificate_type"],
       "software": row["software_version"],
@@ -675,6 +677,9 @@ def _overlay(entry, row, fields, fill_only=False):
       entry[field] = value
 
 
+TRUE_VALUES = ("y", "yes", "true", "1")
+
+
 def _apply_product_row(products, row, headers):
   """Overlay a curated row describing one product, creating it if it is new."""
   # Canonicalise here too, so a curated row may cite either the raw OCA
@@ -696,14 +701,25 @@ def _apply_product_row(products, row, headers):
     if clean(row.get("company")):
       entry["company"] = clean(row.get("company"))
 
+  # The slug is the product's public id, so two curated rows must not share an
+  # entry: the second would silently take over the first one's id and features.
+  slug = clean(row.get("slug"))
+  if entry.get("slug") and entry["slug"] != slug:
+    raise SystemExit(f"{VENDORS_PATH}: rows {entry['slug']!r} and {slug!r} describe "
+                     f"the same product — merge them into one row.")
+  entry["slug"] = slug
+
   entry["versions"].update(
     v.strip() for v in clean(row.get("ocpp_claimed")).split(",") if v.strip())
   _overlay(entry, row, OVERLAY_FIELDS)
 
-  if clean(row.get("source_available")).lower() in ("y", "yes", "true", "1"):
+  if clean(row.get("source_available")).lower() in TRUE_VALUES:
     entry["source_available"] = True
   repo = clean(row.get("repo"))
   if repo:
+    # Kept as curated: the export builds its URL from this, never from the
+    # GitHub answer `enrich_from_github` stores in `repo_url`.
+    entry["repo"] = repo
     enrich_from_github(entry, repo, headers)
 
   return entry
@@ -722,7 +738,8 @@ def merge(certs, vendors, headers, claims=None):
   company_rows = [r for r in vendors if is_company_row(r)]
 
   # The entry key is (company, product), either of which a curated row may
-  # rename, so the slug is carried here rather than stored on the entry.
+  # rename, so features join through this slug map. The slug is also stored on
+  # the entry, as the public id `csms_payload` exports.
   by_slug = {clean(row.get("slug")): _apply_product_row(products, row, headers)
              for row in vendors if is_product_row(row)}
 
@@ -886,6 +903,138 @@ def sort_entries(products):
                 key=lambda e: (_display_name(e).lower(), e["company"].lower()))
 
 
+# --- Public JSON export ---------------------------------------------------------
+
+# csms.csv columns copied as text (string or null). Left out on purpose:
+# `slug` (the id), `product`/`company` (name, company), `oca_company`/
+# `oca_product` (join keys, not facts), `ocpp_claimed` (merged into
+# ocpp_versions), `source_available`/`repo` and the four `Y` columns below.
+EXPORT_TEXT_FIELDS = [
+  "website", "api_docs", "pricing", "pricing_url", "changelog", "hq_country",
+  "hq_city", "company_founded", "first_release", "latest_version",
+  "latest_version_date", "license", "deployment", "status", "notes",
+]
+
+# Columns whose convention is `Y` or empty: true when stated, null when not —
+# an empty cell is unverified, never "no".
+EXPORT_FLAG_FIELDS = ["api", "ocpi", "iso15118", "eichrecht"]
+
+
+def _text(value):
+  """A value or None, without the pipe escape `clean` adds for Markdown cells.
+
+  Entry values went through `clean` already; cleaning again would double it.
+  """
+  return re.sub(r"\s+", " ", str(value or "")).strip().replace(r"\|", "|") or None
+
+
+def _flag(entry, field):
+  """`True` for a stated `Y`, `None` for an empty cell; anything else fails."""
+  value = clean(entry.get(field))
+  if not value:
+    return None
+  if value.lower() in TRUE_VALUES:
+    return True
+  slug = entry.get("slug") or entry["product"]
+  raise SystemExit(f"{slug}: {field} is {value!r}; the column only takes `Y` or "
+                   f"empty (an empty cell means unknown, never `N`).")
+
+
+def derived_id(key):
+  """A stable id for a product no curated row names, from its merge key.
+
+  The key is (company_key, canonical product) lowercased, so the registry
+  respelling the company or bumping a version keeps the same id. Accents are
+  folded (`ó` -> `o`) for URL-friendly ids, but other Unicode word characters
+  are kept: an ASCII-only slug would collapse a CJK name to nothing.
+  """
+  folded = "".join(c for c in unicodedata.normalize("NFKD", " ".join(key))
+                   if not unicodedata.combining(c))
+  return re.sub(r"[\W_]+", "-", folded).strip("-")
+
+
+def _certificate_record(cert):
+  return {
+    "number": cert["number"],
+    "ocpp_version": cert["version"],
+    "type": cert["type"],
+    "software_version": _text(cert["software"]),
+    "date": cert["date"],
+    "url": _text(cert["url"]),
+  }
+
+
+def product_record(key, entry):
+  """One public `csms.json` record, from the committed CSVs only.
+
+  `repo_url` is built from the curated `repo`, not read from the entry: the
+  entry's link comes from GitHub's answer, which a fresh export without the
+  network could not reproduce.
+  """
+  claimed = entry["features_claimed"]
+  repo = _text(entry.get("repo"))
+  flags = {field: _flag(entry, field) for field in EXPORT_FLAG_FIELDS}
+  # The directory's API and OCPI cells: a public API doc implies an API, and
+  # a documented OCPI feature is an OCPI claim, so the export says the same.
+  if entry.get("api_docs"):
+    flags["api"] = True
+  if OCPI_FEATURE in claimed:
+    flags["ocpi"] = True
+  return {
+    "id": entry.get("slug") or derived_id(key),
+    "name": _text(_display_name(entry)),
+    "company": _text(entry["company"]),
+    "oca_company_url": _text(entry.get("company_link")),
+    "repo": repo,
+    "repo_url": f"https://github.com/{repo}" if repo else None,
+    "source_available": True if entry.get("source_available") else None,
+    "ocpp_versions": sorted(entry["versions"], key=lambda v: (_version_key(v), v)) or None,
+    "certificates": [
+      _certificate_record(c) for c in sorted(
+        entry["certificates"],
+        key=lambda c: (_version_key(c["version"]), c["version"], c["date"], c["type"],
+                       c["software"], c["url"], c["number"]))],
+    "features_certified": sort_features(entry["features_certified"]),
+    "features_documented": [{"feature": f, "source_urls": sorted(claimed[f])}
+                            for f in sort_features(claimed)],
+    **flags,
+    **{field: _text(entry.get(field)) for field in EXPORT_TEXT_FIELDS},
+    "sources": (_text(entry.get("sources")) or "").split(),
+  }
+
+
+def disappeared_ids(previous_path, payload):
+  """Sorted ids of the previous `csms.json` that `payload` no longer carries.
+
+  A renamed, re-slugged or removed product drops its id, which breaks consumer
+  URLs keyed on it. A missing or unparseable previous file yields no ids: there
+  is nothing published to compare with, and the render must not fail on it.
+  """
+  try:
+    with open(previous_path, "r", encoding="utf-8") as f:
+      previous = {p["id"] for p in json.load(f)["products"]}
+  except (OSError, ValueError, KeyError, TypeError):
+    return []
+  return sorted(previous - {p["id"] for p in payload["products"]})
+
+
+def csms_payload(products):
+  """The `csms.json` payload, sorted by id; fails on two products with one id."""
+  pairs = sorted(((product_record(key, entry), bool(entry.get("slug")))
+                  for key, entry in products.items()), key=lambda p: p[0]["id"])
+  records = [record for record, _ in pairs]
+  ids = Counter(record["id"] for record in records)
+  duplicates = sorted(i for i, n in ids.items() if n > 1)
+  if duplicates:
+    if any(curated for record, curated in pairs if record["id"] in duplicates):
+      advice = f"rename the curated slug in {VENDORS_PATH}"
+    else:
+      advice = (f"give one of them a curated row with its own slug in {VENDORS_PATH}, "
+                f"or a PRODUCT_ALIASES entry in csms.py if they are one platform")
+    raise SystemExit(f"Two products export the same id {duplicates} — {advice}.")
+  return {"schema_version": pipeline.PUBLIC_SCHEMA_VERSION, "products": records}
+
+
 def cmd_render(args):
   """Merge the mirror with the curated CSVs and inject both generated tables."""
   certs = read_csv(args.certs)
@@ -909,6 +1058,9 @@ def cmd_render(args):
   products = merge(certs, vendors, pipeline.auth_headers(args.token), claims)
 
   entries = sort_entries(products)
+  export_dir = getattr(args, "export_dir", None)
+  # Built before any write, so a duplicate id leaves every file untouched.
+  payload = csms_payload(products) if export_dir else None
 
   # Both files are one view of one dataset, so the render is all-or-nothing:
   # every body is built and every injection validated in memory before the
@@ -928,6 +1080,17 @@ def cmd_render(args):
       (path, pipeline._replace_between_markers(content, body, begin, end, path)))
   for path, content in rendered:
     write_atomic(path, content)
+  if export_dir:
+    export_path = os.path.join(export_dir, CSMS_EXPORT)
+    gone = disappeared_ids(export_path, payload)
+    if gone:
+      print(f"⚠️  {len(gone)} id(s) disappear from {export_path} (renamed, re-slugged "
+            f"or removed products; consumer URLs keyed on them break): {', '.join(gone)}")
+    pipeline.write_public_json(export_path, payload)
+    pipeline.write_manifest(export_dir, "csms", export_path,
+                            [args.certs, args.vendors, args.features],
+                            len(payload["products"]))
+    print(f"✅ Wrote {export_path} ({len(payload['products'])} products)")
 
   certified = sum(1 for e in entries if e["certificates"])
   source = sum(1 for e in entries if e.get("source_available"))
@@ -961,6 +1124,8 @@ def main():
   p_render.add_argument("--features-md", default=FEATURES_MD_PATH,
                         help="Feature annex Markdown file.")
   p_render.add_argument("--token", help="GitHub personal access token (optional).")
+  p_render.add_argument("--export-dir",
+                        help="Also write csms.json there and refresh its manifest.json entry.")
   p_render.set_defaults(func=cmd_render)
 
   args = parser.parse_args()

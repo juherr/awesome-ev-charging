@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/juherr/awesome-ev-charging/blob/main/data/schema/csms.schema.json",
+  "title": "Awesome EV Charging CSMS catalogue",
+  "description": "data/csms.json, written by `python csms.py render --export-dir data` from csms-certificates.csv, csms.csv and csms-features.csv. null means unknown, never no.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "products"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "products": {"type": "array", "items": {"$ref": "#/$defs/product"}}
+  },
+  "$defs": {
+    "nullableString": {"type": ["string", "null"]},
+    "statedOrUnknown": {
+      "description": "true when a source states it; null when unverified. Never false.",
+      "enum": [true, null]
+    },
+    "certificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "ocpp_version", "type", "software_version", "date", "url"],
+      "properties": {
+        "number": {"type": "string"},
+        "ocpp_version": {"type": "string"},
+        "type": {"description": "The raw OCA certificate type, e.g. `Core + S + C`.", "type": "string"},
+        "software_version": {"$ref": "#/$defs/nullableString"},
+        "date": {"description": "Registration date, ISO 8601.", "type": "string"},
+        "url": {"$ref": "#/$defs/nullableString"}
+      }
+    },
+    "documentedFeature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature", "source_urls"],
+      "properties": {
+        "feature": {"type": "string"},
+        "source_urls": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "company", "oca_company_url", "website", "repo", "repo_url",
+        "source_available", "ocpp_versions", "certificates", "features_certified",
+        "features_documented", "ocpi", "iso15118", "eichrecht", "api", "api_docs",
+        "pricing", "pricing_url", "changelog", "hq_country", "hq_city",
+        "company_founded", "first_release", "latest_version", "latest_version_date",
+        "license", "deployment", "status", "notes", "sources"
+      ],
+      "properties": {
+        "id": {"description": "The curated slug, or one derived from company and product.", "type": "string", "minLength": 1},
+        "name": {"type": "string"},
+        "company": {"$ref": "#/$defs/nullableString"},
+        "oca_company_url": {"description": "The OCA participant page.", "$ref": "#/$defs/nullableString"},
+        "website": {"$ref": "#/$defs/nullableString"},
+        "repo": {"description": "GitHub owner/name.", "$ref": "#/$defs/nullableString"},
+        "repo_url": {"$ref": "#/$defs/nullableString"},
+        "source_available": {"$ref": "#/$defs/statedOrUnknown"},
+        "ocpp_versions": {"type": ["array", "null"], "minItems": 1, "items": {"type": "string"}},
+        "certificates": {"type": "array", "items": {"$ref": "#/$defs/certificate"}},
+        "features_certified": {
+          "description": "Features an OCA certificate proves.",
+          "type": "array", "items": {"type": "string"}
+        },
+        "features_documented": {
+          "description": "Features the vendor documents, each with its sources. Kept apart from features_certified.",
+          "type": "array", "items": {"$ref": "#/$defs/documentedFeature"}
+        },
+        "ocpi": {"$ref": "#/$defs/statedOrUnknown"},
+        "iso15118": {"$ref": "#/$defs/statedOrUnknown"},
+        "eichrecht": {"$ref": "#/$defs/statedOrUnknown"},
+        "api": {"$ref": "#/$defs/statedOrUnknown"},
+        "api_docs": {"$ref": "#/$defs/nullableString"},
+        "pricing": {"$ref": "#/$defs/nullableString"},
+        "pricing_url": {"$ref": "#/$defs/nullableString"},
+        "changelog": {"$ref": "#/$defs/nullableString"},
+        "hq_country": {"$ref": "#/$defs/nullableString"},
+        "hq_city": {"$ref": "#/$defs/nullableString"},
+        "company_founded": {"$ref": "#/$defs/nullableString"},
+        "first_release": {"$ref": "#/$defs/nullableString"},
+        "latest_version": {"$ref": "#/$defs/nullableString"},
+        "latest_version_date": {"$ref": "#/$defs/nullableString"},
+        "license": {"$ref": "#/$defs/nullableString"},
+        "deployment": {"$ref": "#/$defs/nullableString"},
+        "status": {"$ref": "#/$defs/nullableString"},
+        "notes": {"$ref": "#/$defs/nullableString"},
+        "sources": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
