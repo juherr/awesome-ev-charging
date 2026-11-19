@@ -118,6 +118,7 @@ The **Open Smart Charging Protocol (OSCP)** communicates forecasts of available 
 
 The **Open Charge Point Interface (OCPI)** is a protocol for roaming between charging station networks.
 The next version is developed in the `ocpi-3` repository, which only [EVRoaming Foundation contributors](https://evroaming.org/how-to-join/) can access.
+OCPI 3.0 is not released yet: according to the [OCPI downloads page](https://evroaming.org/ocpi-downloads/), it awaits official review by CENELEC, with a release expected in H2 2027.
 
 OCPI versions read `MAJOR.MINOR.PATCH`. A `-dN` suffix (`2.1.1-d2`, `2.2-d2`) marks a documentation update of the same specification: text and examples only, no protocol change. From 2.3.0 on, the core is also published in editions (`ed1`, `ed2`), where an edition may change messages, fields or datatypes. This edition scheme follows a CEN-CENELEC proposal that is [still under discussion](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/README.md#versioning-of-the-230-documents).
 
@@ -138,6 +139,9 @@ OCPI versions read `MAJOR.MINOR.PATCH`. A `-dN` suffix (`2.1.1-d2`, `2.2-d2`) ma
   - [2.3.0 Swagger UI](https://ocpi.github.io/openapi-specification/ocpi/2.3.0/)
   - [2.2.1 → 2.3.0 migration guide](https://ocpi.github.io/openapi-specification/migrations/2.2.1-2.3.0/migration-guide.html)
   - [2.2.1 Swagger UI](https://ocpi.github.io/openapi-specification/ocpi/2.2.1/)
+- [Tariff simplification guidelines](https://evroaming.org/wp-content/uploads/2026/10/OCPI-tariff_simplification_extension-1.0.pdf) - EVRoaming Foundation guidelines for publishing simpler, less error-prone tariffs with the OCPI 2.3.0 tariff module, mostly usable with 2.2.1 too; their test cases come with the [EVRoaming Test Tool](#certification-and-interoperability) (1.0, 2026-07).
+- [AFIR NAP data fields vs OCPI 2.3.0](https://evroaming.org/wp-content/uploads/2025/03/NAP-EU-2023_1804-data-fields-OCPI-2.3.0.pdf) - Undated EVRoaming Foundation table mapping the AFIR (EU) 2023/1804 National Access Point data requirements onto OCPI 2.3.0 fields, open remarks included (uploaded 2025-03). It predates the NAP Data Extension listed under Extensions below, which cites Implementing Regulation (EU) 2025/655.
+- [ISO 15118 Plug and Charge authentication support in OCPI](https://evroaming.org/wp-content/uploads/2025/04/EVRF-Whitepaper-ISO15118-Plug-and-Charge-Authentication-Support-In-OCPI.pdf) - Supplemental whitepaper by Octopus Electroverse, published by the EVRoaming Foundation, on conveying Plug & Charge authentication through OCPI tokens and locations, from 2.2.1 to 3.0 (2025-04).
 - [ocpi.fyi](https://ocpi.fyi/) - A browsable rendering of the OCPI specification with an API reference and version comparison. 🏅
   - [2.3.0 Swagger](https://ocpi.fyi/api/2.3.0/swagger/) (unofficial)
   - [2.2.1 Swagger](https://ocpi.fyi/api/2.2.1/swagger/) (unofficial)
@@ -180,6 +184,7 @@ Extensions (vendor / community):
 | [Direct Payment][ext-dp]           | 2.2.1        | EVRoaming | 2024-03 |
 | [e-PoI service][ext-epoi]          | 2.2.1        | Gireve    | 2025-10 |
 | [Accessibility extension][ext-acc] | 2.3.0, 3.0   | EVRoaming | 2025-12 |
+| [NAP Data Extension 1.0][ext-nap]  | 2.3.0, 3.0   | EVRoaming | 2026-09 |
 | [Autocharge][ext-ac]               | 2.3.0        | Community | —       |
 
 [ocpi-loc-211]: https://github.com/ocpi/ocpi/blob/release-2.1.1-bugfixes/mod_locations.md
@@ -208,6 +213,7 @@ Extensions (vendor / community):
 [ext-dp]: https://evroaming.org/wp-content/uploads/2024/10/DirectPayment_2_2_1___EVRF_version.pdf
 [ext-epoi]: https://www.gireve.com/wp-content/uploads/2025/10/Gireve_Tech_ePoI-OCPI-2.2.1_ImplementationGuide_V1.1-_en.pdf
 [ext-acc]: https://evroaming.org/wp-content/uploads/2026/01/e_accessibility_extension-1.0.0.pdf
+[ext-nap]: https://evroaming.org/wp-content/uploads/2026/09/OCPI-nap-extension-1.0.pdf
 [ext-ac]: https://ocpi.fyi/ocpi/2.3.0/extensions/mod_autocharge_roaming.html
 
 #### Roaming
@@ -380,6 +386,7 @@ Message inspection groups contain OCPP DebugKit, CheckOCPP, dsV2Gshark and trace
 
 - [OCA testing and certification FAQ](https://openchargealliance.org/faq/) - Explains OCTT and the official OCPP certification process through designated laboratories; passing developer tests or running OCTT independently does not grant certification.
 - [CharIN conformance testing](https://www.charin.global/technology/charin-conformance-testing/) - Describes the association's conformance program and its defined scope, distinct from community ISO 15118 test utilities.
+- [EVRoaming Test Tool (EVRTT)](https://evroaming.org/evroaming-test-tool/) - Official OCPI conformance-testing service of the EVRoaming Foundation, sold as a paid subscription: predefined OCPI 2.2.1 and 2.3.0 scenarios for the CPO, MSP and NSP roles, plus NAP extension and tariff simplification test cases. Its optional, separately paid EVRoaming Foundation approval (conformance test and proof report) is not a legal AFIR compliance determination, and independent OCPI test tools do not grant EVRoaming approval.
 
 Interoperability exercises test combinations of independent implementations; conformance tests check defined specification requirements. Neither substitutes for electrical safety assessment, legal metrology approval or deployment-specific regulatory compliance.
 
