@@ -1420,7 +1420,17 @@ def load_projects(path):
       for p in projects):
     raise ValueError(f"{path} is not a projects.json export "
                      "(a `projects` list of records with a string `id` and `curation`).")
-  return {p["id"]: p for p in projects}
+  by_id = {}
+  duplicates = set()
+  for p in projects:
+    if p["id"] in by_id:
+      duplicates.add(p["id"])
+    by_id[p["id"]] = p
+  if duplicates:
+    # The id is untrusted text that lands in the report and a workflow command.
+    raise ValueError(f"{path} holds duplicate ids: "
+                     + ", ".join(_cell(i) for i in sorted(duplicates)) + ".")
+  return by_id
 
 
 def curation_movements(base, current):

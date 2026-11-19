@@ -671,6 +671,29 @@ def test_a_non_string_project_id_warns_without_failing_the_guard(tmp_path, capsy
     assert "✅" in out
 
 
+@pytest.mark.parametrize("which", ["base", "fresh"])
+def test_a_duplicate_project_id_warns_and_names_it(tmp_path, capsys, curation, which):
+    """A dict built from the records silently kept the last duplicate."""
+    import json
+    bad = tmp_path / f"{which}-projects-dup.json"
+    bad.write_text(json.dumps({"projects": [
+        {"id": "acme/dup", "full_name": "acme/dup", "curation": "selection"},
+        {"id": "acme/x", "full_name": "acme/x", "curation": "selection"},
+        {"id": "acme/dup", "full_name": "acme/dup", "curation": "dormant"}]}),
+        encoding="utf-8")
+    good = projects_file(tmp_path / "projects.json", [("acme/x", "selection")])
+    extra = {"base": {"base_projects": str(bad), "projects": good},
+             "fresh": {"base_projects": good, "projects": str(bad)}}[which]
+    rows = [cached("acme/x", "OCPP > Server")]
+    report = guard_report(tmp_path, rows, rows, **extra)
+    assert f"Curation movements not reported: {bad}" in report
+    assert "acme/dup" in report
+    assert "| Curation movement |" not in report
+    out = capsys.readouterr().out
+    assert f"::warning::Curation movements not reported: {bad}" in out
+    assert "✅" in out
+
+
 def test_an_invalid_projects_file_leaves_a_regression_failing(tmp_path, capsys, curation):
     bad = tmp_path / "base-projects.json"
     bad.write_text("{not json", encoding="utf-8")
