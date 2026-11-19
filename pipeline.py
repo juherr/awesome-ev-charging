@@ -376,6 +376,15 @@ CATEGORY_OVERRIDES = {
   "suroorhussain/ev-protocols": "OCPI > Misc|Other > Specifications & documentation",
 }
 
+# Reviewed protocol losses that `check-classifications` must not block on.
+# full_name (lowercased) -> {protocol main: why losing it is right}. Add an
+# entry only after reviewing the repo and deciding the non-protocol result is
+# intended (a vendor API client, a tool that only mentions the protocol); when
+# the classifier is wrong, pin the right category in CATEGORY_OVERRIDES
+# instead. An entry excuses the named protocol for the named repo only, so a
+# later loss of another protocol by the same repo still blocks the refresh.
+ACCEPTED_PROTOCOL_LOSSES = {}
+
 # Manual per-repo field overrides for repos whose GitHub record no longer
 # reflects reality — a curated description, or a project that migrated off
 # GitHub to a host the pipeline cannot read (GitLab, self-hosted), whose
@@ -1215,7 +1224,12 @@ def load_classifications(path):
   if not os.path.exists(path):
     return {}
   with open(path, "r", encoding="utf-8", newline="") as f:
-    return {r["full_name"]: r for r in csv.DictReader(f)}
+    return read_classifications(f)
+
+
+def read_classifications(f):
+  """`load_classifications` for an open file, e.g. a baseline piped on stdin."""
+  return {r["full_name"]: r for r in csv.DictReader(f)}
 
 
 def save_classifications(path, cache):
@@ -1236,6 +1250,22 @@ def save_classifications(path, cache):
   os.replace(tmp, path)
 
 
+def _fold_case(cache):
+  """{lowercased full_name: (full_name, row)} for a classifications cache.
+
+  `enrich` folds case when it reuses the cache, but an older file may still
+  hold two spellings of one repo; the classified one wins, so a stale empty
+  duplicate cannot read as a lost category.
+  """
+  folded = {}
+  for full_name in sorted(cache):
+    row = cache[full_name]
+    key = full_name.lower()
+    if key not in folded or not (folded[key][1].get("categories") or "").strip():
+      folded[key] = (full_name, row)
+  return folded
+
+
 def classification_regressions(before, after):
   """Split the empty-category rows of `after` into regressions and newcomers.
 
@@ -1246,13 +1276,17 @@ def classification_regressions(before, after):
   counting empty rows instead conflated the two and blocked the monthly refresh
   every time a README-less repo entered the listing.
 
+  Names are matched case-insensitively, like GitHub's: an owner recasing its
+  name is the same repo, not a regression plus a newcomer.
+
   Returns (lost, arrived_empty), both sorted, so one pass reports every problem.
   """
+  before = _fold_case(before)
   lost, arrived_empty = [], []
-  for full_name, row in after.items():
+  for full_name, row in _fold_case(after).values():
     if (row.get("categories") or "").strip():
       continue
-    prev = before.get(full_name)
+    prev = before.get(full_name.lower(), (None, None))[1]
     if prev is None:
       arrived_empty.append(full_name)
     elif (prev.get("categories") or "").strip():
@@ -1281,50 +1315,389 @@ def _mains(categories):
   return {chunk.split(">", 1)[0].strip() for chunk in categories.split("|") if chunk.strip()}
 
 
-def protocol_losses(before, after):
-  """(full_name, main) pairs for protocol categories a repo had and lost.
+def _label(pair):
+  main, sub = pair
+  return f"{main} > {sub}" if sub else main
 
-  A repo is filed under its protocol when it speaks it; losing one while still
-  classified is the drift a re-classification can introduce without emptying
-  anything, so neither of the other checks sees it. Losing "Other", changing a
-  subcategory, an emptied category and a new repo are not reported here.
+
+def _protocols(mains):
+  return set(mains) - {"Other"}
+
+
+def classification_diff(before, after):
+  """Compare two classifications caches as the README renders them.
+
+  Both sides go through `_effective_categories` with the current
+  CATEGORY_OVERRIDES and SUBCATEGORY_ALIASES, so a reviewed override or an
+  alias fold is not reported as a change; the raw cached categories are kept
+  next to them for diagnosis. Names are matched case-insensitively and reported
+  in `after`'s spelling. A repo present on one side only is a newcomer or a
+  dropped repo, not a change.
+
+  Returns {"repos": [...], "stale_exceptions": [(full_name, protocol), ...]}.
+  Each repo entry, listed when its raw or effective categories differ, is::
+
+    {"full_name": str, "raw_before": str, "raw_after": str,
+     "before": [label], "after": [label],          # effective, "Main > Sub"
+     "added": [label], "removed": [label],
+     "primary_before": label | None, "primary_after": label | None,
+     "primary_changed": bool,
+     "protocol_losses": [{"protocol": str, "reason": str | None,
+                          "status": "unexplained" | "masked" | "accepted"}]}
+
+  A protocol is any main but "Other". Losses are only computed when both raw
+  sides are non-empty: an emptied category is `classification_regressions`'
+  business. "unexplained" is an effective loss nobody reviewed, "accepted" one
+  excused by ACCEPTED_PROTOCOL_LOSSES (with its reason), "masked" a raw loss
+  that CATEGORY_OVERRIDES keeps on the page. A stale exception names a repo
+  absent from `after`, or a protocol it carries again.
   """
-  lost = []
-  for full_name, row in after.items():
-    now = (row.get("categories") or "").strip()
-    prev = ((before.get(full_name) or {}).get("categories") or "").strip()
-    if now and prev:
-      lost += [(full_name, main) for main in sorted(_mains(prev) - _mains(now) - {"Other"})]
-  return sorted(lost, key=lambda pair: (pair[0].lower(), pair[1]))
+  before, after = _fold_case(before), _fold_case(after)
+  repos = []
+  effective_after = {}
+  for key, (full_name, row) in sorted(after.items()):
+    raw_after = (row.get("categories") or "").strip()
+    eff_after = _effective_categories({"full_name": full_name, "categories": raw_after})
+    effective_after[key] = eff_after
+    if key not in before:
+      continue
+    raw_before = (before[key][1].get("categories") or "").strip()
+    eff_before = _effective_categories({"full_name": full_name, "categories": raw_before})
+    if raw_before == raw_after and eff_before == eff_after:
+      continue
+    labels_before = [_label(p) for p in eff_before]
+    labels_after = [_label(p) for p in eff_after]
+    found = []
+    if raw_before and raw_after:
+      eff_kept = _protocols(m for m, _ in eff_after)
+      eff_lost = _protocols(m for m, _ in eff_before) - eff_kept
+      raw_lost = _protocols(_mains(raw_before)) - _protocols(_mains(raw_after))
+      accepted = ACCEPTED_PROTOCOL_LOSSES.get(key, {})
+      for protocol in sorted(eff_lost | (raw_lost & eff_kept)):
+        if protocol in eff_kept:
+          status, reason = "masked", None
+        elif protocol in accepted:
+          status, reason = "accepted", accepted[protocol]
+        else:
+          status, reason = "unexplained", None
+        found.append({"protocol": protocol, "status": status, "reason": reason})
+    primary_before = labels_before[0] if labels_before else None
+    primary_after = labels_after[0] if labels_after else None
+    repos.append({
+      "full_name": full_name, "raw_before": raw_before, "raw_after": raw_after,
+      "before": labels_before, "after": labels_after,
+      "added": [label for label in labels_after if label not in labels_before],
+      "removed": [label for label in labels_before if label not in labels_after],
+      "primary_before": primary_before, "primary_after": primary_after,
+      "primary_changed": bool(primary_before and primary_after
+                              and primary_before != primary_after),
+      "protocol_losses": found,
+    })
+  stale = []
+  for key, protocols in ACCEPTED_PROTOCOL_LOSSES.items():
+    name = after[key][0] if key in after else key
+    carried = {m for m, _ in effective_after.get(key, [])}
+    stale += [(name, protocol) for protocol in protocols
+              if key not in after or protocol in carried]
+  repos.sort(key=lambda r: r["full_name"].lower())
+  return {"repos": repos,
+          "stale_exceptions": sorted(stale, key=lambda p: (p[0].lower(), p[1]))}
+
+
+NO_PROJECTS_BASELINE = "No projects.json baseline: curation movements not reported."
+
+
+def load_projects(path):
+  """{id: record} of a `projects.json` export; ValueError when it is not one."""
+  try:
+    with open(path, "r", encoding="utf-8") as f:
+      payload = json.load(f)
+  except (OSError, ValueError) as e:
+    raise ValueError(f"{path} is not readable JSON: {e}") from e
+  projects = payload.get("projects") if isinstance(payload, dict) else None
+  if not isinstance(projects, list) or not all(
+      isinstance(p, dict) and isinstance(p.get("id"), str) and p["id"] and p.get("curation")
+      for p in projects):
+    raise ValueError(f"{path} is not a projects.json export "
+                     "(a `projects` list of records with a string `id` and `curation`).")
+  by_id = {}
+  duplicates = set()
+  for p in projects:
+    if p["id"] in by_id:
+      duplicates.add(p["id"])
+    by_id[p["id"]] = p
+  if duplicates:
+    # The id is untrusted text that lands in the report and a workflow command.
+    raise ValueError(f"{path} holds duplicate ids: "
+                     + ", ".join(_cell(i) for i in sorted(duplicates)) + ".")
+  return by_id
+
+
+def curation_movements(base, current):
+  """Selection / dormant / to_refine moves between two `load_projects` exports.
+
+  A repo moves when an input of `_curation` changes: its promotion score
+  (which STARRED_USERS starred it, contributor status or a Codeberg
+  source, never the star count), its `dormant` flag (push age, archived), or
+  deprecation wording in its description, which is the classifier's
+  synthesized one unless REPO_OVERRIDES replaces it. Category labels are
+  never compared, and these moves never fail the guard.
+  Returns {"moved": [(name, before, after)], "added": [(name, curation)],
+  "removed": [(name, curation)]}, sorted by id.
+  """
+  def name(record):
+    return record.get("full_name") or record["id"]
+  return {
+    "moved": [(name(current[i]), base[i]["curation"], current[i]["curation"])
+              for i in sorted(base.keys() & current.keys())
+              if base[i]["curation"] != current[i]["curation"]],
+    "added": [(name(current[i]), current[i]["curation"])
+              for i in sorted(current.keys() - base.keys())],
+    "removed": [(name(base[i]), base[i]["curation"])
+                for i in sorted(base.keys() - current.keys())],
+  }
+
+
+def _projects_comparison(args):
+  """(movements or None, warning or None) for `--base-projects` / `--projects`.
+
+  A baseline that is absent (none committed yet, issue #98, or no
+  `--base-projects` at all) is expected, and the report says so without a
+  warning. A fresh export missing next to a baseline, or a file that is
+  present but not an export, is a warning: it points at a broken render, a
+  broken baseline or an export schema change. Curation movements are
+  informational, so neither ever fails the guard.
+  """
+  base_path = getattr(args, "base_projects", None)
+  current_path = getattr(args, "projects", None) or os.path.join("data", PROJECTS_EXPORT)
+  if not base_path or not os.path.exists(base_path):
+    return None, None
+  if not os.path.exists(current_path):
+    return None, f"the fresh export {current_path} is missing."
+  try:
+    return curation_movements(load_projects(base_path), load_projects(current_path)), None
+  except ValueError as e:
+    return None, str(e)
+
+
+def _cell(value):
+  """Untrusted text as one inline code span, safe in a GFM table cell.
+
+  The report is published unescaped (PR body, job summary), and its values
+  come from the classifier's output, GitHub or an export: inside a code span
+  no link, image, HTML or @mention renders. The fence is one backtick longer
+  than any run in the value, padded when the value starts or ends with one;
+  line breaks become spaces. `|` is escaped as `\\|`, which GFM tables resolve
+  before the span is parsed, so it reads as `|`. A `\\` needs no escape: code
+  spans take it literally, and the closing fence always separates it from the
+  next cell's `|`.
+  """
+  text = re.sub(r"\r\n|\r|\n", " ", str(value))
+  if not text:
+    return "(none)"
+  fence = "`" * (max((len(run) for run in re.findall(r"`+", text)), default=0) + 1)
+  pad = " " if text.startswith("`") or text.endswith("`") else ""
+  return f"{fence}{pad}{text}{pad}{fence}".replace("|", "\\|")
+
+
+def _known_label(label):
+  """True when `Main` or `Main > Sub` is in CATEGORY_TREE once aliases apply."""
+  main, sep, sub = (part.strip() for part in label.partition(">"))
+  if main not in CATEGORY_TREE:
+    return False
+  return not sep or _canon_sub(main, sub) in CATEGORY_TREE[main]
+
+
+def _report_label(label):
+  """A category label: plain when the taxonomy knows it, else flagged and quoted.
+
+  A known label is flattened to one line: `_known_label` strips around `>`,
+  so a raw cell such as "OCPP\\n> Simulator" is known, and its line break
+  would split the table row.
+  """
+  label = label.strip()
+  return " ".join(label.split()) if _known_label(label) else f"(unknown label) {_cell(label)}"
+
+
+def _labels(value):
+  """A raw pipe-joined `categories` string, a list of effective labels, or None."""
+  if not value:
+    return "(none)"
+  if isinstance(value, list):
+    return ", ".join(_report_label(v) for v in value) or "(none)"
+  return "\\|".join(_report_label(c) for c in value.split("|") if c.strip()) or "(none)"
+
+
+def _arrow(before, after, render=_labels):
+  return f"{render(before)} → {render(after)}"
+
+
+def classification_report(before, after, curation=None, curation_warning=None):
+  """The guard's findings as a Markdown report, for the step summary and the PR.
+
+  Built from the same helpers the guard prints from, so the two agree. One
+  table per non-empty class; an empty class appears in the counts only.
+  Deterministic: sorted, no timestamp.
+
+  It lists what changes the rendered page, plus masked protocol losses. A
+  raw-only change, one that overrides or aliases keep off the page, is
+  deliberately left out.
+  """
+  lost, arrived_empty = classification_regressions(before, after)
+  diff = classification_diff(before, after)
+  by_name = {r["full_name"].lower(): r for r in diff["repos"]}
+
+  def lost_row(full_name):
+    repo = by_name.get(full_name.lower())
+    if repo is None:
+      return [_cell(full_name), "(none)", "(none)"]
+    return [_cell(full_name), _arrow(repo["raw_before"], repo["raw_after"]),
+            _arrow(repo["before"], repo["after"])]
+
+  def losses(status):
+    rows = []
+    for repo in diff["repos"]:
+      for loss in repo["protocol_losses"]:
+        if loss["status"] == status:
+          row = [_cell(repo["full_name"]), _report_label(loss["protocol"]),
+                 _arrow(repo["raw_before"], repo["raw_after"]),
+                 _arrow(repo["before"], repo["after"])]
+          rows.append(row + [_cell(loss["reason"])] if status == "accepted" else row)
+    return rows
+
+  protocol_columns = ["Repo", "Protocol", "Raw before → raw after",
+                      "Effective before → effective after"]
+  classes = [
+    ("Lost category", ["Repo", "Raw before → raw after", "Effective before → effective after"],
+     [lost_row(n) for n in lost]),
+    ("Unexplained protocol loss", protocol_columns, losses("unexplained")),
+    ("Masked by an override", protocol_columns, losses("masked")),
+    ("Accepted protocol loss", protocol_columns + ["Reason"], losses("accepted")),
+    ("Stale exception", ["Repo", "Protocol"],
+     [[_cell(n), _report_label(p)] for n, p in diff["stale_exceptions"]]),
+    ("Category change", ["Repo", "Added", "Removed", "Raw before → raw after"],
+     [[_cell(r["full_name"]), _labels(r["added"]), _labels(r["removed"]),
+       _arrow(r["raw_before"], r["raw_after"])]
+      for r in diff["repos"] if r["added"] or r["removed"]]),
+    ("Primary category change", ["Repo", "Primary before → after"],
+     [[_cell(r["full_name"]), _arrow(r["primary_before"], r["primary_after"])]
+      for r in diff["repos"] if r["primary_changed"]]),
+    ("Newcomer without a category", ["Repo"], [[_cell(n)] for n in arrived_empty]),
+    # `after[n]`, not the case-folded row: with two spellings of one repo,
+    # the folded row is the classified one, not the bare one reported here.
+    ("Bare main category", ["Repo", "Raw categories"],
+     [[_cell(n), _labels((after[n].get("categories") or "").strip())]
+      for n in bare_main_categories(after)]),
+  ]
+  if curation is not None:
+    classes += [
+      ("Curation movement", ["Repo", "Before → after"],
+       [[_cell(n), _arrow(b, a, _cell)] for n, b, a in curation["moved"]]),
+      ("Project added to the export", ["Repo", "Curation"],
+       [[_cell(n), _cell(c)] for n, c in curation["added"]]),
+      ("Project removed from the export", ["Repo", "Curation"],
+       [[_cell(n), _cell(c)] for n, c in curation["removed"]]),
+    ]
+
+  # Every data cell above went through `_cell` or `_label`; headers and counts are ours.
+  def table(columns, rows):
+    return ["| " + " | ".join(columns) + " |",
+            "| " + " | ".join("---" for _ in columns) + " |"] + \
+           ["| " + " | ".join(str(c) for c in row) + " |" for row in rows]
+
+  lines = ["# Classification report", ""]
+  lines += table(["Class", "Count"], [[title, len(rows)] for title, _, rows in classes])
+  lines.append("")
+  if curation_warning:
+    lines += [f"Curation movements not reported: {curation_warning}", ""]
+  elif curation is None:
+    lines += [NO_PROJECTS_BASELINE, ""]
+  for title, columns, rows in classes:
+    if rows:
+      lines += [f"## {title}", ""] + table(columns, rows) + [""]
+  return "\n".join(lines).rstrip("\n") + "\n"
 
 
 def check_classifications(args):
-  """CI guard: fail when a repo that had a category comes back without one."""
+  """CI guard: fail when a repo lost its category or, unexplained, a protocol.
+
+  With `--report`, the findings are also written as Markdown before any exit,
+  so a blocked run still leaves the report to review. With `--base-projects`,
+  the report adds the curation movements between that export and `--projects`;
+  those never fail the guard. A missing fresh export or an unreadable file is
+  a `::warning::` and a line in the report, never an exit.
+  """
   if args.base == "-":
-    before = {r["full_name"]: r for r in csv.DictReader(sys.stdin)}
+    before = read_classifications(sys.stdin)
   else:
     before = load_classifications(args.base)
   after = load_classifications(args.cache)
 
+  curation, curation_warning = _projects_comparison(args)
+  report_path = getattr(args, "report", None)
+  if report_path:
+    with open(report_path, "w", encoding="utf-8", newline="") as f:
+      f.write(classification_report(before, after, curation, curation_warning))
+
   lost, arrived_empty = classification_regressions(before, after)
+  diff = classification_diff(before, after)
   # Why the category is empty is not knowable from the cache alone — it holds no
   # signal data — so the warning states only the fact. The enrich log is where
   # the reason is.
   for full_name in arrived_empty:
     print(f"::warning::{full_name} entered the listing without a category.")
-  # A warning, not a failure: the repo still renders under its main category,
-  # and blocking the monthly refresh on model drift would cost more than it saves.
-  for full_name, main in protocol_losses(before, after):
-    print(f"::warning::{full_name} lost its {main} category.")
   for full_name in bare_main_categories(after):
     print(f"::warning::{full_name} has a main category without a subcategory.")
+  # Reviewed outcomes and category moves are context for the PR reviewer, not
+  # problems: plain lines, so the run's only annotations stay the ones that
+  # need acting on.
+  counts = {"unexplained": 0, "masked": 0, "accepted": 0}
+  changed = primary = 0
+  for repo in diff["repos"]:
+    name = repo["full_name"]
+    for loss in repo["protocol_losses"]:
+      counts[loss["status"]] += 1
+      if loss["status"] == "unexplained":
+        print(f"::error::{name} lost its {loss['protocol']} category "
+              f"({repo['raw_before']} -> {repo['raw_after']}).")
+      elif loss["status"] == "masked":
+        print(f"ℹ️ {name} lost {loss['protocol']} in its raw categories; "
+              "CATEGORY_OVERRIDES keeps it.")
+      else:
+        print(f"ℹ️ {name} lost {loss['protocol']} (accepted: {loss['reason']})")
+    if repo["added"] or repo["removed"]:
+      changed += 1
+      moves = ([f"+ {', '.join(repo['added'])}"] if repo["added"] else []) + \
+              ([f"- {', '.join(repo['removed'])}"] if repo["removed"] else [])
+      print(f"ℹ️ {name}: {'; '.join(moves)}")
+    if repo["primary_changed"]:
+      primary += 1
+      print(f"ℹ️ {name}: primary category {repo['primary_before']} -> {repo['primary_after']}.")
+  for full_name, protocol in diff["stale_exceptions"]:
+    print(f"ℹ️ ACCEPTED_PROTOCOL_LOSSES excuses {full_name} for {protocol}, "
+          "but the repo is gone or carries it again.")
   for full_name in lost:
     print(f"::error::{full_name} lost the category it had.")
+  summary = (f"{len(after)} repo(s), {len(arrived_empty)} newcomer(s) without a category, "
+             f"{changed} category change(s), {primary} primary change(s), "
+             f"{counts['masked']} masked, {counts['accepted']} accepted, "
+             f"{counts['unexplained']} unexplained protocol loss(es)")
   if lost:
     print(f"❌ Classification regressed: {len(lost)} repo(s) newly lost their category.")
+  if counts["unexplained"]:
+    print(f"❌ Protocol classification regressed: {counts['unexplained']} unexplained "
+          "protocol loss(es). Pin the protocol in CATEGORY_OVERRIDES, or record a "
+          "reviewed exception in ACCEPTED_PROTOCOL_LOSSES.")
+  if curation is not None:
+    print(f"ℹ️ Curation: {len(curation['moved'])} movement(s), "
+          f"{len(curation['added'])} project(s) added to and "
+          f"{len(curation['removed'])} removed from the export.")
+  if curation_warning:
+    print(f"::warning::Curation movements not reported: {curation_warning}")
+  if lost or counts["unexplained"]:
+    print(f"Summary: {summary}.")
     sys.exit(1)
-  print(f"✅ No classification regression — {len(after)} repo(s), "
-        f"{len(arrived_empty)} newcomer(s) without a category.")
+  print(f"✅ No classification regression — {summary}.")
 
 
 def cached_labels(entry):
@@ -2072,12 +2445,22 @@ def main():
   p_render.set_defaults(func=render)
 
   p_check = sub.add_parser("check-classifications",
-                           help="CI guard: fail if a repo lost the category it had.")
+                           help="CI guard: fail if a repo lost the category it had, "
+                                "or a protocol category without a reviewed reason.")
   p_check.add_argument("--base", default="-",
                        help="Baseline cache to compare against; '-' reads stdin "
                             "(e.g. `git show HEAD:classifications.csv | ...`).")
   p_check.add_argument("--cache", default=CLASSIFICATIONS_PATH,
                        help="Cache produced by the run under test.")
+  p_check.add_argument("--report",
+                       help="Also write the findings as a Markdown report to this path "
+                            "(written before the guard exits, even when it fails).")
+  p_check.add_argument("--base-projects",
+                       help="Baseline projects.json export (e.g. from `git show "
+                            "HEAD:data/projects.json`); adds curation movements to the "
+                            "report. Absent file: movements not reported.")
+  p_check.add_argument("--projects", default=os.path.join("data", PROJECTS_EXPORT),
+                       help="Fresh projects.json export to compare --base-projects with.")
   p_check.set_defaults(func=check_classifications)
 
   args = parser.parse_args()

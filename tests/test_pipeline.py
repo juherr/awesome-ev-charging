@@ -7,6 +7,7 @@ themselves are exercised through a stubbed `subprocess.run`.
 
 import csv
 import pathlib
+import re
 import types
 from datetime import datetime, timedelta, timezone
 
@@ -160,37 +161,573 @@ def test_the_guard_warns_on_a_bare_main_without_failing(tmp_path, capsys):
 
 # --- The CI guard: a repo that lost a protocol category ------------------------
 
-def test_a_repo_that_lost_a_protocol_category_is_reported():
+@pytest.fixture
+def curation(monkeypatch):
+    """Empty CATEGORY_OVERRIDES / ACCEPTED_PROTOCOL_LOSSES, filled per test.
+
+    The guard tests never depend on the real curated entries.
+    """
+    overrides, accepted = {}, {}
+    monkeypatch.setattr(pipeline, "CATEGORY_OVERRIDES", overrides)
+    monkeypatch.setattr(pipeline, "ACCEPTED_PROTOCOL_LOSSES", accepted)
+    return types.SimpleNamespace(overrides=overrides, accepted=accepted)
+
+
+def losses(diff, status=None):
+    """(full_name, protocol[, reason]) of the diff's protocol losses."""
+    return [(r["full_name"], loss["protocol"]) + ((loss["reason"],) if loss["reason"] else ())
+            for r in diff["repos"] for loss in r["protocol_losses"]
+            if status is None or loss["status"] == status]
+
+
+def entry(diff, full_name):
+    return next(r for r in diff["repos"] if r["full_name"] == full_name)
+
+
+def run_guard(tmp_path, before, after):
+    base = tmp_path / "base.csv"
+    cache = tmp_path / "classifications.csv"
+    pipeline.save_classifications(base, {r["full_name"]: r for r in before})
+    pipeline.save_classifications(cache, {r["full_name"]: r for r in after})
+    pipeline.check_classifications(types.SimpleNamespace(base=str(base), cache=str(cache)))
+
+
+def test_a_repo_that_lost_a_protocol_category_is_an_unexplained_loss(curation):
     """The #61 drift: a firmware that implements OCPP came back as `Other` only."""
     before = {"acme/fw": cached("acme/fw", "OCPP > Libraries"),
               "acme/meter": cached("acme/meter", "Eichrecht > Misc|Other > Battery")}
     after = {"acme/fw": cached("acme/fw", "Other > EVSE firmware"),
              "acme/meter": cached("acme/meter", "Other > Developer tools & libraries")}
-    assert pipeline.protocol_losses(before, after) == [("acme/fw", "OCPP"),
-                                                       ("acme/meter", "Eichrecht")]
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == losses(diff, "unexplained") == [("acme/fw", "OCPP"),
+                                                           ("acme/meter", "Eichrecht")]
+    fw = entry(diff, "acme/fw")
+    assert fw["raw_before"] == "OCPP > Libraries"
+    assert fw["raw_after"] == "Other > EVSE firmware"
+    assert fw["removed"] == ["OCPP > Libraries"]
+    assert fw["added"] == ["Other > EVSE firmware"]
 
 
-def test_a_changed_protocol_subcategory_or_a_lost_other_is_not_a_protocol_loss():
+def test_a_changed_protocol_subcategory_or_a_lost_other_is_not_a_protocol_loss(curation):
     before = {"acme/sim": cached("acme/sim", "OCPP > Server|Other > Home automation")}
     after = {"acme/sim": cached("acme/sim", "OCPP > Simulator")}
-    assert pipeline.protocol_losses(before, after) == []
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == []
+    sim = entry(diff, "acme/sim")
+    assert sim["removed"] == ["OCPP > Server", "Other > Home automation"]
+    assert sim["added"] == ["OCPP > Simulator"]
 
 
-def test_an_emptied_or_new_repo_is_not_a_protocol_loss():
+def test_an_emptied_or_new_repo_is_not_a_protocol_loss(curation):
+    """An emptied category is the lost-category check's business, and a
+    newcomer had nothing to lose: neither is a change to report here."""
     before = {"acme/lost": cached("acme/lost", "OCPP > Server")}
     after = {"acme/lost": cached("acme/lost", ""), "acme/new": cached("acme/new", "Other > Security")}
-    assert pipeline.protocol_losses(before, after) == []
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == []
+    assert [r["full_name"] for r in diff["repos"]] == ["acme/lost"]
 
 
-def test_the_guard_warns_on_a_protocol_loss_without_failing(tmp_path, capsys):
+def test_an_override_masks_a_raw_protocol_loss(curation):
+    """A reviewed CATEGORY_OVERRIDES fix keeps the protocol on the page."""
+    curation.overrides["acme/fw"] = "OCPP > Libraries|Other > EVSE firmware"
+    before = {"acme/fw": cached("acme/fw", "OCPP > Libraries")}
+    after = {"acme/fw": cached("acme/fw", "Other > EVSE firmware")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == losses(diff, "masked") == [("acme/fw", "OCPP")]
+    fw = entry(diff, "acme/fw")
+    assert fw["added"] == fw["removed"] == []
+    assert fw["primary_changed"] is False
+    assert fw["raw_after"] == "Other > EVSE firmware"
+
+
+def test_alias_folding_adds_and_removes_nothing(curation):
+    """`Charging station map` and `route planner` fold onto one label."""
+    before = {"acme/map": cached("acme/map", "OCPI > Libraries|Other > Charging station map")}
+    after = {"acme/map": cached("acme/map", "OCPI > Libraries|Other > route planner")}
+    diff = pipeline.classification_diff(before, after)
+    # Listed for its raw difference, with nothing moved on the page.
+    amap = entry(diff, "acme/map")
+    assert amap["added"] == amap["removed"] == []
+    assert amap["before"] == amap["after"] == ["OCPI > Libraries", "Other > Maps & route planning"]
+    assert amap["primary_changed"] is False
+    assert losses(diff) == []
+
+
+def test_a_primary_category_change_is_detected(curation):
+    before = {"acme/sim": cached("acme/sim", "OCPP > Server|OCPI > Libraries")}
+    after = {"acme/sim": cached("acme/sim", "OCPI > Libraries|OCPP > Server")}
+    sim = entry(pipeline.classification_diff(before, after), "acme/sim")
+    assert sim["primary_before"] == "OCPP > Server"
+    assert sim["primary_after"] == "OCPI > Libraries"
+    assert sim["primary_changed"] is True
+    assert sim["added"] == sim["removed"] == []
+
+
+def test_a_protocol_first_reorder_is_not_a_primary_change(curation):
+    """The render sorts protocols ahead of `Other`, so the classifier's order
+    between the two moves nothing on the page."""
+    before = {"acme/ha": cached("acme/ha", "OCPP > Server|Other > Home automation")}
+    after = {"acme/ha": cached("acme/ha", "Other > Home automation|OCPP > Server")}
+    diff = pipeline.classification_diff(before, after)
+    assert all(not r["primary_changed"] and not r["added"] and not r["removed"]
+               for r in diff["repos"])
+
+
+def test_an_accepted_loss_is_reported_with_its_reason(curation):
+    curation.accepted["acme/client"] = {"OCPP": "A vendor API client, not OCPP."}
+    before = {"acme/client": cached("acme/client", "OCPP > Libraries")}
+    after = {"acme/client": cached("acme/client", "Other > Developer tools & libraries")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff) == losses(diff, "accepted") == [
+        ("acme/client", "OCPP", "A vendor API client, not OCPP.")]
+    assert diff["stale_exceptions"] == []
+
+
+def test_an_accepted_loss_excuses_only_the_named_protocol(curation):
+    curation.accepted["acme/client"] = {"OCPP": "A vendor API client, not OCPP."}
+    before = {"acme/client": cached("acme/client", "OCPP > Libraries|OCPI > Libraries")}
+    after = {"acme/client": cached("acme/client", "Other > Developer tools & libraries")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff, "accepted") == [("acme/client", "OCPP", "A vendor API client, not OCPP.")]
+    assert losses(diff, "unexplained") == [("acme/client", "OCPI")]
+
+
+def test_an_exception_is_stale_only_when_the_repo_or_the_loss_is_gone(curation):
+    """Next month the base no longer has the protocol either: an unchanged repo
+    still needs its exception, so it is not reported as stale."""
+    curation.accepted.update({
+        "acme/kept": {"OCPP": "Reviewed."},
+        "acme/back": {"OCPP": "Reviewed."},
+        "acme/gone": {"OCPI": "Reviewed."},
+    })
+    before = {"acme/kept": cached("acme/kept", "Other > Security"),
+              "acme/back": cached("acme/back", "Other > Security")}
+    after = {"acme/kept": cached("acme/kept", "Other > Security"),
+             "acme/back": cached("acme/back", "OCPP > Server|Other > Security")}
+    diff = pipeline.classification_diff(before, after)
+    assert diff["stale_exceptions"] == [("acme/back", "OCPP"), ("acme/gone", "OCPI")]
+
+
+def test_a_case_only_rename_is_the_same_repo(curation):
+    before = {"EcoG-io/pyslac": cached("EcoG-io/pyslac", "iso15118 > SLAC")}
+    after = {"ecog-io/pyslac": cached("ecog-io/pyslac", "")}
+    assert pipeline.classification_regressions(before, after) == (["ecog-io/pyslac"], [])
+    after = {"ecog-io/pyslac": cached("ecog-io/pyslac", "Other > Security")}
+    diff = pipeline.classification_diff(before, after)
+    assert losses(diff, "unexplained") == [("ecog-io/pyslac", "iso15118")]
+
+
+def test_a_case_only_rename_is_neither_a_regression_nor_a_newcomer(tmp_path, capsys, curation):
+    run_guard(tmp_path, [cached("EcoG-io/pyslac", "iso15118 > SLAC")],
+              [cached("ecog-io/pyslac", "iso15118 > SLAC")])
+    out = capsys.readouterr().out
+    assert "::error::" not in out
+    assert "::warning::" not in out
+
+
+def test_a_case_duplicate_keeps_the_classified_row(curation):
+    # Sorted, "Acme/fw" comes first: the classified row must win from either side.
+    before = {"Acme/fw": cached("Acme/fw", "OCPP > Libraries"),
+              "acme/fw": cached("acme/fw", "")}
+    after = {"acme/fw": cached("acme/fw", "OCPP > Libraries")}
+    assert pipeline.classification_diff(before, after)["repos"] == []
+    assert pipeline.classification_regressions(before, after) == ([], [])
+
+
+def test_the_guard_fails_on_an_unexplained_protocol_loss(tmp_path, capsys, curation):
+    with pytest.raises(SystemExit) as excinfo:
+        run_guard(tmp_path, [cached("acme/fw", "OCPP > Libraries")],
+                  [cached("acme/fw", "Other > EVSE firmware")])
+    assert excinfo.value.code == 1
+    out = capsys.readouterr().out
+    assert "::error::acme/fw lost its OCPP category" in out
+    assert "1 unexplained protocol loss" in out
+    assert "newly lost their category" not in out
+
+
+def test_the_guard_reports_masked_and_accepted_losses_without_failing(tmp_path, capsys, curation):
+    curation.overrides["acme/fw"] = "OCPP > Libraries"
+    curation.accepted["acme/client"] = {"OCPP": "A vendor API client, not OCPP."}
+    run_guard(tmp_path,
+              [cached("acme/fw", "OCPP > Libraries"), cached("acme/client", "OCPP > Libraries"),
+               cached("acme/sim", "OCPP > Server")],
+              [cached("acme/fw", "Other > EVSE firmware"),
+               cached("acme/client", "Other > Developer tools & libraries"),
+               cached("acme/sim", "OCPP > Simulator")])
+    out = capsys.readouterr().out
+    assert "::error::" not in out
+    assert "acme/fw lost OCPP in its raw categories; CATEGORY_OVERRIDES keeps it" in out
+    assert "acme/client lost OCPP (accepted: A vendor API client, not OCPP.)" in out
+    assert "acme/sim: + OCPP > Simulator; - OCPP > Server" in out
+    assert "1 masked, 1 accepted" in out
+
+
+def test_the_guard_reads_the_base_from_stdin(tmp_path, capsys, monkeypatch, curation):
+    import io
+    base = tmp_path / "base.csv"
+    pipeline.save_classifications(base, {"Acme/FW": cached("Acme/FW", "OCPP > Libraries")})
+    monkeypatch.setattr("sys.stdin", io.StringIO(base.read_text(encoding="utf-8")))
+    cache = tmp_path / "classifications.csv"
+    pipeline.save_classifications(cache, {"acme/fw": cached("acme/fw", "Other > EVSE firmware")})
+    with pytest.raises(SystemExit) as excinfo:
+        pipeline.check_classifications(types.SimpleNamespace(base="-", cache=str(cache)))
+    assert excinfo.value.code == 1
+    assert "::error::acme/fw lost its OCPP category" in capsys.readouterr().out
+
+
+# --- The guard's Markdown report ------------------------------------------------
+
+def guard_report(tmp_path, before, after, expect_exit=False, **extra):
+    """Run the guard with `--report` and return the report it wrote."""
     base = tmp_path / "base.csv"
     cache = tmp_path / "classifications.csv"
-    pipeline.save_classifications(base, {"acme/fw": cached("acme/fw", "OCPP > Libraries")})
-    pipeline.save_classifications(cache, {"acme/fw": cached("acme/fw", "Other > EVSE firmware")})
-    pipeline.check_classifications(types.SimpleNamespace(base=str(base), cache=str(cache)))
+    report = tmp_path / "report" / "classification-report.md"
+    report.parent.mkdir(exist_ok=True)
+    pipeline.save_classifications(base, {r["full_name"]: r for r in before})
+    pipeline.save_classifications(cache, {r["full_name"]: r for r in after})
+    args = types.SimpleNamespace(base=str(base), cache=str(cache), report=str(report),
+                                 base_projects=None,
+                                 projects=str(tmp_path / "absent-projects.json"))
+    args.__dict__.update(extra)
+    if expect_exit:
+        with pytest.raises(SystemExit) as excinfo:
+            pipeline.check_classifications(args)
+        assert excinfo.value.code == 1
+        # The report exists for the run that blocked, which is the one to review.
+        assert report.exists()
+    else:
+        pipeline.check_classifications(args)
+    return report.read_text(encoding="utf-8")
+
+
+def section(report, title):
+    """The body of the `## title` section of a report, up to the next heading."""
+    lines = report.split("\n")
+    start = lines.index(f"## {title}")
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("#")),
+               len(lines))
+    return "\n".join(lines[start + 1:end])
+
+
+def count(report, label):
+    return next(line for line in report.split("\n") if line.startswith(f"| {label} |"))
+
+
+def test_the_report_lists_each_class_with_raw_and_effective_categories(tmp_path, capsys,
+                                                                        curation):
+    curation.overrides["acme/sim"] = "OCPP > Simulator"
+    curation.accepted["acme/client"] = {"OCPP": "A vendor API client, not OCPP."}
+    before = [cached("acme/fw", "OCPP > Libraries"),
+              cached("acme/sim", "OCPP > Simulator"),
+              cached("acme/client", "OCPP > Misc"),
+              cached("acme/move", "OCPP > Server"),
+              cached("acme/empty", "OCPI > Libraries")]
+    after = [cached("acme/fw", "Other > EVSE firmware|Other > Security"),
+             cached("acme/sim", "Other > Developer tools & libraries"),
+             cached("acme/client", "Other > Developer tools & libraries"),
+             cached("acme/move", "OCPI > Libraries|OCPP > Server"),
+             cached("acme/empty", ""),
+             cached("acme/new", ""),
+             cached("acme/bare", "Other")]
+    report = guard_report(tmp_path, before, after, expect_exit=True)
+
+    assert report.startswith("# Classification report\n\n")
+    assert count(report, "Lost category") == "| Lost category | 1 |"
+    assert count(report, "Unexplained protocol loss") == "| Unexplained protocol loss | 1 |"
+    assert count(report, "Masked by an override") == "| Masked by an override | 1 |"
+    assert count(report, "Accepted protocol loss") == "| Accepted protocol loss | 1 |"
+    assert count(report, "Stale exception") == "| Stale exception | 0 |"
+    assert count(report, "Primary category change") == "| Primary category change | 3 |"
+    assert count(report, "Newcomer without a category") == "| Newcomer without a category | 1 |"
+    assert count(report, "Bare main category") == "| Bare main category | 1 |"
+
+    assert "| `acme/empty` | OCPI > Libraries → (none) | OCPI > Libraries → (none) |" \
+        in section(report, "Lost category")
+    assert ("| `acme/fw` | OCPP | OCPP > Libraries → Other > EVSE firmware\\|Other > Security"
+            " | OCPP > Libraries → Other > EVSE firmware, Other > Security |") \
+        in section(report, "Unexplained protocol loss")
+    assert "| `acme/sim` | OCPP |" in section(report, "Masked by an override")
+    assert "| `acme/client` | OCPP |" in section(report, "Accepted protocol loss")
+    assert "`A vendor API client, not OCPP.` |" in section(report, "Accepted protocol loss")
+    assert "| `acme/move` | OCPP > Server → OCPI > Libraries |" \
+        in section(report, "Primary category change")
+    # An empty cell reads `|  |`, which markdownlint's MD060 rejects.
+    assert "| `acme/move` | OCPI > Libraries | (none) |" in section(report, "Category change")
+    assert "|  |" not in report
+    assert "| `acme/new` |" in section(report, "Newcomer without a category")
+    assert "| `acme/bare` | Other |" in section(report, "Bare main category")
+    # Nothing was stale: the class is counted, not given an empty table.
+    assert "## Stale exception" not in report
+    assert "No projects.json baseline: curation movements not reported." in report
+
+
+def test_the_report_counts_stale_exceptions(tmp_path, curation):
+    curation.accepted["acme/gone"] = {"OCPP": "Reviewed."}
+    report = guard_report(tmp_path, [cached("acme/x", "OCPP > Server")],
+                          [cached("acme/x", "OCPP > Server")])
+    assert count(report, "Stale exception") == "| Stale exception | 1 |"
+    assert "| `acme/gone` | OCPP |" in section(report, "Stale exception")
+
+
+def test_the_report_escapes_pipes_in_every_cell(tmp_path, curation):
+    curation.accepted["acme/client"] = {"OCPP": "Client | not a server."}
+    report = guard_report(tmp_path, [cached("acme/client", "OCPP > Misc|Other > Security")],
+                          [cached("acme/client", "Other > Security")])
+    table = section(report, "Accepted protocol loss")
+    assert "OCPP > Misc\\|Other > Security → Other > Security" in table
+    assert "Client \\| not a server." in table
+    for line in table.split("\n"):
+        if line.startswith("| `acme/client`"):
+            assert line.replace("\\|", "").count("|") == 6
+
+
+def outside_code_spans(markdown):
+    """`markdown` with every inline code span removed, as CommonMark reads them:
+    a run of N backticks closes on the next run of exactly N."""
+    return re.sub(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", "", markdown, flags=re.S)
+
+
+def unescaped_pipes(line):
+    return line.replace("\\|", "").count("|")
+
+
+EVIL = "[x](https://evil) <img src=x> @someone `tick` ``ticks"
+
+
+def test_the_report_neutralises_untrusted_text(tmp_path, curation):
+    """Categories come from an LLM and names from GitHub; the report is published
+    unescaped in the PR body and the job summary, so neither may open a link, an
+    image, HTML or a mention there."""
+    name = "acme/" + EVIL + " | x\\"
+    before = [cached(name, "Evil<b> > Server|OCPP > Server"),
+              cached("acme/bare", "OCPP > Server")]
+    after = [cached(name, "OCPP > Server|Other > " + EVIL + "\nline"),
+             cached("acme/bare", "`Other` @someone")]
+    report = guard_report(tmp_path, before, after, expect_exit=True)
+
+    outside = outside_code_spans(report)
+    for marker in ("](", "<img", "<b>", "@someone", "evil", "tick"):
+        assert marker not in outside
+    # A known label stays readable; an unknown one is flagged, then quoted.
+    assert "OCPP > Server" in outside
+    assert "(unknown label) ```Other > [x](https://evil)" in report
+    lines = report.split("\n")
+    for i, line in enumerate(lines):
+        if line.startswith("| ") and lines[i - 1] == "":
+            header = unescaped_pipes(line)
+            j = i + 1
+            while j < len(lines) and lines[j].startswith("|"):
+                assert unescaped_pipes(lines[j]) == header, lines[j]
+                j += 1
+
+
+def test_a_known_label_spanning_lines_keeps_each_row_on_one_line(tmp_path, curation):
+    """`_known_label` strips around `>`, so a raw cell such as "OCPP\\n> Simulator"
+    is known, and returned verbatim its newline split the table row."""
+    report = guard_report(tmp_path, [cached("acme/x", "OCPP > Server")],
+                          [cached("acme/x", "OCPP\n> Simulator|OCPP > Server")])
+    assert "OCPP > Server → OCPP > Simulator\\|OCPP > Server" in report
+    lines = report.split("\n")
+    for i, line in enumerate(lines):
+        if line.startswith("| ") and lines[i - 1] == "":
+            header = unescaped_pipes(line)
+            j = i + 1
+            while j < len(lines) and lines[j] != "":
+                assert lines[j].startswith("|") and unescaped_pipes(lines[j]) == header, lines[j]
+                j += 1
+
+
+def test_the_bare_main_row_shows_the_bare_duplicate(tmp_path, curation):
+    """An older cache may hold two spellings of one repo; the bare one is the
+    one reported, so its row must show its own categories."""
+    before = [cached("Acme/fw", "OCPP > Server")]
+    after = [cached("Acme/fw", "OCPP > Server"), cached("acme/fw", "Other")]
+    report = guard_report(tmp_path, before, after)
+    assert "| `acme/fw` | Other |" in section(report, "Bare main category")
+
+
+def test_the_report_is_deterministic(tmp_path, curation):
+    before = [cached("b/two", "OCPP > Server"), cached("A/one", "OCPI > Libraries")]
+    after = [cached("A/one", "OCPI > Hub"), cached("b/two", "OCPP > Server|OCPI > Hub")]
+    runs = []
+    for name in ("first", "second"):
+        (tmp_path / name).mkdir()
+        runs.append((tmp_path / name / "report" / "classification-report.md",
+                     guard_report(tmp_path / name, before, after)))
+    first = runs[0][1]
+    assert runs[0][0].read_bytes() == runs[1][0].read_bytes()
+    assert first.endswith("\n") and not first.endswith("\n\n")
+    assert first.index("| `A/one` |") < first.index("| `b/two` |")
+
+
+def test_the_report_is_markdownlint_shaped(tmp_path, curation):
+    """Blank lines around headings and tables, one title, no double blank line."""
+    report = guard_report(tmp_path, [cached("acme/fw", "OCPP > Libraries")],
+                          [cached("acme/fw", "Other > EVSE firmware")], expect_exit=True)
+    lines = report.rstrip("\n").split("\n")
+    assert sum(1 for line in lines if line.startswith("# ")) == 1
+    assert "\n\n\n" not in report
+    for i, line in enumerate(lines):
+        if line.startswith("#") and i:
+            assert lines[i - 1] == "" and lines[i + 1] == ""
+        if line.startswith("|") and (i == 0 or not lines[i - 1].startswith("|")):
+            assert lines[i - 1] == ""
+        if line.startswith("|") and i + 1 < len(lines) and not lines[i + 1].startswith("|"):
+            assert lines[i + 1] == ""
+
+
+def test_the_guard_writes_no_report_without_the_flag(tmp_path, curation):
+    run_guard(tmp_path, [cached("acme/x", "OCPP > Server")], [cached("acme/x", "OCPP > Server")])
+    assert not list(tmp_path.glob("*.md"))
+
+
+# --- Curation movements from the projects.json export -----------------------------
+
+def projects_file(path, records):
+    import json
+    path.write_text(json.dumps({"schema_version": "1.0", "projects": [
+        {"id": full_name.lower(), "full_name": full_name, "curation": block}
+        for full_name, block in records]}), encoding="utf-8")
+    return str(path)
+
+
+def test_the_report_lists_curation_movements(tmp_path, capsys, curation):
+    base = projects_file(tmp_path / "base-projects.json",
+                         [("acme/up", "to_refine"), ("acme/down", "selection"),
+                          ("acme/same", "selection"), ("acme/gone", "dormant")])
+    fresh = projects_file(tmp_path / "projects.json",
+                          [("acme/up", "selection"), ("acme/down", "dormant"),
+                           ("acme/same", "selection"), ("acme/new", "to_refine")])
+    rows = [cached("acme/x", "OCPP > Server")]
+    report = guard_report(tmp_path, rows, rows, base_projects=base, projects=fresh)
+    assert count(report, "Curation movement") == "| Curation movement | 2 |"
+    assert count(report, "Project added to the export") == "| Project added to the export | 1 |"
+    assert count(report, "Project removed from the export") \
+        == "| Project removed from the export | 1 |"
+    moves = section(report, "Curation movement")
+    assert "| `acme/down` | `selection` → `dormant` |" in moves
+    assert "| `acme/up` | `to_refine` → `selection` |" in moves
+    assert "acme/same" not in report
+    assert "| `acme/new` | `to_refine` |" in section(report, "Project added to the export")
+    assert "| `acme/gone` | `dormant` |" in section(report, "Project removed from the export")
+    assert "No projects.json baseline" not in report
+    # Fresh metadata moves blocks: that never fails the guard.
+    assert "✅" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("which", ["base", "flag"])
+def test_a_missing_projects_baseline_is_reported_not_failed(tmp_path, curation, which):
+    fresh = projects_file(tmp_path / "projects.json", [("acme/x", "dormant")])
+    extra = {"base": {"base_projects": str(tmp_path / "nope.json"), "projects": fresh},
+             "flag": {"base_projects": None, "projects": fresh}}[which]
+    rows = [cached("acme/x", "OCPP > Server")]
+    report = guard_report(tmp_path, rows, rows, **extra)
+    assert "No projects.json baseline: curation movements not reported." in report
+    assert "| Curation movement |" not in report
+
+
+def test_a_missing_fresh_export_is_not_reported_as_a_missing_baseline(tmp_path, capsys,
+                                                                      curation):
+    base = projects_file(tmp_path / "base-projects.json", [("acme/x", "selection")])
+    missing = tmp_path / "nope.json"
+    rows = [cached("acme/x", "OCPP > Server")]
+    report = guard_report(tmp_path, rows, rows, base_projects=base, projects=str(missing))
+    # The baseline is there: saying it is not would send the reviewer the wrong way.
+    assert "No projects.json baseline" not in report
+    assert (f"Curation movements not reported: the fresh export {missing} is missing."
+            in report)
+    assert "| Curation movement |" not in report
     out = capsys.readouterr().out
-    assert "::warning::acme/fw lost its OCPP category" in out
+    assert f"::warning::Curation movements not reported: the fresh export {missing}" in out
+    assert "✅" in out
+
+
+@pytest.mark.parametrize("which", ["base", "fresh"])
+@pytest.mark.parametrize("content", ["{not json", '{"projects": [{"full_name": "a/b"}]}',
+                                     '["a list"]'])
+def test_an_invalid_projects_file_warns_without_failing_the_guard(tmp_path, capsys, curation,
+                                                                  content, which):
+    bad = tmp_path / f"{which}-projects-bad.json"
+    bad.write_text(content, encoding="utf-8")
+    good = projects_file(tmp_path / "projects.json", [("acme/x", "selection")])
+    extra = {"base": {"base_projects": str(bad), "projects": good},
+             "fresh": {"base_projects": good, "projects": str(bad)}}[which]
+    rows = [cached("acme/x", "OCPP > Server")]
+    # Curation movements are informational: a corrupt baseline or an export
+    # schema change must not block the classification refresh.
+    report = guard_report(tmp_path, rows, rows, **extra)
+    assert f"Curation movements not reported: {bad}" in report
+    assert "No projects.json baseline" not in report
+    out = capsys.readouterr().out
+    assert f"::warning::Curation movements not reported: {bad}" in out
     assert "::error::" not in out
+    assert "✅" in out
+
+
+@pytest.mark.parametrize("which", ["base", "fresh"])
+def test_a_non_string_project_id_warns_without_failing_the_guard(tmp_path, capsys, curation,
+                                                                 which):
+    """An int id next to string ids made `curation_movements` sort mixed keys:
+    an uncaught TypeError, where the guard must only warn."""
+    import json
+    bad = tmp_path / f"{which}-projects-bad.json"
+    bad.write_text(json.dumps({"projects": [
+        {"id": 1, "full_name": "acme/int", "curation": "selection"},
+        {"id": "acme/y", "full_name": "acme/y", "curation": "selection"}]}), encoding="utf-8")
+    good = projects_file(tmp_path / "projects.json",
+                         [("acme/x", "selection"), ("acme/z", "dormant")])
+    extra = {"base": {"base_projects": str(bad), "projects": good},
+             "fresh": {"base_projects": good, "projects": str(bad)}}[which]
+    rows = [cached("acme/x", "OCPP > Server")]
+    report = guard_report(tmp_path, rows, rows, **extra)
+    assert f"Curation movements not reported: {bad}" in report
+    out = capsys.readouterr().out
+    assert f"::warning::Curation movements not reported: {bad}" in out
+    assert "✅" in out
+
+
+@pytest.mark.parametrize("which", ["base", "fresh"])
+def test_a_duplicate_project_id_warns_and_names_it(tmp_path, capsys, curation, which):
+    """A dict built from the records silently kept the last duplicate."""
+    import json
+    bad = tmp_path / f"{which}-projects-dup.json"
+    bad.write_text(json.dumps({"projects": [
+        {"id": "acme/dup", "full_name": "acme/dup", "curation": "selection"},
+        {"id": "acme/x", "full_name": "acme/x", "curation": "selection"},
+        {"id": "acme/dup", "full_name": "acme/dup", "curation": "dormant"}]}),
+        encoding="utf-8")
+    good = projects_file(tmp_path / "projects.json", [("acme/x", "selection")])
+    extra = {"base": {"base_projects": str(bad), "projects": good},
+             "fresh": {"base_projects": good, "projects": str(bad)}}[which]
+    rows = [cached("acme/x", "OCPP > Server")]
+    report = guard_report(tmp_path, rows, rows, **extra)
+    assert f"Curation movements not reported: {bad}" in report
+    assert "acme/dup" in report
+    assert "| Curation movement |" not in report
+    out = capsys.readouterr().out
+    assert f"::warning::Curation movements not reported: {bad}" in out
+    assert "✅" in out
+
+
+def test_an_invalid_projects_file_leaves_a_regression_failing(tmp_path, capsys, curation):
+    bad = tmp_path / "base-projects.json"
+    bad.write_text("{not json", encoding="utf-8")
+    fresh = projects_file(tmp_path / "projects.json", [("acme/x", "selection")])
+    report = guard_report(tmp_path, [cached("acme/x", "OCPP > Server")], [cached("acme/x", "")],
+                          expect_exit=True, base_projects=str(bad), projects=fresh)
+    assert f"Curation movements not reported: {bad}" in report
+    assert "::error::acme/x lost the category it had." in capsys.readouterr().out
+
+
+def test_accepted_protocol_losses_are_keyed_lowercase_with_reasons():
+    for full_name, protocols in pipeline.ACCEPTED_PROTOCOL_LOSSES.items():
+        assert full_name == full_name.lower()
+        assert protocols
+        for protocol, reason in protocols.items():
+            # A misspelt main would excuse nothing and never read as stale.
+            assert protocol in pipeline.CATEGORY_TREE and protocol != "Other"
+            assert reason.strip()
 
 
 # --- Rendering: placement and subcategories outside the taxonomy --------------
