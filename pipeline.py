@@ -1538,6 +1538,10 @@ def classification_report(before, after, curation=None, curation_warning=None):
   Built from the same helpers the guard prints from, so the two agree. One
   table per non-empty class; an empty class appears in the counts only.
   Deterministic: sorted, no timestamp.
+
+  It lists what changes the rendered page, plus masked protocol losses. A
+  raw-only change, one that overrides or aliases keep off the page, is
+  deliberately left out.
   """
   lost, arrived_empty = classification_regressions(before, after)
   diff = classification_diff(before, after)
