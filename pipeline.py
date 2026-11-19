@@ -1532,19 +1532,19 @@ def _arrow(before, after, render=_labels):
   return f"{render(before)} → {render(after)}"
 
 
-def classification_report(before, after, curation=None, curation_warning=None):
+def classification_report(after, lost, arrived_empty, diff, curation=None,
+                          curation_warning=None):
   """The guard's findings as a Markdown report, for the step summary and the PR.
 
-  Built from the same helpers the guard prints from, so the two agree. One
-  table per non-empty class; an empty class appears in the counts only.
-  Deterministic: sorted, no timestamp.
+  Formats the findings the guard computed (`classification_regressions` and
+  `classification_diff`), so the two agree; `after` is the current cache, read
+  for the bare main categories. One table per non-empty class; an empty class
+  appears in the counts only. Deterministic: sorted, no timestamp.
 
   It lists what changes the rendered page, plus masked protocol losses. A
   raw-only change, one that overrides or aliases keep off the page, is
   deliberately left out.
   """
-  lost, arrived_empty = classification_regressions(before, after)
-  diff = classification_diff(before, after)
   by_name = {r["full_name"].lower(): r for r in diff["repos"]}
 
   def lost_row(full_name):
@@ -1634,13 +1634,14 @@ def check_classifications(args):
   after = load_classifications(args.cache)
 
   curation, curation_warning = _projects_comparison(args)
+  lost, arrived_empty = classification_regressions(before, after)
+  diff = classification_diff(before, after)
   report_path = getattr(args, "report", None)
   if report_path:
     with open(report_path, "w", encoding="utf-8", newline="") as f:
-      f.write(classification_report(before, after, curation, curation_warning))
+      f.write(classification_report(after, lost, arrived_empty, diff, curation,
+                                    curation_warning))
 
-  lost, arrived_empty = classification_regressions(before, after)
-  diff = classification_diff(before, after)
   # Why the category is empty is not knowable from the cache alone — it holds no
   # signal data — so the warning states only the fact. The enrich log is where
   # the reason is.
