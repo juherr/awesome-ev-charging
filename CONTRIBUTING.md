@@ -31,7 +31,8 @@ commercial platforms on purpose (see
 [Adding or correcting a CSMS entry](#adding-or-correcting-a-csms-entry)). The
 criterion is usefulness to developers, not whether something is free or paid.
 
-**Out of scope**, when they offer no meaningful technical resource:
+**Out of scope**, unless they are open source or offer a meaningful technical
+resource:
 
 - consumer-facing charging apps;
 - eMSP subscriptions and charge cards;
