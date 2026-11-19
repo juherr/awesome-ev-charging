@@ -39,6 +39,7 @@ A carefully curated list of specifications, tools, and resources for electric ve
   - [OSCP](#oscp)
   - [Other](#other)
   - [Uncategorized](#uncategorized)
+- [Open Data](#open-data)
 <!-- END GENERATED TOC -->
 
 The diagram below places each protocol on the link it covers, from the vehicle to the roaming partners and the grid.
@@ -827,6 +828,14 @@ This list features actively maintained, curated projects. Dormant, archived, or 
 - [vampirebyte/ocpp-gatling-test](https://github.com/vampirebyte/ocpp-gatling-test) (Java · ⭐ 1)
 
 <!-- END GENERATED PROJECTS -->
+
+## Open Data
+
+Datasets and data APIs about EV charging. Where a project also publishes its code, the repository appears in the generated listing above.
+
+- [LiveChargeMap open statistics](https://livechargemap.com/stats) - Daily statistics on the share of public charge points reporting live availability status, by country and operator, in JSON and CSV, under CC BY 4.0 with the credit "LiveChargeMap".
+- [Open Charge Map API](https://openchargemap.org/develop/api) - Global crowdsourced registry of charging locations with a free REST API (key required); user-contributed data under CC BY 4.0, imported data under each provider's terms.
+- [Open IDRO Directory API](https://idro.juherr.dev/docs) - Read-only API over CPO and eMSP e-mobility identifiers aggregated from national IDRO registries, with per-source provenance; reuse terms vary by source.
 
 ## Contributing
 
