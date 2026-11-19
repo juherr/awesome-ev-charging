@@ -11,29 +11,10 @@ import csv
 import pytest
 
 import csms
+from csms_helpers import cert, stub_github, vendor
 
 
 # --- Fixtures -----------------------------------------------------------------
-
-def cert(company="Acme Ltd", product="Acme CSMS", type_="Core + S",
-         version="OCPP 2.0.1", software="1.0", number="OCA.1", url="https://oca/1.pdf",
-         link="https://oca/acme", country="France", date="2024-01-01"):
-  """One row shaped like csms-certificates.csv, every column present."""
-  row = {field: "" for field in csms.CERT_FIELDS}
-  row.update(certificate_no=number, company=company, company_link=link,
-             country=country, product_designation=product, certificate_type=type_,
-             software_version=software, protocol_version=version,
-             date_of_registration=date, certificate_url=url,
-             product_type=csms.OCA_PRODUCT_TYPE)
-  return row
-
-
-def vendor(**overrides):
-  """One row shaped like csms.csv, every column present and empty by default."""
-  row = {field: "" for field in csms.VENDOR_FIELDS}
-  row.update(overrides)
-  return row
-
 
 def render(certs=(), vendors=(), claims=None):
   """Merge and render, the way cmd_render does, without touching the filesystem."""
@@ -53,13 +34,6 @@ def feature_row(entries, index=0):
   """One rendered annex row, keyed by column name."""
   return dict(zip(csms.FEATURE_TABLE_HEADERS,
                   csms.render_feature_row(entries[index]), strict=True))
-
-
-def stub_github(monkeypatch, **repo_fields):
-  """Answer enrich_from_github's only call without touching the network."""
-  monkeypatch.setattr(csms.pipeline, "get_repo_data",
-                      lambda repo, headers: {"html_url": f"https://github.com/{repo}",
-                                             **repo_fields})
 
 
 def write_features(tmp_path, rows):

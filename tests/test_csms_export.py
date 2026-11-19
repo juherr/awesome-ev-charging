@@ -17,7 +17,7 @@ import pytest
 
 import csms
 import pipeline
-from test_csms import cert, stub_github, vendor
+from csms_helpers import cert, stub_github, vendor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSMS_JSON = os.path.join("data", csms.CSMS_EXPORT)
