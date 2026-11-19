@@ -1436,8 +1436,12 @@ def load_projects(path):
 def curation_movements(base, current):
   """Selection / dormant / to_refine moves between two `load_projects` exports.
 
-  Fresh stars, pushes and dormancy move a repo between blocks; the
-  classification has no part in it, so these never fail the guard.
+  A repo moves when an input of `_curation` changes: its promotion score
+  (which STARRED_USERS starred it, contributor status or a Codeberg
+  source, never the star count), its `dormant` flag (push age, archived), or
+  deprecation wording in its description, which is the classifier's
+  synthesized one unless REPO_OVERRIDES replaces it. Category labels are
+  never compared, and these moves never fail the guard.
   Returns {"moved": [(name, before, after)], "added": [(name, curation)],
   "removed": [(name, curation)]}, sorted by id.
   """
