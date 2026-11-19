@@ -11,7 +11,8 @@ assignees: ''
 Scope: open-source projects, developer tools, protocol implementations,
 specifications and other public technical resources. Consumer charging apps,
 eMSP subscriptions, payment services and marketing-only product pages are out
-of scope when they offer no meaningful technical resource. See
+of scope unless they are open source or offer a meaningful technical resource.
+See
 https://github.com/juherr/awesome-ev-charging/blob/main/CONTRIBUTING.md#scope
 -->
 
