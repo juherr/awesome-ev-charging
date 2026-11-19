@@ -65,10 +65,13 @@ INLINE_LINK = re.compile(
 )
 # `[label]: target` — but not a footnote definition `[^1]: text`.
 REFERENCE_DEFINITION = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(?:<([^>]*)>|(\S+))")
-# An inline HTML tag on one line, and its `href` / `src` attribute values.
+# An inline HTML tag on one line, and its `href` / `src` attribute values:
+# double-quoted, single-quoted, or unquoted (no whitespace nor "'=<>`, as
+# the HTML spec defines an unquoted attribute value).
 HTML_TAG = re.compile(r"<[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?>")
 HTML_LINK_ATTRIBUTE = re.compile(
-    r"\s(?:href|src)\s*=\s*(?:\"([^\"]*)\"|'([^']*)')", re.IGNORECASE
+    r"\s(?:href|src)\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s\"'=<>`]+))",
+    re.IGNORECASE,
 )
 # A CommonMark URI autolink `<scheme:...>`; `](<target>)` is a link
 # destination, already matched by INLINE_LINK.
@@ -188,9 +191,9 @@ def _line_links(line):
         found.append((match.start(), target))
     for tag in HTML_TAG.finditer(line):
         for attribute in HTML_LINK_ATTRIBUTE.finditer(tag.group(0)):
-            target = attribute.group(1)
-            if target is None:
-                target = attribute.group(2)
+            target = next(
+                value for value in attribute.groups() if value is not None
+            )
             found.append((tag.start() + attribute.start(), target))
     for match in AUTOLINK.finditer(line):
         found.append((match.start(), match.group(1)))
@@ -327,6 +330,19 @@ def test_extracts_href_and_src_from_inline_html():
         (1, "docs/a.md"),
         (1, "img/logo.png"),
         (2, "csms.md"),
+    ]
+
+
+def test_extracts_unquoted_href_and_src_from_inline_html():
+    text = (
+        "<img src=missing.png> and <a class=x HREF=docs/x.md>X</a>\n"
+        '<a href="quoted.md">Q</a> <img SRC=img/logo.png alt=logo>\n'
+    )
+    assert extract_links(text) == [
+        (1, "missing.png"),
+        (1, "docs/x.md"),
+        (2, "quoted.md"),
+        (2, "img/logo.png"),
     ]
 
 
