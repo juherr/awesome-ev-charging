@@ -121,6 +121,9 @@ mise run enrich
   Run a plain `enrich` **before** the prompt edit and commit its cache: the
   signature cannot tell a prompt edit from a repo edit, so `--restamp` would
   also adopt answers made stale by a changed README, description or topics.
+  Its summary must read `failed: 0` and `README unreadable: 0`: a repo that
+  failed either way keeps its stale entry, which `--restamp` would adopt too.
+  Re-run `enrich` until both counts are zero.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
