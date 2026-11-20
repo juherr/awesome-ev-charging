@@ -11,9 +11,12 @@ a bad curated row fails there as well as at render time. `tests/test_pipeline.py
 covers `pipeline.py`'s classification layer — the CI guard, the "is there
 anything to classify" rule, the backends' failure contract and what `enrich`
 writes to the durable cache — with the backend and the README fetch stubbed, so
-it needs no network and spawns no LLM CLI. Apart from that and the JSON
-export below, `pipeline.py` is untested; its pure functions can be exercised by importing `pipeline` and
-calling `build_repo_record` / `days_since_push` / `parse_categories` directly.
+it needs no network and spawns no LLM CLI. The same file also covers category
+parsing and the taxonomy aliases, README fetching over mocked HTTP (absent
+versus unreadable, the byte-identical cache, the repo's host), protocol version
+extraction, GitHub and Codeberg record building (`build_repo_record`,
+`days_since_push`, dormancy), `ingest` keeping its previous CSV when a Codeberg
+repo is unreadable, and the promotion of a Codeberg repo to the Selection.
 
 `tests/test_vendored_assets.py` pins every vendored third-party file under
 `ocpp/`, `ocpi/`, `oicp/`, `emi3/`, `eichrecht/`, `nemo/` and `oscp/` with the
