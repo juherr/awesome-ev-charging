@@ -117,7 +117,9 @@ mise run enrich
   as current; only those buckets, minus repos pinned in `CATEGORY_OVERRIDES`,
   are asked again. To let Copilot do it in CI instead, run the
   `refresh-metadata` workflow by hand with `restamp` ticked and the buckets in
-  `reask_categories`, `;`-separated.
+  `reask_categories`, `;`-separated. The workflow checks out `main` whatever
+  branch it is fired from, so merge the prompt edit and the plain run's cache
+  into `main` first, or it restamps against the old prompt.
   Run a plain `enrich` **before** the prompt edit and commit its cache: the
   signature cannot tell a prompt edit from a repo edit, so `--restamp` would
   also adopt answers made stale by a changed README, description or topics.
