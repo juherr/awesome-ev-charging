@@ -29,7 +29,8 @@ the verbatim OCA `ReadMe.md` files are. It also checks that the Allowed and
 Unknown counts of `docs/third-party-assets.md` add up to the manifest. After a
 deliberate addition, removal or upgrade, update the inventory and run
 `python tests/vendored_manifest.py --write`; never regenerate to silence an
-unexplained change.
+unexplained change. Both the test and `--write` list files with `git ls-files`,
+so `git add` a new file first: an untracked one is neither pinned nor reported.
 
 `tests/test_oscp_schemas.py` takes the `oscp/OSCP-2.0/` schema set from that
 manifest and proves each defect listed in its README, and that the local
