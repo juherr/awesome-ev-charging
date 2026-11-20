@@ -132,6 +132,10 @@ mise run enrich
   workflow re-runs `ingest` and fetches every README afresh, so in CI a repo
   edited since the committed plain run has its stale answer adopted: restamp
   locally when that matters.
+  The restamp's own summary must read `failed: 0` too: a re-asked repo whose
+  call failed keeps its old bucket, and `enrich` still exits 0 when another
+  call succeeded. Re-run the same restamp command, same `--reask-category`
+  arguments, until it does, and only then render.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
