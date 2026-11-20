@@ -99,7 +99,8 @@ In a git worktree (agent stacks put them under `.context/`):
   with `MISE_TRUSTED_CONFIG_PATHS=$PWD` instead of trusting the worktree.
 - awesome-lint rejects a worktree (its `.git` is a file) and a branch with no
   upstream (`remark-lint:awesome-github`): run it in a throwaway `git clone`
-  whose `origin` is the GitHub URL.
+  of the GitHub URL, after copying the worktree's `README.md` over the
+  clone's, so the lint reads your changes, not `main`'s.
 - Reuse the main checkout's interpreter: `<main>/.venv/bin/python -m pytest`,
   run from the worktree root, imports the worktree's modules.
 
