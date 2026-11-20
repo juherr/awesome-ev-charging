@@ -52,7 +52,8 @@ tracked file, or a directory holding one — compared case-sensitively as on the
 Linux runner, so a link that only works on macOS fails. It reads Markdown links
 and images, reference definitions, `href` / `src` in inline HTML and
 `<https://…>` autolinks. Anchors are not checked, and links in code or in HTML
-comments are skipped. The three verbatim OCA `ReadMe.md`
+comments are skipped, as is an `href` / `src` in an HTML tag split across
+lines: tags are matched one line at a time. The three verbatim OCA `ReadMe.md`
 files are checked too, though markdownlint skips them (see `AGENTS.md`): a link that only
 an edit of their bytes could fix goes in `VENDORED_LINK_EXCEPTIONS` as an exact
 `(file, target)` pair (empty today), never by skipping the file.
