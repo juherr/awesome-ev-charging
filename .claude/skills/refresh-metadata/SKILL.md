@@ -123,7 +123,15 @@ mise run enrich
   also adopt answers made stale by a changed README, description or topics.
   Its summary must read `failed: 0` and `README unreadable: 0`: a repo that
   failed either way keeps its stale entry, which `--restamp` would adopt too.
-  Re-run `enrich` until both counts are zero.
+  Re-run `enrich` until both counts are zero. Then edit the prompt and
+  restamp at once, from the same `repos.csv` (no `ingest` in between) and
+  without clearing `cache_github/`: `enrich` takes the description and topics
+  from that CSV and the README from a cache entry kept for one day
+  (`CACHE_TTL`), so both runs read the same inputs and only the prompt is
+  stale. A README whose cache entry expires in between is fetched again. The
+  workflow re-runs `ingest` and fetches every README afresh, so in CI a repo
+  edited since the committed plain run has its stale answer adopted: restamp
+  locally when that matters.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
