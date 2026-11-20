@@ -193,7 +193,7 @@ filed under the CSMS product type — those are left alone.
 
 **Product** links to the vendor's own site, or to the repository for a
 source-available project. **Company** links to the vendor's **OCA participant
-page** where the registry provides one (158 of the 293 certificates); that page
+page** where the registry provides one (about half of the certificates); that page
 lists the vendor's certificates and postal address.
 
 **OCA certificates** lists the certificates found in the mirrored registry. An
@@ -237,8 +237,8 @@ money, and vendor documentation is incomplete by nature. A vendor certified for
 Each certificate PDF names the exact software version tested. A vendor being in
 this list says nothing about the version you are about to deploy.
 
-**The certified set is geographically skewed.** 194 of the 293 CSMS certificates
-are held by South Korean companies, because certification is effectively required
+**The certified set is geographically skewed.** About two thirds of the CSMS
+certificates are held by South Korean companies, because certification is effectively required
 there. The OCA registry is an exhaustive list of *certified* CSMS, not a
 representative sample of the market — several major platforms are absent simply
 because they never applied.
