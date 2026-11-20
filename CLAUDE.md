@@ -3,7 +3,9 @@
 @AGENTS.md
 
 The import above is the shared guidance — repository layout, commands,
-`pipeline.py` and `csms.py` architecture, conventions. **Read it first.** This
+conventions, and summaries of `pipeline.py` and `csms.py` whose architecture
+lives in `docs/pipeline-architecture.md` and `docs/csms-architecture.md`.
+**Read it first.** This
 file adds only what is specific to Claude Code, so anything you learn that holds
 for every agent belongs in `AGENTS.md`, not here.
 
@@ -42,4 +44,5 @@ the same contract is duplicated — change one, change all of them.
 - The pinned Python lives in mise's venv at `.venv/`. It has no `pip`; use
   `uv pip install --python .venv/bin/python …` or the mise tasks.
 - `python` on `PATH` is not the project interpreter unless mise has activated
-  the directory. `.venv/bin/python` always is.
+  the directory. `.venv/bin/python` is, once it exists: a fresh Conductor
+  workspace has none until `mise trust && mise run install-dev`.

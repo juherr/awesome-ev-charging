@@ -28,7 +28,7 @@ category to pin, no issue to close. If the goal is to add or remove one specific
 repo, use `add-project` instead — it handles the discovery + reconciliation
 steps this skill deliberately skips.
 
-Read `AGENTS.md` in the repo root for the authoritative "why" behind the
+Read `AGENTS.md` and `docs/pipeline-architecture.md` for the authoritative "why" behind the
 pipeline; this skill is the executable "how" for the refresh case.
 
 ## Preconditions
@@ -117,7 +117,27 @@ mise run enrich
   as current; only those buckets, minus repos pinned in `CATEGORY_OVERRIDES`,
   are asked again. To let Copilot do it in CI instead, run the
   `refresh-metadata` workflow by hand with `restamp` ticked and the buckets in
-  `reask_categories`, `;`-separated.
+  `reask_categories`, `;`-separated. The workflow checks out `main` whatever
+  branch it is fired from, so merge the prompt edit and the plain run's cache
+  into `main` first, or it restamps against the old prompt.
+  Run a plain `enrich` **before** the prompt edit and commit its cache: the
+  signature cannot tell a prompt edit from a repo edit, so `--restamp` would
+  also adopt answers made stale by a changed README, description or topics.
+  Its summary must read `failed: 0` and `README unreadable: 0`: a repo that
+  failed either way keeps its stale entry, which `--restamp` would adopt too.
+  Re-run `enrich` until both counts are zero. Then edit the prompt and
+  restamp at once, from the same `repos.csv` (no `ingest` in between) and
+  without clearing `cache_github/`: `enrich` takes the description and topics
+  from that CSV and the README from a cache entry kept for one day
+  (`CACHE_TTL`), so both runs read the same inputs and only the prompt is
+  stale. A README whose cache entry expires in between is fetched again. The
+  workflow re-runs `ingest` and fetches every README afresh, so in CI a repo
+  edited since the committed plain run has its stale answer adopted: restamp
+  locally when that matters.
+  The restamp's own summary must read `failed: 0` too: a re-asked repo whose
+  call failed keeps its old bucket, and `enrich` still exits 0 when another
+  call succeeded. Re-run the same restamp command, same `--reask-category`
+  arguments, until it does, and only then render.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
