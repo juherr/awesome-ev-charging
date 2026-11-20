@@ -118,6 +118,9 @@ mise run enrich
   are asked again. To let Copilot do it in CI instead, run the
   `refresh-metadata` workflow by hand with `restamp` ticked and the buckets in
   `reask_categories`, `;`-separated.
+  Run a plain `enrich` **before** the prompt edit and commit its cache: the
+  signature cannot tell a prompt edit from a repo edit, so `--restamp` would
+  also adopt answers made stale by a changed README, description or topics.
 - **Never pass `--refresh`** — it re-classifies everything and would blow away
   any hand-pinned `classifications.csv` cells. There is no repo-scoped form of
   it: the only reason to accept a full re-classification is to clear an empty
