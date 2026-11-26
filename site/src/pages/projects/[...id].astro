@@ -1,0 +1,384 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import { protocolLabel } from '../../lib/counts';
+import { getData, type Project } from '../../lib/data';
+import { CURATION_HELP, CURATION_LABELS, serialiseState, DEFAULT_STATE } from '../../lib/filter';
+import {
+  UNKNOWN_MARK,
+  correctionUrl,
+  discoveredViaText,
+  formatCount,
+  formatDate,
+  hostLabel,
+  sourceLabel,
+} from '../../lib/format';
+import { projectPath, url } from '../../lib/url';
+
+export const getStaticPaths = (() =>
+  getData().projects.map((project) => ({ params: { id: project.id }, props: { project } }))) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+
+const { project: p } = Astro.props;
+
+/** The directory filtered on a protocol (and category), every curation state included. */
+const directory = (protocol: string, category: string | null = null) =>
+  `${url('projects/')}?${serialiseState({
+    ...DEFAULT_STATE,
+    protocol,
+    category,
+    states: ['selection', 'dormant', 'to_refine'],
+  })}`;
+
+const primary = p.primary_category ?? p.categories[0] ?? null;
+const list = (values: string[] | null) => (values?.length ? values.join(', ') : UNKNOWN_MARK);
+const flag = (value: boolean | null) => (value === null ? 'Unknown' : value ? 'Yes' : 'No');
+
+type Facet = { label: string; value: string; href?: string };
+const facets: Facet[] = [];
+if (p.categories.length) {
+  for (const c of p.categories) {
+    facets.push({ label: 'Protocol', value: protocolLabel(c.main), href: directory(c.main) });
+    facets.push({
+      label: 'Category',
+      value: c.sub ?? UNKNOWN_MARK,
+      href: c.sub ? directory(c.main, c.sub) : undefined,
+    });
+  }
+} else {
+  facets.push({ label: 'Protocol', value: 'Unknown' }, { label: 'Category', value: 'Unknown' });
+}
+facets.push(
+  { label: 'OCPP versions', value: list(p.ocpp_versions) },
+  { label: 'OCPI versions', value: list(p.ocpi_versions) },
+  { label: 'Language', value: p.language ?? 'Unknown' },
+  { label: 'Licence', value: p.license ?? 'Unknown' },
+  { label: 'Host', value: hostLabel(p.host) },
+  { label: 'Curation state', value: CURATION_LABELS[p.curation] },
+  // `archived` comes from the host's API: false is a fact, null is unknown.
+  { label: 'Archived', value: flag(p.archived) },
+);
+if (p.deprecated === true) facets.push({ label: 'Deprecated', value: 'Yes' });
+
+const signals = [
+  { label: 'Stars', value: formatCount(p.stars) },
+  { label: 'Forks', value: formatCount(p.forks) },
+  { label: 'Last push', value: formatDate(p.pushed_at), date: true },
+  { label: 'Last update', value: formatDate(p.updated_at), date: true },
+];
+
+const description =
+  p.description ?? `${p.full_name}, an EV charging developer tool listed in the Awesome EV Charging directory.`;
+---
+
+<Base title={p.full_name} description={description} current="projects" ogType="article">
+  <div class="container page">
+    <nav aria-label="Breadcrumb" class="breadcrumb">
+      <ol>
+        <li><a href={url('projects/')}>Developer Tools</a></li>
+        {
+          primary && (
+            <li>
+              <a href={`${url('projects/')}?${serialiseState({ ...DEFAULT_STATE, protocol: primary.main })}`}>
+                {protocolLabel(primary.main)}
+              </a>
+            </li>
+          )
+        }
+        <li><a href={projectPath(p.id)} aria-current="page">{p.full_name}</a></li>
+      </ol>
+    </nav>
+
+    <div class="layout">
+      <article class="main">
+        <header class="head">
+          <div class="state">
+            <span class={`badge badge-${p.curation}`}>{CURATION_LABELS[p.curation]}</span>
+            <span class="state-help">{CURATION_HELP[p.curation]}</span>
+          </div>
+          <h1 class="mono">{p.full_name}</h1>
+          <p class="lede">{p.description ?? 'Description unknown.'}</p>
+          {
+            p.url ? (
+              <p class="actions">
+                <a class="button button-primary" href={p.url}>
+                  {sourceLabel(p.host)}
+                </a>
+              </p>
+            ) : (
+              <p class="actions muted">Source URL unknown.</p>
+            )
+          }
+        </header>
+
+        <section aria-labelledby="facets">
+          <h2 id="facets">Facets</h2>
+          <dl class="facets">
+            {
+              facets.map((f) => (
+                <div>
+                  <dt>{f.label}</dt>
+                  <dd>{f.href ? <a href={f.href}>{f.value}</a> : f.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section aria-labelledby="topics">
+          <h2 id="topics">Topics declared upstream</h2>
+          {
+            p.topics.length ? (
+              <ul class="topics">
+                {p.topics.map((t) => (
+                  <li class="mono">{t}</li>
+                ))}
+              </ul>
+            ) : (
+              <p class="muted">Unknown.</p>
+            )
+          }
+        </section>
+
+        <section class="panel">
+          <h2>How to read this page</h2>
+          <p>
+            The description is a short summary of the upstream README. Protocol versions are those the project itself
+            documents. Stars and activity describe the repository; they say nothing about protocol compliance or quality.
+            A missing value means unknown, never “no”.
+          </p>
+        </section>
+      </article>
+
+      <aside class="side" aria-label="Repository signals">
+        <div class="panel">
+          <h2>Repository signals</h2>
+          <dl class="signals">
+            {
+              signals.map((s) => (
+                <div>
+                  <dt>{s.label}</dt>
+                  <dd class:list={['mono', { date: 'date' in s }]}>{s.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+          <p class="note">Figures as of the data export, refreshed monthly.</p>
+        </div>
+
+        <div class="panel">
+          <h2>Why it is listed</h2>
+          <p>{discoveredViaText(p.discovered_via)}</p>
+          <a class="correction" href={correctionUrl(p.full_name)}>Suggest a correction</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .page {
+    padding-top: 28px;
+    padding-bottom: 56px;
+  }
+
+  .breadcrumb ol {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+
+  .breadcrumb li + li::before {
+    content: '/';
+    margin-right: 8px;
+    color: var(--color-muted);
+  }
+
+  .breadcrumb a {
+    display: inline-block;
+    padding: 12px 0;
+    overflow-wrap: anywhere;
+  }
+
+  .breadcrumb [aria-current='page'] {
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+
+  .layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .main {
+    flex: 999 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .side {
+    flex: 1 1 260px;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .state-help,
+  .muted {
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+
+  .lede {
+    margin: 0;
+    max-width: 680px;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--color-body);
+  }
+
+  .actions {
+    margin: 0;
+    padding-top: 4px;
+  }
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .facets {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    border-top: 1px solid var(--color-line);
+  }
+
+  .facets div {
+    padding: 14px 16px 14px 0;
+    border-bottom: 1px solid var(--color-line);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  dt {
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .topics {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .topics li {
+    font-size: 13px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background: #eceeeb;
+    color: var(--color-body);
+  }
+
+  .panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    padding: 22px;
+  }
+
+  .panel h2 {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .main .panel h2 {
+    font-size: 17px;
+  }
+
+  .panel p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--color-body-soft);
+  }
+
+  .signals {
+    margin: 0 0 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .signals div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2px;
+  }
+
+  .signals dd {
+    font-size: 22px;
+  }
+
+  .signals dd.date {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .note {
+    font-size: 13px;
+  }
+
+  .correction {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 12px 0;
+    font-size: 14px;
+  }
+</style>
