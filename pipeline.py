@@ -110,6 +110,8 @@ ADDITIONAL_REPOS = {
   "OpenChargingCloud/ISO15118ConformanceTests",
   # Maintained fork of lorenzodonini/ocpp-go, whose upstream went dormant (#38).
   "enesismail/ocpp-go",
+  # Monorepo whose packages/ocpi is a TypeScript OCPI library (#125).
+  "OpenConditions/openconditions",
 }
 # Repositories hosted on Codeberg (Forgejo), as owner/repo. Ingest reads them
 # from Codeberg's API, enrich reads their README there, and they render like any
@@ -366,6 +368,9 @@ CATEGORY_OVERRIDES = {
   # Libraries, schemas and demos.
   "llocer/llocer_ocpi_json": "OCPI > Libraries|Other > Data models & identifiers",
   "llocer/llocer_ocpp_json": "OCPP > Libraries|Other > Data models & identifiers",
+  # A mobility-data monorepo: its GitHub topics name no EV protocol, but its
+  # packages/ocpi is an OCPI library and model-charging a charging model (#125).
+  "openconditions/openconditions": "OCPI > Libraries|Other > Data models & identifiers",
   "ko1103/ocpi-mcp-server": "OCPI > Misc|Other > Developer tools & libraries",
   "drvelvetfog/x402-charging-agent": "OCPI > Misc|Other > Other protocols",  # ships a mock OCPI 2.2 CPO and settles its CDR
   "chargerdojo/ocpi-conformance-action": "OCPI > Misc|Other > Developer tools & libraries",  # runs OCPI conformance suites in CI
@@ -428,6 +433,15 @@ REPO_OVERRIDES = {
   # writes it in lower case.
   "dipakjad1993/chargetruth-os": {
     "description": "Offline-first Progressive Web App for EV drivers that plans charging routes, scores charger reliability, and verifies plug compatibility.",
+  },
+  # The listing links a repository, and #125 asks for the OCPI package of this
+  # monorepo. Only packages/ocpi is publishable; datex2, model-charging and
+  # charging are `private: true` workspace packages. Sources:
+  # https://github.com/OpenConditions/openconditions/tree/main/packages/ocpi#readme
+  # and each packages/*/package.json.
+  "openconditions/openconditions": {
+    "html_url": "https://github.com/OpenConditions/openconditions/tree/main/packages/ocpi",
+    "description": "TypeScript OCPI wire types, decoders and normalizers for locations, EVSEs, connectors and tariffs, including captured NDW, Via Lietuva and OCPDB dialects and Digitraffic adapters; the monorepo's DATEX II and charging-model packages are internal workspace packages.",
   },
 }
 
