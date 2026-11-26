@@ -909,6 +909,32 @@ def _file_ids(path):
                                     path.read_text(encoding="utf-8").splitlines()) if m]
 
 
+@pytest.mark.parametrize("extra", [
+    {"by_contributor": "true"},                      # README Selection
+    {"by_contributor": "true", "dormant": "true"},   # legacy, Dormant block
+    {},                                              # legacy, To refine block
+])
+def test_render_aborts_before_writing_when_two_groups_share_an_anchor(tmp_path, extra):
+    # No positional suffix: a `-1` id would retarget exactly like the heading
+    # slugs these ids replace, so two groups that slug alike stop the render.
+    rows = [
+        repo(f"acme/{n}", categories=categories, html_url=f"https://example.com/{n}",
+             description="A tool.", **extra)
+        for n, categories in enumerate(["Other > Energy management",
+                                        "Other > Energy-management"])
+    ]
+    with pytest.raises(SystemExit) as excinfo:
+        render(tmp_path, rows, export=False)
+    message = str(excinfo.value)
+    assert "other-energy-management" in message
+    assert "Other > Energy management" in message
+    assert "Other > Energy-management" in message
+    out = tmp_path / "out"
+    assert not (out / "legacy-projects.md").exists()
+    assert pipeline.README_MARKER_BEGIN + "\n" + pipeline.README_MARKER_END in (
+        out / "README.md").read_text(encoding="utf-8")
+
+
 def test_legacy_ids_are_prefixed_by_block_and_unique_within_each_file(tmp_path):
     # Dormant and To refine both render an `iso15118 > EXI codecs` group: the
     # block prefix keeps their ids apart, and `### main` gets one too, since
