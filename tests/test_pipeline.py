@@ -1911,3 +1911,30 @@ def test_a_codeberg_repo_wins_over_its_github_mirror(monkeypatch):
     monkeypatch.setattr(pipeline, "get_starred_list_repos", lambda user, slug, headers: [])
     candidates = pipeline.collect_candidates({})
     assert set(candidates) == {"acme/charger"}
+
+
+# --- The README scan: GitHub repo names from Markdown text ----------------------
+
+SCAN_TEXT = """\
+- [Charger](https://github.com/Acme/Charger/tree/main/docs) and
+  [again](https://github.com/acme/charger.git), [sponsor](https://github.com/sponsors/acme)
+- [Server](https://github.com/b-org/ocpp.server.) <https://github.com/acme/issues>
+"""
+
+
+def test_repo_names_from_text_folds_paths_and_dedupes_case_insensitively():
+    assert pipeline.repo_names_from_text(SCAN_TEXT) == ["acme/charger", "b-org/ocpp.server"]
+
+
+def test_readme_repo_names_reads_the_file_through_the_text_scan(tmp_path):
+    path = tmp_path / "README.md"
+    path.write_text(SCAN_TEXT, encoding="utf-8")
+    assert pipeline.readme_repo_names(str(path)) == pipeline.repo_names_from_text(SCAN_TEXT)
+    assert pipeline.readme_repo_names(str(tmp_path / "missing.md")) == []
+
+
+@pytest.mark.parametrize("kwargs, expected", [({}, None), ({"missing": {}}, {})])
+def test_get_repo_data_answers_a_404_with_missing(tmp_path, monkeypatch, kwargs, expected):
+    monkeypatch.setattr(pipeline, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(pipeline.requests, "get", lambda *a, **k: FakeResponse(404))
+    assert pipeline.get_repo_data("acme/gone", {}, **kwargs) == expected
