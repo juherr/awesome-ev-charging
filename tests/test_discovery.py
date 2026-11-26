@@ -381,29 +381,31 @@ def test_aliases_resolving_to_one_repo_merge_into_one_candidate(results):
     assert "argonne-national-laboratory/node-red-contrib-ocpp" not in results
 
 
-def test_a_stale_catalogue_name_is_changed_on_the_catalogue_side():
-    repos, urls = discovery.collect_candidates({"fork": "https://github.com/old/name"})
+def _classify_one(link, lookups):
+    """The single result for a source linking `link`, with old/name classified."""
+    repos, urls = discovery.collect_candidates({"fork": link})
     t = discovery.build_tracked({"old/name": row()}, [])
-    [result] = discovery.classify(repos, urls, {"old/name": {"full_name": "new/Name"}}, t)
+    [result] = discovery.classify(repos, urls, lookups, t)
+    return result
+
+
+def test_a_stale_catalogue_name_is_changed_on_the_catalogue_side():
+    result = _classify_one("https://github.com/old/name", {"old/name": {"full_name": "new/Name"}})
     assert (result.status, result.stale, result.old, result.name) == (
         "changed", "catalogue", ["old/name"], "new/Name")
 
 
 def test_a_stale_catalogue_name_the_source_does_not_link_is_still_changed():
-    repos, urls = discovery.collect_candidates({"fork": "https://github.com/new/Name"})
-    t = discovery.build_tracked({"old/name": row()}, [])
     lookups = {"new/name": {"full_name": "new/Name"}, "old/name": {"full_name": "new/Name"}}
-    [result] = discovery.classify(repos, urls, lookups, t)
+    result = _classify_one("https://github.com/new/Name", lookups)
     assert (result.status, result.stale, result.old, result.name, result.related) == (
         "changed", "catalogue", ["old/name"], "new/Name", [])
 
 
 @pytest.mark.parametrize("answer", [None, discovery.NOT_FOUND, {"full_name": "old/name"}])
 def test_a_related_name_that_does_not_resolve_to_the_candidate_leaves_it_new(answer):
-    repos, urls = discovery.collect_candidates({"fork": "https://github.com/new/Name"})
-    t = discovery.build_tracked({"old/name": row()}, [])
     lookups = {"new/name": {"full_name": "new/Name"}, "old/name": answer}
-    [result] = discovery.classify(repos, urls, lookups, t)
+    result = _classify_one("https://github.com/new/Name", lookups)
     assert (result.status, result.related) == ("new", ["old/name"])
 
 
