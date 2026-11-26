@@ -23,6 +23,8 @@ from urllib.parse import unquote
 
 import pytest
 
+import pipeline
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Verbatim upstream Markdown from the Open Charge Alliance. Their bytes are
@@ -261,6 +263,47 @@ def broken_links(source, text, tracked, exceptions=frozenset()):
     return broken
 
 
+# The same heading pattern `pipeline._build_toc` slugs, and the explicit
+# anchor `pipeline._render_grouped` emits before each generated subcategory.
+HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
+EXPLICIT_ID = re.compile(r'<a\s+id="([^"]+)"\s*>')
+GENERATED_PROJECTS = ("<!-- BEGIN GENERATED PROJECTS -->", "<!-- END GENERATED PROJECTS -->")
+GENERATED_TOC = ("<!-- BEGIN GENERATED TOC -->", "<!-- END GENERATED TOC -->")
+
+
+def page_anchors(text):
+    """`(heading slugs, explicit ids)`, each mapping an anchor to its line.
+
+    Heading slugs are GitHub's, deduplicated in document order with one shared
+    `seen`, as `pipeline._slugify` computes them for the Contents list.
+    """
+    seen = {}
+    headings = {}
+    explicit = {}
+    for number, line in enumerate(_blank_code_and_comments(text), start=1):
+        heading = HEADING.match(line)
+        if heading:
+            headings[pipeline._slugify(heading.group(2).strip(), seen)] = number
+        for match in EXPLICIT_ID.finditer(line):
+            explicit[match.group(1)] = number
+    return headings, explicit
+
+
+def marker_lines(text, markers):
+    """The 1-based line numbers of the two markers, as a range."""
+    begin, end = (text[: text.index(marker)].count("\n") + 1 for marker in markers)
+    return range(begin, end + 1)
+
+
+def in_page_links(text):
+    """`(line number, fragment)` for every `#fragment`-only link."""
+    return [
+        (number, target[1:])
+        for number, target in extract_links(text)
+        if target.startswith("#")
+    ]
+
+
 def _git_ls_files(*pathspec):
     output = subprocess.run(
         ["git", "ls-files", "-z", "--", *pathspec],
@@ -470,6 +513,21 @@ def test_skips_anchor_only_mailto_and_external_urls():
         assert link_path("README.md", target) is None, target
 
 
+def test_page_anchors_dedupe_heading_slugs_and_collect_explicit_ids():
+    text = (
+        "## Server\n"
+        "<!-- <a id=\"hidden\"></a> -->\n"
+        '<a id="ocpp-server"></a>\n'
+        "\n"
+        "#### Server\n"
+        "`<a id=\"code\"></a>`\n"
+    )
+    headings, explicit = page_anchors(text)
+    assert headings == {"server": 1, "server-1": 5}
+    assert explicit == {"ocpp-server": 3}
+    assert in_page_links("[a](#server-1) [b](other.md#x)\n") == [(1, "server-1")]
+
+
 def test_strips_anchor_and_query_before_resolving():
     assert link_path("README.md", "csms.md#features") == "csms.md"
     assert link_path("README.md", "csms.md?plain=1") == "csms.md"
@@ -553,3 +611,78 @@ def test_internal_links_resolve(md_file):
     text = (REPO_ROOT / md_file).read_text(encoding="utf-8")
     broken = broken_links(md_file, text, tracked_paths(), VENDORED_LINK_EXCEPTIONS)
     assert not broken, "broken internal links:\n" + "\n".join(broken)
+
+
+# --- The README's in-page anchors -------------------------------------------
+
+
+def _readme():
+    return (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+
+def test_readme_in_page_links_resolve():
+    text = _readme()
+    headings, explicit = page_anchors(text)
+    broken = [
+        f"README.md:{number} -> #{fragment}"
+        for number, fragment in in_page_links(text)
+        if fragment not in headings and fragment not in explicit
+    ]
+    assert not broken, "unresolved in-page links:\n" + "\n".join(broken)
+
+
+def test_readme_prose_links_into_generated_projects_use_explicit_ids():
+    # A generated heading's slug is positional (`#server-1`): it moves to
+    # another section as soon as a protocol gains or loses a subcategory.
+    # Hand-written prose must link the stable id `_render_grouped` emits.
+    text = _readme()
+    headings, _ = page_anchors(text)
+    projects = marker_lines(text, GENERATED_PROJECTS)
+    toc = marker_lines(text, GENERATED_TOC)
+    positional = [
+        f"README.md:{number} -> #{fragment}"
+        for number, fragment in in_page_links(text)
+        if number not in projects
+        and number not in toc
+        and headings.get(fragment) in projects
+    ]
+    assert not positional, (
+        "prose links to generated headings by slug:\n" + "\n".join(positional)
+    )
+
+
+LEGACY_LINK = re.compile(r"^legacy-projects\.md#(.+)$")
+
+
+def explicit_ids(text):
+    """Every explicit id of `text`, duplicates kept, outside code and comments."""
+    return [
+        match.group(1)
+        for line in _blank_code_and_comments(text)
+        for match in EXPLICIT_ID.finditer(line)
+    ]
+
+
+@pytest.mark.parametrize("md_file", ["README.md", "legacy-projects.md"])
+def test_generated_explicit_ids_are_unique_and_never_shadow_a_heading_slug(md_file):
+    text = (REPO_ROOT / md_file).read_text(encoding="utf-8")
+    ids = explicit_ids(text)
+    assert ids, "no explicit ids: _render_grouped emits one per subcategory"
+    duplicates = sorted({i for i in ids if ids.count(i) > 1})
+    assert not duplicates, f"ids repeated in {md_file}: {duplicates}"
+    headings, _ = page_anchors(text)
+    assert not set(headings) & set(ids)
+
+
+def test_readme_links_into_legacy_projects_use_its_explicit_ids():
+    # Every heading of legacy-projects.md is generated, Dormant and To refine
+    # repeat the same ones, so a heading slug there is positional too.
+    headings, explicit = page_anchors(
+        (REPO_ROOT / "legacy-projects.md").read_text(encoding="utf-8"))
+    wrong = []
+    for number, target in extract_links(_readme()):
+        link = LEGACY_LINK.match(target)
+        if link and link.group(1) not in explicit:
+            kind = "heading slug" if link.group(1) in headings else "unresolved"
+            wrong.append(f"README.md:{number} -> {target} ({kind})")
+    assert not wrong, "README links into legacy-projects.md:\n" + "\n".join(wrong)

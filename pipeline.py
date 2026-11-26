@@ -2263,12 +2263,27 @@ def _escape_trailing_hashes(text):
   return re.sub(r"#+$", lambda m: m.group().replace("#", r"\#"), text)
 
 
-def _render_grouped(rows, lines):
+def _render_grouped(rows, lines, id_prefix=None):
   """Emit `### main` / `#### sub` subsections; a repo appears under each of its categories.
 
   Under a `Libraries` subcategory the technology becomes an extra `##### language`
   level (and is dropped from the line).
+
+  Each `#### sub` heading is preceded by an explicit `<a id="main-sub">` anchor
+  (both parts slugged GitHub-style, no dedup counter). The heading's own slug
+  is positional (`#server-1` is the second "Server" of the page) and points at
+  another section as soon as a protocol gains or loses a subcategory, so
+  hand-written prose links these ids instead.
+
+  `id_prefix` names the block when one file holds several (legacy-projects.md:
+  `dormant`, `to-refine`), which keeps the ids unique per file. Such a block
+  also gets an id on each `### main` (`dormant-iso15118`); without a prefix
+  (the README) those headings are left to the Contents list.
   """
+  def anchor(*parts):
+    slug = "-".join(_slugify(part, {}) for part in parts)
+    return [f'<a id="{id_prefix}-{slug}"></a>' if id_prefix else f'<a id="{slug}"></a>', ""]
+
   # Single-list each repo under its primary (first) category only: the awesome
   # format forbids duplicate links (remark-lint:double-link).
   groups = defaultdict(lambda: defaultdict(list))
@@ -2276,11 +2291,13 @@ def _render_grouped(rows, lines):
     main, sub = _row_categories(row)[0]
     groups[main][sub].append(row)
   for main in sorted(groups, key=_main_key):
+    if id_prefix:
+      lines += anchor(main)
     lines += [f"### {main}", ""]
     subs = groups[main]
     for sub in sorted(subs, key=lambda s: _sub_key(main, s)):
       if sub:
-        lines += [f"#### {sub}", ""]
+        lines += anchor(main, sub) + [f"#### {sub}", ""]
       if sub == "Libraries":
         by_lang = defaultdict(list)
         for row in subs[sub]:
@@ -2418,9 +2435,9 @@ def render(args):
     f"## Dormant ({len(dormant)})",
     "",
   ]
-  _render_grouped(dormant, legacy)
+  _render_grouped(dormant, legacy, id_prefix="dormant")
   legacy += [f"## To refine ({len(refine)} projects)", ""]
-  _render_grouped(refine, legacy)
+  _render_grouped(refine, legacy, id_prefix="to-refine")
   legacy_body = "\n".join(legacy).strip() + "\n"
 
   with open(args.out, "w", encoding="utf-8") as f:

@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 import pipeline
-from export_helpers import write_csv
+from export_helpers import render, write_csv
 
 # The autouse `no_network` fixture stubs this; its own tests need the real one.
 real_fetch_readme_content = pipeline.fetch_readme_content
@@ -865,6 +865,86 @@ def test_new_grid_protocols_keep_protocol_priority_and_single_listing():
     pipeline._render_grouped([row], lines)
     assert sum("https://example.com/flex" in line for line in lines) == 1
     assert "### OpenADR" in lines
+
+
+ANCHOR_LINE = re.compile(r'^<a id="([^"]+)"></a>$')
+
+
+def test_each_subcategory_heading_gets_a_stable_id_named_after_its_parent():
+    # Positional `-N` slugs retarget whenever a protocol gains or loses a
+    # subcategory, so prose links use these ids, which name main and sub.
+    rows = [
+        repo(f"acme/{n}", categories=categories, html_url=f"https://example.com/{n}",
+             description="A tool.", language=language)
+        for n, (categories, language) in enumerate([
+            ("OCPP > Server", ""),
+            ("OCPI > Server", ""),
+            ("Eichrecht > Libraries", "C#"),
+            ("Eichrecht > Libraries", "C++"),
+            ("OpenADR > VEN & VTN", ""),
+            ("iso15118 > Plug&Charge", ""),
+            ("Other > Specifications & documentation", ""),
+        ])
+    ]
+    lines = []
+    pipeline._render_grouped(rows, lines)
+
+    ids = [m.group(1) for m in map(ANCHOR_LINE.match, lines) if m]
+    assert sorted(ids) == sorted([
+        "ocpp-server", "ocpi-server", "eichrecht-libraries", "openadr-ven--vtn",
+        "iso15118-plugcharge", "other-specifications--documentation",
+    ])
+    assert len(ids) == len(set(ids))
+    for i, line in enumerate(lines):
+        if line.startswith("#### "):
+            assert lines[i - 1] == "", line
+            assert ANCHOR_LINE.match(lines[i - 2]), line
+        elif line.startswith(("### ", "##### ")):
+            assert not (i >= 2 and ANCHOR_LINE.match(lines[i - 2])), line
+            assert not (i >= 1 and ANCHOR_LINE.match(lines[i - 1])), line
+
+
+def _file_ids(path):
+    return [m.group(1) for m in map(ANCHOR_LINE.match,
+                                    path.read_text(encoding="utf-8").splitlines()) if m]
+
+
+def test_legacy_ids_are_prefixed_by_block_and_unique_within_each_file(tmp_path):
+    # Dormant and To refine both render an `iso15118 > EXI codecs` group: the
+    # block prefix keeps their ids apart, and `### main` gets one too, since
+    # no Contents list links the legacy file's protocol headings.
+    rows = [
+        repo(f"acme/{n}", categories=categories, html_url=f"https://example.com/{n}",
+             description="A tool.", **extra)
+        for n, (categories, extra) in enumerate([
+            ("iso15118 > EXI codecs", {"by_contributor": "true"}),
+            ("iso15118 > EXI codecs", {"by_contributor": "true", "dormant": "true"}),
+            ("OCPP > Libraries", {"by_contributor": "true", "dormant": "true",
+                                  "language": "C#"}),
+            ("iso15118 > EXI codecs", {}),
+            ("Other > Grid simulation", {}),
+        ])
+    ]
+    out = render(tmp_path, rows, export=False)
+
+    legacy = _file_ids(out / "legacy-projects.md")
+    assert sorted(legacy) == sorted([
+        "dormant-ocpp", "dormant-ocpp-libraries",
+        "dormant-iso15118", "dormant-iso15118-exi-codecs",
+        "to-refine-iso15118", "to-refine-iso15118-exi-codecs",
+        "to-refine-other", "to-refine-other-grid-simulation",
+    ])
+    readme = _file_ids(out / "README.md")
+    assert readme == ["iso15118-exi-codecs"]
+    for ids in (legacy, readme):
+        assert len(ids) == len(set(ids))
+
+    lines = (out / "legacy-projects.md").read_text(encoding="utf-8").splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith(("### ", "#### ")):
+            assert lines[i - 1] == "" and ANCHOR_LINE.match(lines[i - 2]), line
+        elif line.startswith("##### "):
+            assert not ANCHOR_LINE.match(lines[i - 2]), line
 
 
 # --- The classifier contract: one rule in every copy ---------------------------
