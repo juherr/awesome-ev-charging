@@ -124,6 +124,7 @@ OCPI versions read `MAJOR.MINOR.PATCH`. A `-dN` suffix (`2.1.1-d2`, `2.2-d2`) ma
 
 - [Specifications on GitHub](https://github.com/ocpi/ocpi)
   - [2.3.0 Edition 2](https://github.com/ocpi/ocpi/releases/download/2.3.0-ed2/OCPI-2.3.0-ed2.pdf) - Official edition 2 release, the text sent to CEN-CENELEC: adds the Invoice Reconciliation module and fixes small inconsistencies, Payments module included (2026-11).
+  - [2.3.0 Edition 2, June 2026 package](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2/OCPI-2.3.0-ed2.pdf) - Earlier core-only edition 2, with Payments packaged separately, superseded upstream by the official release above (2026-06, tag `v2.3.0-ed2`).
   - 2.3.0 Edition 1 - Core edition 1 without the Payments module, an internal release upstream with no published document (tag `v2.3.0-ed1`).
   - [2.3.0](https://github.com/ocpi/ocpi/releases/download/v2.3.0/OCPI-2.3.0.pdf) - Original release, core edition 1 including the Payments module (2025-02).
   - [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf) (2021-10)
