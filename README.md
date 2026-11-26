@@ -291,7 +291,11 @@ The **eMobility Protocol Inter-Operation (eMIP)** is a roaming protocol develope
 **Eichrecht** refers to German legal metrology requirements, including measurement and verification in charging transactions. See the German legal references below for scope; a signed meter-data format alone does not establish compliance.
 
 - [Whitepaper](https://openchargealliance.org/wp-content/uploads/2024/03/Presentation_Eichrecht_Plugfest.pdf)
-- [Signed Meter Values in OCPP](https://openchargealliance.org/wp-content/uploads/2025/02/signed_meter_values-v10.pdf)
+- [Signed Meter Values in OCPP](https://openchargealliance.org/wp-content/uploads/2025/02/signed_meter_values-v10.pdf) - OCA application note (v1.0, 2025-02) on carrying signed meter data in OCPP 1.6, 2.0.1 and 2.1.
+
+Signed meter data follows one chain from the meter to the driver. The meter signs its readings in an encoding such as OCMF (Open Charge Metering Format), a format for meter readings relevant under German calibration law that the OCA application note names as the most common encoding in Germany. OCPP 2.0.1 carries the reading in the `signedMeterValue` field of a sampled value, a `SignedMeterValueType` holding `signedMeterData`, `signingMethod`, `encodingMethod` and `publicKey`, once `SampledDataSignReadings` or `AlignedDataSignReadings` enables it. For OCPP 1.6, the application note reuses that type as the value of a sampled value whose `format` is `SignedData`, in `StopTransaction.req` and `MeterValues.req`. Since OCPI 2.2, a CDR may carry `signed_data`: the encoding method (OCMF among the listed ones), the signed start, intermediate and end values and, optionally, the public key and a URL where the driver can check them ([OCPI 2.2.1](ocpi/OCPI-2.2.1.pdf), CDRs module).
+
+The OCMF specification and verification tools are listed in the generated Eichrecht category, its OCMF libraries under [Eichrecht libraries](#libraries-4).
 
 ### OIOI (discontinued)
 
@@ -329,13 +333,20 @@ Regulations, standards, certification schemes and recommendations have different
 These are published standards or industry specifications, not blanket regulatory obligations. Editions below identify verified publications, not a promise that a given edition is required in every jurisdiction. Full standards may require purchase; consult each publisher for amendments and national adoptions.
 
 - [IEC 61851-1:2017 — Electric vehicle conductive charging system, general requirements](https://webstore.iec.ch/en/publication/33644) - Published third edition covering EV supply equipment operation and electrical safety, within the multipart IEC 61851 series.
+- [IEC 61851-23:2023 — DC electric vehicle supply equipment](https://webstore.iec.ch/en/publication/32973) - Published second edition, replacing the 2014 edition, for DC supply equipment transferring energy between the supply network and electric vehicles.
+- [IEC 61851-24:2023 — Digital communication for control of DC charging](https://webstore.iec.ch/en/publication/32582) - Published second edition for the communication between DC supply equipment and the vehicle, used with IEC 61851-23 to control DC power transfer.
 - [IEC 62196-1:2025 — Conductive charging connectors, general requirements](https://webstore.iec.ch/en/publication/86313) - Published fifth edition covering plugs, socket-outlets, vehicle connectors and inlets; connector-specific parts complement these general requirements.
+- [IEC 62196-2:2025 — AC pin and contact-tube accessories](https://webstore.iec.ch/en/publication/86317) - Published fourth edition of the dimensional compatibility requirements for AC accessories up to 480 V AC and 63 A three-phase or 70 A single-phase.
+- [IEC 62196-3:2026 — DC and AC/DC vehicle couplers](https://webstore.iec.ch/en/publication/86314) - Published third edition, corrected in August 2026, of the dimensional compatibility requirements for high-power DC and combined AC/DC vehicle couplers.
+- [SAE J3400 — North American Charging System (NACS)](https://saemobilus.sae.org/standards/j3400_202409-north-american-charging-system-nacs-electric-vehicles) - SAE recommended practice, issued December 2023 and revised September 2024, for a hand-mateable coupler carrying DC or single-phase AC power.
+- [CHAdeMO](https://www.chademo.com/what-is-chademo) - DC charging standard, including the car-to-charger communication, developed by the CHAdeMO Association.
+- [ChaoJi](https://www.chademo.com/technology/high-power) - Next-generation ultra-fast charging standard co-developed by the CHAdeMO Association and the China Electricity Council; its CHAdeMO-side releases are CHAdeMO 3.0 (2021) and 3.1 (2023), tagged ChaoJi-2.
 - [ISO 15118-2:2014 — Network and application protocol requirements](https://www.iso.org/standard/55366.html) - Published vehicle-to-grid communication standard, confirmed in 2024; distinguish this edition from drafts of its revision and from the second-generation protocol.
 - [ISO 15118-20:2022 — Second-generation network and application requirements](https://www.iso.org/standard/77845.html) - Published communication standard including bidirectional power-transfer message sequences; its publisher also lists a 2026 amendment.
 - [DIN/TS 70121:2024-11 — Digital communication for CCS DC charging](https://www.dinmedia.de/en/pre-standard/din-ts-70121/379319307) - Published pre-standard replacing DIN SPEC 70121:2014-12; existing implementations may still target the older specification.
 - [US Access Board EV charging design recommendations](https://www.access-board.gov/tad/ev/) - Technical assistance distinguishing existing accessibility requirements from additional recommended design practices; recommendations are not themselves a new binding accessibility standard.
 
-Backend and roaming specifications remain in the existing Specifications section: OCPP connects chargers and management systems; OCPI and OICP connect roaming actors. Smart charging, grid integration and demand-response specifications are introduced in the guide below. Electrical metering references are under Eichrecht; cybersecurity requirements and certificate exchange are separate from proof of certification.
+IEC 61851, IEC 62196, SAE J3400, CHAdeMO and ChaoJi are hardware, connector and charging-system standards for the link between vehicle and charger, not backend application protocols. Backend and roaming specifications remain in the existing Specifications section: OCPP connects chargers and management systems; OCPI and OICP connect roaming actors. Smart charging, grid integration and demand-response specifications are introduced in the guide below. Electrical metering references are under Eichrecht; cybersecurity requirements and certificate exchange are separate from proof of certification.
 
 ### Standards Bodies & Industry Organizations
 
@@ -359,10 +370,14 @@ Protocol governance bodies and industry associations:
 
 ### Demand response and capacity exchange
 
-- [OpenADR Alliance specifications](https://www.openadr.org/specification) - Industry demand-response specifications for Virtual Top Nodes (VTNs) and Virtual End Nodes (VENs), with OpenADR 2.0b and 3.x representing distinct protocol generations.
+- [OpenADR Alliance specifications](https://www.openadr.org/specification) - Download form for the OpenADR 2.0a and 2.0b profile specifications and schema and the OpenADR 3 package (YAML, User Guide, Definitions); the links arrive by email.
+- [OpenADR 3 introduction](https://www.openadr.org/openadr-3-0) - Alliance overview: OpenADR 3 complements the 2.0a/b profiles rather than replacing them, and its OpenAPI YAML is the normative reference; a version of it ships in the download package. It describes VTNs (Virtual Top Nodes) as the center of interoperability and VENs (Virtual End Nodes) as free to implement any combination of certification profiles.
+- [What's new in OpenADR 3.1.0](https://www.openadr.org/index.php?option=com_dailyplanetblog&view=entry&year=2025&month=09&day=17&id=100%3Awhat-you-need-to-know-about-the-latest-version-of-openadr-3-openadr-3-1-0-) - Alliance summary of the 3.1 changes, including message-queue notifications for in-home VENs, targets as lists of strings and `/resources` as a top-level collection.
 - [Open Smart Charging Protocol (OSCP)](https://openchargealliance.org/protocols/open-smart-charging-protocol/) - OCA specification for communicating available network capacity between grid or site actors and charging back offices; version 2.0 extends the original model. Specifications are listed under [OSCP](#oscp-open-smart-charging-protocol).
 
 The generated OpenADR and OSCP categories separate these implementations from generic energy management. OpenLEADR's Rust implementation documents OpenADR 3.1 VEN and VTN roles; its earlier releases targeted 3.0. These versions should not be assumed interchangeable. The [LF Energy project status](https://lfenergy.org/projects/openleadr/) identifies the Python 2.0b implementation as currently unmaintained, so it belongs with historical resources rather than maintained recommendations. Neither a protocol implementation nor a developer test suite automatically confers OpenADR certification.
+
+OpenADR, OSCP and OCPP smart charging sit on different links. OpenADR connects VTNs and VENs; OSCP forecasts available capacity for a charging back office; OCPP smart charging (functional block K of OCPP 2.0.1) lets a CSMS influence the power or current of an EV, or the total consumption allowed for a charging station or a group of stations. The OCPP whitepapers include Using OpenADR with OCPP, and site-level optimisation belongs to energy management below.
 
 ### Energy management and simulation
 
@@ -396,7 +411,7 @@ Interoperability exercises test combinations of independent implementations; con
 
 Security & PKI remains a cross-cutting concern: protocol-specific security tools stay with their protocol, Plug & Charge certificate tooling stays with ISO 15118, and general security resources stay under Other. OCPP Security Profiles and TLS certificate requirements belong to the corresponding OCPP edition and security documents.
 
-Metering & Billing uses the existing Eichrecht and OCPI categories: OCMF and signed-meter-value verification address measurement evidence; CDRs and tariffs address roaming and billing data. Verifying a signature is not a complete Eichrecht assessment, and a CDR is not a signed meter reading.
+Metering & Billing uses the existing Eichrecht and OCPI categories: OCMF and signed-meter-value verification address measurement evidence; CDRs and tariffs address roaming and billing data. Verifying a signature is not a complete Eichrecht assessment, and a CDR is not a signed meter reading, although an OCPI CDR can carry one: the Eichrecht specification section traces the chain from meter to CDR.
 
 Data models & identifiers groups OECS charger-model schemas, French IRVE data schemas, DATEX II libraries and mobility identifier tools. OECS is a community schema, not a formal IEC/ISO standard. Reference datasets remain under Analytics & data, avoiding a separate category for each data source.
 
