@@ -473,11 +473,27 @@ def render_report(results, source_names, failures):
 
 # --- Run and CLI --------------------------------------------------------------
 
+def _source_repos(sources, headers):
+  """The configured source repos plus the current name each resolves to.
+
+  A renamed or transferred list may link itself under its new name. A failed
+  lookup keeps only the configured name.
+  """
+  names = set()
+  for s in sources:
+    if s.repo:
+      names.add(s.repo)
+      data = pipeline.get_repo_data(s.repo, headers, missing=NOT_FOUND)
+      if isinstance(data, dict) and data.get("full_name"):
+        names.add(data["full_name"])
+  return names
+
+
 def run(sources, tracked, headers):
   """Fetch, resolve and classify; return `(report, whether any source was read)`."""
   texts, failures = fetch_sources(sources, headers)
   repos, urls = collect_candidates(texts)
-  source_repos = {s.repo for s in sources if s.repo}
+  source_repos = _source_repos(sources, headers)
   lookups = {c.key: pipeline.get_repo_data(c.name, headers, missing=NOT_FOUND) for c in repos}
   results = classify(repos, urls, lookups, tracked, source_repos)
   related = related_names(results, lookups)

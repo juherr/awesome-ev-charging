@@ -419,6 +419,26 @@ def test_run_looks_up_the_related_names_of_a_new_candidate(http):
     assert "- old/name -> new/Name, stale in the catalogue (sources: other)" in report
 
 
+def test_run_excludes_a_renamed_source_under_its_current_name(http):
+    http.answers["https://api.github.com/repos/old/list/readme"] = FakeResponse(
+        200, "https://github.com/new/List")
+    for name in ("old/list", "new/List"):
+        http.answers[f"https://api.github.com/repos/{name}"] = FakeResponse(
+            200, json.dumps({"full_name": "new/List"}))
+    report, _ = discovery.run([discovery.Source("fork", repo="old/list")],
+                              discovery.build_tracked({}, []), {})
+    assert "- new/List: discovery source (sources: fork)" in report
+
+
+def test_run_keeps_the_configured_source_name_when_its_lookup_fails(http):
+    http.answers["https://api.github.com/repos/old/list/readme"] = FakeResponse(
+        200, "https://github.com/old/list")
+    http.answers["https://api.github.com/repos/old/list"] = FakeResponse(500)
+    report, _ = discovery.run([discovery.Source("fork", repo="old/list")],
+                              discovery.build_tracked({}, []), {})
+    assert "- old/list: discovery source (sources: fork)" in report
+
+
 def test_a_new_candidate_carries_metadata_context_and_related_projects(results):
     new = results["acme/ocpp-proxy"]
     assert new.data == NEW_REPO

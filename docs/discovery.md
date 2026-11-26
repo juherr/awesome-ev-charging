@@ -35,8 +35,8 @@ python discovery.py --sources discovery-sources.toml --report <path> [--token T]
 
 Run it from the repository root: it reads the catalogue files from the current
 directory. Without `--token`, GitHub's unauthenticated rate limit applies, and
-every source repository and linked repository costs one API request (cached
-for the usual TTL in `cache_github/`).
+every source repository costs two API requests (its README and its lookup) and
+every linked repository one (cached for the usual TTL in `cache_github/`).
 
 | Exit code | Meaning |
 | --- | --- |
@@ -108,9 +108,10 @@ into one candidate, keeping all the linked names (aliases) and all the
 sources. The first matching rule gives the status:
 
 1. **excluded** — an alias or the current name is in `EXCLUDED_REPOS`
-   (reason `EXCLUDED_REPOS`), is a configured source repository (`discovery
-   source`: a list never recommends itself), or has a deprecated
-   classification (`deprecated`).
+   (reason `EXCLUDED_REPOS`), is a configured source repository under its
+   configured or current name (`discovery source`: a list never recommends
+   itself; a failed lookup of the source keeps only the configured name), or
+   has a deprecated classification (`deprecated`).
 2. **unavailable** — the lookup answered 404 (`not found`, or `not found
    (tracked)` when an alias is in the catalogue), or failed otherwise (rate
    limit, server error, network) for a name the catalogue does not hold
