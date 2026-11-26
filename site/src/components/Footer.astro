@@ -1,0 +1,38 @@
+---
+import { dataVersion, getData } from '../lib/data';
+import { REPO_URL } from '../lib/site';
+
+const version = dataVersion(getData().manifest);
+const unknown = 'unknown';
+---
+
+<footer class="container site-footer">
+  <p>
+    Generated from <a href={REPO_URL}>juherr/awesome-ev-charging</a>. The README and the catalogue
+    remain authoritative.
+  </p>
+  <p class="mono version" title="Short SHA-256 of each payload, from data/manifest.json">
+    Data version · projects {version.projects ?? unknown} · csms {version.csms ?? unknown}
+  </p>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding-top: 40px;
+    padding-bottom: 48px;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .version {
+    font-size: 13px;
+  }
+</style>
