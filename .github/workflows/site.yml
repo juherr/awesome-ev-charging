@@ -1,0 +1,59 @@
+name: site
+
+# Checks the static site under site/: astro check, the vitest suite, a build
+# against the committed fixture (site/fixtures/data/) and the internal link
+# checker, all through `mise run site-check`. The build never reads data/
+# here: data/projects.json is not published yet (issue #98), and a check that
+# depends on the live export would go red the day a refresh changes it.
+#
+# A workflow of its own rather than a job in tests.yml: tests.yml runs on
+# every pull request on purpose (its link test can break on any renamed
+# path), and `paths:` filters apply to a whole workflow, not to one job. The
+# site check only needs to run when something it reads changes. The
+# fixture's drift test (tests/test_site_fixture.py) stays in tests.yml, which
+# already runs it on every pull request.
+#
+# The build reads ../README.md (Specifications and Regulations pages) and
+# ../data/schema/, so it needs the whole repository checked out; pipeline.py
+# is listed because its exporter shapes the fixture the build consumes.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "data/**"
+      - "README.md"
+      - "pipeline.py"
+      - "mise.toml"
+      - ".github/workflows/site.yml"
+  pull_request:
+    paths:
+      - "site/**"
+      - "data/**"
+      - "README.md"
+      - "pipeline.py"
+      - "mise.toml"
+      - ".github/workflows/site.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Node comes from the exact pin in mise.toml, the same runtime as a
+      # local `mise run site-check`.
+      - name: Set up mise (Node)
+        uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+
+      - name: Install the site's dependencies
+        run: mise run site-install
+
+      - name: Check, test, build against the fixture, check links
+        run: mise run site-check

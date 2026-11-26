@@ -1,0 +1,104 @@
+name: pages
+
+# Builds the static site under site/ from the committed export in data/ and
+# deploys it to GitHub Pages (https://juherr.github.io/awesome-ev-charging/).
+# See docs/site.md.
+#
+# Deploy gate: the site cannot build without data/projects.json, which the
+# first scheduled refresh after 2026-12-01 publishes (issue #98). Until that
+# refresh PR is merged, the `gate` job emits a notice and the build and deploy
+# jobs are skipped, so the run is green rather than failed.
+#
+# Built with mise rather than withastro/action: that action installs its own
+# Node (`node-version`, default 24) through setup-node, where every other site
+# command runs the exact pin in mise.toml. Building through `mise run
+# site-build` keeps one runtime for local builds, the `site` check and the
+# deploy; upload-pages-artifact and deploy-pages are the two steps
+# withastro/action would have run after its build anyway.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "data/**"
+      - "README.md"
+      - "mise.toml"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time, and never cancel one halfway through.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      has-data: ${{ steps.check.outputs.has-data }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: data
+
+      - name: Check that data/projects.json is published
+        id: check
+        run: |
+          if [ -f data/projects.json ]; then
+            echo "has-data=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::data/projects.json is not published yet (issue #98): skipping the site build and deploy."
+            echo "has-data=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: gate
+    if: needs.gate.outputs.has-data == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      # The whole tree: the build reads ../README.md and ../data/schema/.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up mise (Node)
+        uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+
+      - name: Install the site's dependencies
+        run: mise run site-install
+
+      # No AEC_DATA_DIR: the default is ../data, the committed export.
+      - name: Build the site from data/
+        run: mise run site-build
+
+      - name: Check internal links
+        working-directory: site
+        run: mise exec -- node scripts/check-links.mjs dist
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site/dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only this job talks to Pages, so only it holds the deploy token scopes;
+    # the build job runs npm packages and keeps `contents: read`.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
