@@ -123,9 +123,9 @@ OCPI 3.0 is not released yet: according to the [OCPI downloads page](https://evr
 OCPI versions read `MAJOR.MINOR.PATCH`. A `-dN` suffix (`2.1.1-d2`, `2.2-d2`) marks a documentation update of the same specification: text and examples only, no protocol change. From 2.3.0 on, the core is also published in editions (`ed1`, `ed2`), where an edition may change messages, fields or datatypes. This edition scheme follows a CEN-CENELEC proposal that is [still under discussion](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/README.md#versioning-of-the-230-documents).
 
 - [Specifications on GitHub](https://github.com/ocpi/ocpi)
-  - [2.3.0 Edition 2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2/OCPI-2.3.0-ed2.pdf) - Core edition 2, adds Invoice Reconciliation (2026-06).
-  - [2.3.0 Edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed1/OCPI-2.3.0.pdf) - Core edition 1 without the Payments module, an internal release upstream (2026-06).
-  - [2.3.0](https://evroaming.org/wp-content/uploads/2025/02/OCPI-2.3.0.pdf) - Original release, core edition 1 including the Payments module (2025-02).
+  - [2.3.0 Edition 2](https://github.com/ocpi/ocpi/releases/download/2.3.0-ed2/OCPI-2.3.0-ed2.pdf) - Official edition 2 release, the text sent to CEN-CENELEC: adds the Invoice Reconciliation module and fixes small inconsistencies, Payments module included (2026-11).
+  - 2.3.0 Edition 1 - Core edition 1 without the Payments module, an internal release upstream with no published document (tag `v2.3.0-ed1`).
+  - [2.3.0](https://github.com/ocpi/ocpi/releases/download/v2.3.0/OCPI-2.3.0.pdf) - Original release, core edition 1 including the Payments module (2025-02).
   - [2.2.1](https://github.com/ocpi/ocpi/releases/download/2.2.1/OCPI-2.2.1.pdf) (2021-10)
   - [2.2.0-d2](https://github.com/ocpi/ocpi/releases/download/2.2-d2/OCPI-2.2-d2.pdf) - Deprecated, use 2.2.1 instead (2020-06)
   - [2.2.0](https://github.com/ocpi/ocpi/releases/download/2.2/OCPI-2.2.pdf) - Deprecated, use 2.2.0-d2 instead (2019-09)
@@ -167,15 +167,15 @@ Core functional modules:
 | Hub Client Info        | [2.2.1][ocpi-hci-221], [2.3.0][ocpi-hci-230]                        |
 | Invoice Reconciliation | [2.3.0 (ed2)][ocpi-ir-230]                                          |
 
-Additional modules (packaged separately). Payments and Bookings are optional and evolve independently of the core: each carries its own module version, and each PDF bundles it with one core edition. They are independent from each other and from Invoice Reconciliation — an implementation may support any of them on its own. The upstream [compatibility matrix](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/README.md#compatibility-matrix) maps every document to its tag, branch, core edition and module version. Its release status lags behind: it still marks Edition 2 and Edition 2 Payments as planned and says the 2.3.0 tags are not GitHub Releases, while the PDFs linked here are published as releases.
+Additional modules (packaged separately). Payments and Bookings are optional and evolve independently of the core: each carries its own module version, and each PDF bundles it with one core edition. They are independent from each other and from Invoice Reconciliation — an implementation may support any of them on its own. The upstream [compatibility matrix](https://github.com/ocpi/ocpi/blob/2.3.0/release/core/README.md#compatibility-matrix) maps every document to its tag, branch, core edition and module version. Its release status lags behind: it still marks Edition 2 and Edition 2 Payments as planned and says the 2.3.0 tags are not GitHub Releases, while the PDFs linked here are published as releases. It also predates the official `2.3.0-ed2` release, which bundles the Payments module with core edition 2; upstream now marks the June 2026 `v2.3.0-ed2`, `v2.3.0-ed2-payments`, `v2.3.0-payments` and `v2.3.0-bookings` releases as superseded.
 
 - Payments 1 ([specification](https://github.com/ocpi/ocpi/blob/2.3.0/release/payments/mod_payments.asciidoc))
-  - [With core edition 2](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2-payments/OCPI-2.3.0-ed2-payments.pdf) (2026-06, tag `v2.3.0-ed2-payments`)
-  - [With core edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-payments/OCPI-2.3.0-payments.pdf) - Same specification as the original 2.3.0 release (2026-06, tag `v2.3.0-payments`)
+  - With core edition 2 - Included in the official 2.3.0 Edition 2 release listed above (2026-11, tag `2.3.0-ed2`), which supersedes the separate [`v2.3.0-ed2-payments`](https://github.com/ocpi/ocpi/releases/download/v2.3.0-ed2-payments/OCPI-2.3.0-ed2-payments.pdf) package (2026-06)
+  - [With core edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-payments/OCPI-2.3.0-payments.pdf) - Same specification as the original 2.3.0 release, superseded upstream (2026-06, tag `v2.3.0-payments`)
 - Bookings ([specification](https://github.com/ocpi/ocpi/blob/2.3.0/release/bookings/mod_bookings.asciidoc))
   - Bookings 1.1 with core edition 2 - Not yet released
   - [Bookings 1.1 with core edition 1](https://evroaming.org/wp-content/uploads/2026/01/OCPI-2.3.0-booking-1.1.pdf) (2025-06, not yet tagged)
-  - [Bookings 1 with core edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-bookings/OCPI-2.3.0-bookings.pdf) (2026-06, tag `v2.3.0-bookings`)
+  - [Bookings 1 with core edition 1](https://github.com/ocpi/ocpi/releases/download/v2.3.0-bookings/OCPI-2.3.0-bookings.pdf) - Superseded upstream (2026-06, tag `v2.3.0-bookings`)
 
 Extensions (vendor / community):
 
