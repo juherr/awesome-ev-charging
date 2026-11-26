@@ -15,11 +15,15 @@ It does:
   repository is compared under its current name;
 - give each candidate one status against the catalogue, and keep which sources
   link it;
-- write one report, the same bytes for the same inputs.
+- write one report, the same bytes for the same inputs;
+- with `--issue-body` and `--workflow-url`, also write the body of the rolling
+  issue (see [Workflow and artifact](#workflow-and-artifact)).
 
 It never writes curated data: not `classifications.csv`, `README.md`,
 `legacy-projects.md`, the CSMS files nor `data/`. Its only outputs are the
-report and the disposable `cache_github/`. Nothing it finds reaches the
+report, the issue body when asked for, and the disposable `cache_github/`.
+The weekly workflow opens or edits one issue with that body, and nothing
+else: no commit, no pull request, no comment. Nothing it finds reaches the
 catalogue without a review, through the usual workflows below.
 
 Like `csms.py`, it is a separate script that imports `pipeline` for the HTTP
@@ -31,6 +35,7 @@ cache, the README fetch and the README scan. Do not fold it into
 ```bash
 mise run discover   # writes discovery-report.md (git-ignored)
 python discovery.py --sources discovery-sources.toml --report <path> [--token T]
+#   [--issue-body <path> --workflow-url <url>]: also write the issue body
 ```
 
 Run it from the repository root: it reads the catalogue files from the current
@@ -156,10 +161,32 @@ bytes and a re-run adds nothing to review. Sections:
 ## Workflow and artifact
 
 `.github/workflows/discovery.yml` runs every Monday at 06:00 UTC and on
-`workflow_dispatch`, with a read-only token. It appends the report to the job
-summary and uploads it as the `discovery-report` artifact. Both steps also run
-when every source failed, so the failures can be read while the job ends red.
-It opens no issue and no pull request.
+`workflow_dispatch`. It appends the report to the job summary, uploads it as
+the `discovery-report` artifact, and keeps one rolling issue up to date. These
+steps also run when every source failed, so the failures can be read while the
+job ends red. It opens no pull request.
+
+The rolling issue is the open issue labelled `discovery-report` (the oldest
+one if there are several). The workflow creates the label when it is missing,
+and the issue when none is open, titled « Discovery report: candidates from
+external lists ». Its body, written by `discovery.py --issue-body <path>
+--workflow-url <url>`, is a hidden `<!-- discovery-report -->` marker, a link
+to the workflow (each run's `discovery-report` artifact holds the full
+report), then the report. Nothing in it is specific to a run, so an unchanged
+report gives an unchanged body. When the report is longer than GitHub's
+65,536 characters, the body keeps the summary and the `New`, `Changed` and
+`Unavailable` sections, whole while they fit, cut on a line boundary
+otherwise, and ends with a line pointing at the workflow's artifacts for the
+full report.
+
+The issue is created once, then its body is edited only when it differs from
+the new one; the workflow never comments, closes or reopens it. Closing it is
+how a reviewer marks the report as handled: the next run opens a new one.
+Mentions and issue references in external metadata (a repository description,
+say) are neutralised with a zero-width space: after `@`, `#` and the `GH` of
+`GH-1`, and before the number of an issue, pull request or discussion URL. So
+the bot pings no one and links no other issue. The job's token holds
+`contents: read` and `issues: write`, nothing more.
 
 ## Acting on the report
 
@@ -177,9 +204,9 @@ It opens no issue and no pull request.
 
 ## Deviations from issue #120
 
-- No rolling issue: the report is published as an artifact and in the job
-  summary only.
+- The rolling issue came later, with #126 (see
+  [Workflow and artifact](#workflow-and-artifact)).
 - No suggested category for a new candidate: the classifier runs when the
-  candidate is added through `add-project`.
-
-Both are tracked in #126.
+  candidate is added through `add-project`. Tracked in #140.
+- No comparison across several lists: the configuration has one source so
+  far. Tracked in #139.
