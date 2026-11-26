@@ -40,6 +40,11 @@
     // single parent.
     "MD024": { "siblings_only": true },
 
+    // `pipeline.py render` puts an explicit `<a id="ocpp-server"></a>` before
+    // each generated subcategory heading, so prose can link a section whose
+    // heading slug is positional (`#server-1`). No other inline HTML is allowed.
+    "MD033": { "allowed_elements": ["a"] },
+
     // False positive on `### eMI³ (eMobility ICT Interoperability)`: MD051 keeps
     // the `³` when slugging, so it expects `#emi³-emobility-ict-interoperability`.
     // GitHub drops it — `github-slugger` returns

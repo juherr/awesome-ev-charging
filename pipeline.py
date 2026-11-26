@@ -2263,12 +2263,34 @@ def _escape_trailing_hashes(text):
   return re.sub(r"#+$", lambda m: m.group().replace("#", r"\#"), text)
 
 
-def _render_grouped(rows, lines):
+def _render_grouped(rows, lines, id_prefix=None, anchors=None):
   """Emit `### main` / `#### sub` subsections; a repo appears under each of its categories.
 
   Under a `Libraries` subcategory the technology becomes an extra `##### language`
   level (and is dropped from the line).
+
+  Each `#### sub` heading is preceded by an explicit `<a id="main-sub">` anchor
+  (both parts slugged GitHub-style, no dedup counter). The heading's own slug
+  is positional (`#server-1` is the second "Server" of the page) and points at
+  another section as soon as a protocol gains or loses a subcategory, so
+  hand-written prose links these ids instead.
+
+  `id_prefix` names the block when one file holds several (legacy-projects.md:
+  `dormant`, `to-refine`), which keeps the ids unique per file. Such a block
+  also gets an id on each `### main` (`dormant-iso15118`); without a prefix
+  (the README) those headings are left to the Contents list.
+
+  `anchors`, when given, maps each emitted id to the `main > sub` labels that
+  produced it, so the caller can refuse two groups that slug alike before it
+  writes anything (`_colliding_anchors`).
   """
+  def anchor(*parts):
+    slug = "-".join(_slugify(part, {}) for part in parts)
+    anchor_id = f"{id_prefix}-{slug}" if id_prefix else slug
+    if anchors is not None:
+      anchors.setdefault(anchor_id, []).append(" > ".join(parts))
+    return [f'<a id="{anchor_id}"></a>', ""]
+
   # Single-list each repo under its primary (first) category only: the awesome
   # format forbids duplicate links (remark-lint:double-link).
   groups = defaultdict(lambda: defaultdict(list))
@@ -2276,11 +2298,13 @@ def _render_grouped(rows, lines):
     main, sub = _row_categories(row)[0]
     groups[main][sub].append(row)
   for main in sorted(groups, key=_main_key):
+    if id_prefix:
+      lines += anchor(main)
     lines += [f"### {main}", ""]
     subs = groups[main]
     for sub in sorted(subs, key=lambda s: _sub_key(main, s)):
       if sub:
-        lines += [f"#### {sub}", ""]
+        lines += anchor(main, sub) + [f"#### {sub}", ""]
       if sub == "Libraries":
         by_lang = defaultdict(list)
         for row in subs[sub]:
@@ -2294,6 +2318,16 @@ def _render_grouped(rows, lines):
         for row in sorted(subs[sub], key=_sort_key):
           lines.append(_render_line(row, main=main))
         lines.append("")
+
+
+def _colliding_anchors(anchors, path):
+  """One line per id that several category groups of `path` emit.
+
+  No `-1` suffix is added instead: a positional id retargets exactly like the
+  heading slugs these ids exist to replace.
+  """
+  return [f"  {path}: #{anchor_id} <- {', '.join(labels)}"
+          for anchor_id, labels in sorted(anchors.items()) if len(labels) > 1]
 
 
 def _replace_between_markers(content, body, begin_marker, end_marker, path):
@@ -2401,7 +2435,8 @@ def render(args):
   # awesome guidelines require. No H1/`## Selection` wrapper — the top level is
   # the per-protocol `### main`, so it slots straight under `## Tools and Resources`.
   sel_lines = []
-  _render_grouped(selection, sel_lines)
+  readme_anchors = {}
+  _render_grouped(selection, sel_lines, anchors=readme_anchors)
   selection_body = "\n".join(sel_lines).strip() + "\n"
 
   # Secondary file: dormant/archived/deprecated and not-yet-curated projects,
@@ -2418,10 +2453,19 @@ def render(args):
     f"## Dormant ({len(dormant)})",
     "",
   ]
-  _render_grouped(dormant, legacy)
+  legacy_anchors = {}
+  _render_grouped(dormant, legacy, id_prefix="dormant", anchors=legacy_anchors)
   legacy += [f"## To refine ({len(refine)} projects)", ""]
-  _render_grouped(refine, legacy)
+  _render_grouped(refine, legacy, id_prefix="to-refine", anchors=legacy_anchors)
   legacy_body = "\n".join(legacy).strip() + "\n"
+
+  # Checked before any write, like the payload above: a duplicate id would
+  # leave one of the two groups unreachable from prose.
+  collisions = (_colliding_anchors(readme_anchors, "README.md")
+                + _colliding_anchors(legacy_anchors, args.out))
+  if collisions:
+    raise SystemExit("Category anchors collide, rename one group of each pair:\n"
+                     + "\n".join(collisions))
 
   with open(args.out, "w", encoding="utf-8") as f:
     f.write(legacy_body)
