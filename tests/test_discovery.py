@@ -82,6 +82,8 @@ url = "https://example.org/list.md"
     '[[sources]]\nname = "x"\nurl = "ftp://e.org/list.md"',
     '[[sources]]\nname = "x"\nrepo = "a/b"\nbranch = "main"',  # unknown key
     '[[sources]]\nname = "x"\nrepo = "a/b"\n[[sources]]\nname = "x"\nrepo = "c/d"',
+    '[[sources]]\nname = "a | b"\nrepo = "a/b"',             # breaks the source table
+    '[[sources]]\nname = "a`b"\nrepo = "a/b"',               # breaks a code span
 ])
 def test_load_sources_rejects_an_invalid_config(tmp_path, body):
     with pytest.raises(discovery.ConfigError):
@@ -124,6 +126,36 @@ def test_only_github_api_requests_carry_the_token(http):
     discovery.fetch_source(URL, {"Authorization": "token T"})
     discovery.fetch_source(REPO, {"Authorization": "token T"})
     assert [("Authorization" in h) for _, h in http] == [False, True]
+
+
+@pytest.mark.parametrize("error", [pipeline.requests.Timeout, pipeline.requests.ConnectionError])
+def test_a_url_source_that_does_not_answer_is_a_failed_fetch(monkeypatch, error):
+    def get(url, **kwargs):
+        raise error("no answer")
+    monkeypatch.setattr(pipeline.requests, "get", get)
+    assert discovery.fetch_source(URL, {"Authorization": "token T"}) == (None, "fetch failed")
+
+
+@pytest.mark.parametrize("status, text, expected", [
+    (200, "", (None, "not found")),
+    (429, "", (None, "fetch failed")),
+])
+def test_a_url_source_maps_empty_bodies_and_rate_limits(http, status, text, expected):
+    http.answers[URL.url] = FakeResponse(status, text)
+    assert discovery.fetch_source(URL, {"Authorization": "token T"}) == expected
+
+
+def test_a_url_source_is_fetched_with_a_timeout_and_no_auth(monkeypatch):
+    seen = []
+
+    def get(url, **kwargs):
+        seen.append(kwargs)
+        return FakeResponse(200, "# List")
+    monkeypatch.setattr(pipeline.requests, "get", get)
+    assert discovery.fetch_source(URL, {"Authorization": "token T"}) == ("# List", None)
+    [kwargs] = seen
+    assert kwargs.get("timeout") == discovery.URL_TIMEOUT
+    assert "Authorization" not in (kwargs.get("headers") or {})
 
 
 def test_fetch_sources_keeps_going_past_a_failed_source(http):
@@ -181,6 +213,18 @@ def test_extract_links_reads_repos_and_external_urls_with_their_line():
     # Images, badges and GitHub asset hosts are not candidates.
     assert sorted(urls) == ["https://evroaming.org", "https://tandemdrive.com/ocpi"]
     assert urls["https://evroaming.org"].startswith("- ![logo]")
+
+
+def test_extract_links_skips_images_attachments_and_gists():
+    text = """\
+- ![shot](https://github.com/acme/screens/raw/main/a.png) [Tool](https://github.com/acme/tool)
+- <img src="https://github.com/acme/logos/blob/main/l.png" width="20">
+- See https://github.com/user-attachments/assets/0b1c-2d3e for a demo.
+- [Gist](https://gist.github.com/someone/0123abcd) and gist.github.com/other/4567ef.
+"""
+    repos, urls = discovery.extract_links(text)
+    assert list(repos) == ["acme/tool"]
+    assert urls == {}
 
 
 def test_collect_candidates_dedupes_across_sources_with_provenance():

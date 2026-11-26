@@ -60,16 +60,19 @@ url = "https://example.org/list.md"           # or a raw Markdown file
 ```
 
 Each table takes a non-empty, unique `name` and exactly one of `repo`
-(`owner/name`) or `url` (`http(s)://`); any other key is an error. A `repo`
-source is read through the GitHub API with the token; a `url` source is
-fetched without any authentication header, whatever its host.
+(`owner/name`) or `url` (`http(s)://`); any other key is an error. A `name`
+may hold only letters, digits, `_`, `.`, `/`, `-` and spaces, since it is
+printed in a table and in code spans of the report. A `repo` source is read
+through the GitHub API with the token; a `url` source is fetched without any
+authentication header, whatever its host, bypassing the HTTP cache and with a
+30-second timeout (`URL_TIMEOUT`).
 
 A source that cannot be read is listed under "Failed sources" and the run goes
 on with the others:
 
 - `not found` — the repository or its README is gone, or the URL answers 404
   or 200 with an empty body;
-- `fetch failed` — rate limit, server error or network failure.
+- `fetch failed` — rate limit, server error, timeout or network failure.
 
 A failed source never reads as a list that links nothing.
 
@@ -78,6 +81,8 @@ A failed source never reads as a list that links nothing.
 - **GitHub repositories**: the same rules as the README scan of `ingest`
   (`pipeline.repo_names_from_text`): a `/tree/...` or `/blob/...` link folds
   to its repository, non-repository paths are skipped, `.git` is stripped.
+  Images, gists (`gist.github.com`) and uploads (`github.com/user-attachments`)
+  are skipped too: they are not repositories.
 - **Other URLs**: every http(s) link that is not on GitHub (`github.com`, its
   asset and `githubusercontent.com` hosts), skipping images and badge hosts
   (`BADGE_HOSTS`). A URL is normalized before comparison: scheme and host in

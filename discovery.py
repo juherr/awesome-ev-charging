@@ -23,11 +23,15 @@ import tomllib
 from dataclasses import dataclass, field
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+import requests
+
 import pipeline
 
 # --- Configuration ------------------------------------------------------------
 
 _REPO_RE = re.compile(r"[\w.-]+/[\w.-]+")
+# Source names land in a Markdown table and in code spans of the report.
+_NAME_RE = re.compile(r"[\w./ -]+")
 
 
 class ConfigError(Exception):
@@ -61,6 +65,9 @@ def load_sources(path):
     name = entry.get("name")
     if not isinstance(name, str) or not name.strip():
       raise ConfigError(f"{where}: `name` is required")
+    if not _NAME_RE.fullmatch(name):
+      raise ConfigError(f"{where}: `name` may hold only letters, digits, `_`, `.`, `/`, `-`"
+                        " and spaces")
     if name in seen:
       raise ConfigError(f"{where}: duplicate name {name!r}")
     seen.add(name)
@@ -77,18 +84,37 @@ def load_sources(path):
 
 # --- Fetching -----------------------------------------------------------------
 
+# Seconds before an unresponsive `url` source counts as a failed fetch.
+URL_TIMEOUT = 30
+
+
+def _fetch_url(url):
+  """Body of a `url` source, `""` on a 404, None on any other failure.
+
+  Fetched directly, without the HTTP cache or any header, and bounded by
+  `URL_TIMEOUT`: an arbitrary host must not hang the run.
+  """
+  try:
+    response = requests.get(url, timeout=URL_TIMEOUT)
+  except requests.RequestException:
+    return None
+  if response.status_code == 404:
+    return ""
+  return response.text if response.status_code < 400 else None
+
+
 def fetch_source(source, headers):
   """Return `(markdown, None)`, or `(None, reason)` when the source is unread.
 
   `not found` for a deleted source (a 404, or a repo without README) and
-  `fetch failed` for a failed run (rate limit, 5xx, network): a source that
-  could not be read must never read as one that links nothing. Only the GitHub
-  API request carries `headers`; a `url` source goes out with none.
+  `fetch failed` for a failed run (rate limit, 5xx, network, timeout): a source
+  that could not be read must never read as one that links nothing. Only the
+  GitHub API request carries `headers`; a `url` source goes out with none.
   """
   if source.repo:
     text = pipeline.fetch_readme_content(source.repo, headers)
   else:
-    text = pipeline.github_request_cached(source.url, headers={}, missing="", raw=True)
+    text = _fetch_url(source.url)
   if text is None:
     return None, "fetch failed"
   if not text:
@@ -148,18 +174,30 @@ def _external_urls(line):
   return urls
 
 
+_GIST_RE = re.compile(r"""gist\.github\.com/[^\s<>()\[\]"'`]*""", re.IGNORECASE)
+# GitHub owners whose paths are uploads, not repositories.
+_NON_REPO_OWNERS = {"user-attachments"}
+
+
+def _repo_names(text):
+  """`pipeline.repo_names_from_text`, minus images, gists and uploads."""
+  names = pipeline.repo_names_from_text(_GIST_RE.sub("", _IMAGE_RE.sub("", text)))
+  return [n for n in names if n.split("/")[0].lower() not in _NON_REPO_OWNERS]
+
+
 def extract_links(text):
   """Return `({owner/repo: line}, {normalized url: line})` for one source.
 
   Repos come from `pipeline.repo_names_from_text`, so the same rules as the
-  README scan apply. Each value is the first source line (trimmed) that
+  README scan apply, except that images, gists and `user-attachments`
+  uploads are skipped. Each value is the first source line (trimmed) that
   links the candidate: the list's own words about it.
   """
   repos, urls = {}, {}
   lines = [line.strip() for line in text.splitlines()]
-  names = pipeline.repo_names_from_text(text)
+  names = _repo_names(text)
   for line in lines:
-    for name in pipeline.repo_names_from_text(line):
+    for name in _repo_names(line):
       repos.setdefault(name.lower(), line)
     for url in _external_urls(line):
       urls.setdefault(url, line)
