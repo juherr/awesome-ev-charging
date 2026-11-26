@@ -658,6 +658,23 @@ def test_text_neutralises_mentions_and_issue_references():
         assert sign_then_alnum not in out
 
 
+def test_text_neutralises_gh_and_issue_url_references():
+    zw = "​"
+    out = discovery._text("Fixes GH-1, gh-22 and https://github.com/a/b/issues/3, "
+                          "see https://github.com/a/b.c/pull/4 and github.com/x/y/discussions/5")
+    assert out == (f"Fixes GH{zw}-1, gh{zw}-22 and https://github.com/a/b/issues{zw}/3, "
+                   f"see https://github.com/a/b.c/pull{zw}/4 and github.com/x/y/discussions{zw}/5")
+
+
+@pytest.mark.parametrize("value", [
+    "GH- stands alone, GH-x, OGH-1 and SIGH-2",
+    "https://github.com/a/b, https://github.com/a/b/issues and github.com/a/b/tree/1",
+    "https://example.org/a/b/issues/1",
+])
+def test_text_leaves_other_gh_and_github_text_unchanged(value):
+    assert discovery._text(value) == value
+
+
 @pytest.mark.parametrize("value", ["An OCPP proxy.", "C# and @ alone, # 1", "Ünïcode ok"])
 def test_text_leaves_values_without_a_mention_or_reference_unchanged(value):
     assert discovery._text(value) == value

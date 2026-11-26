@@ -183,9 +183,10 @@ The issue is created once, then its body is edited only when it differs from
 the new one; the workflow never comments, closes or reopens it. Closing it is
 how a reviewer marks the report as handled: the next run opens a new one.
 Mentions and issue references in external metadata (a repository description,
-say) are neutralised with a zero-width space after `@` and `#`, so the bot
-pings no one and links no other issue. The job's token holds `contents: read`
-and `issues: write`, nothing more.
+say) are neutralised with a zero-width space: after `@`, `#` and the `GH` of
+`GH-1`, and before the number of an issue, pull request or discussion URL. So
+the bot pings no one and links no other issue. The job's token holds
+`contents: read` and `issues: write`, nothing more.
 
 ## Acting on the report
 

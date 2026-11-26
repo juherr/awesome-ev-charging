@@ -407,16 +407,25 @@ def related_names(results, lookups):
 
 # `@` or `#` followed by a letter or digit: a mention or an issue reference on GitHub.
 _PING_RE = re.compile(r"([@#])(?=[^\W_])")
+# `GH-1`: an issue reference of the current repository.
+_GH_REF_RE = re.compile(r"\b(gh)(?=-\d)", re.IGNORECASE)
+# An issue, pull request or discussion URL, cut before its `/<number>`.
+_ISSUE_URL_RE = re.compile(r"(github\.com/[\w.-]+/[\w.-]+/(?:issues|pull|discussions))(?=/\d)",
+                           re.IGNORECASE)
 
 
 def _text(value):
   """A metadata value as report text: blank when unknown, no raw HTML, and no
-  mention or issue reference (a zero-width space after `@` / `#`), so the
-  rolling issue pings no one with text taken from external repositories.
+  mention or issue reference (a zero-width space after `@` / `#` / `GH`, and
+  before the number of an issue URL), so the rolling issue pings no one with
+  text taken from external repositories.
   """
   if value is None:
     return ""
-  return _PING_RE.sub("\\1\u200b", " ".join(str(value).split()).replace("<", "&lt;"))
+  text = " ".join(str(value).split()).replace("<", "&lt;")
+  for pattern in (_PING_RE, _GH_REF_RE, _ISSUE_URL_RE):
+    text = pattern.sub("\\1\u200b", text)
+  return text
 
 
 def _code(line):
