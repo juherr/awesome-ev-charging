@@ -12,5 +12,8 @@ repos.enriched.csv
 cache_github/
 list.txt
 
+# Discovery report (written by `mise run discover`)
+discovery-report.md
+
 # Atomic-write temp file of the classification cache
 classifications.csv.*.tmp

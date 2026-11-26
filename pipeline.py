@@ -556,9 +556,14 @@ def auth_headers(token):
   return {"Authorization": f"token {token}"} if token else {}
 
 
-def get_repo_data(full_name, headers):
-  """Return the full repository object from /repos/{owner}/{repo}."""
-  return github_request_cached(f"{BASE_URL}/repos/{full_name}", headers=headers)
+def get_repo_data(full_name, headers, missing=None):
+  """Return the full repository object from /repos/{owner}/{repo}.
+
+  A 404 returns `missing`, so a caller can tell a deleted repository from a
+  lookup that failed (None).
+  """
+  return github_request_cached(f"{BASE_URL}/repos/{full_name}", headers=headers,
+                               missing=missing)
 
 
 def fetch_readme_content(repo_full_name, headers, html_url=None):
@@ -778,6 +783,16 @@ def readme_repo_names(path=README_PATH):
   except OSError:
     print(f"⚠️  {path} not found; skipping readme source")
     return []
+  return repo_names_from_text(text)
+
+
+def repo_names_from_text(text):
+  """Extract distinct owner/repo names from the GitHub links in Markdown text.
+
+  `/tree/...` and other repo sub-paths fold to the repo, non-repo owners
+  (`sponsors`, `orgs`, ...) are skipped and `.git` is stripped. Names dedupe
+  case-insensitively, in order of first appearance.
+  """
   names = {}
   for owner, repo in re.findall(r"github\.com/([\w.-]+)/([\w.-]+)", text):
     if owner.lower() in _README_NON_REPO:

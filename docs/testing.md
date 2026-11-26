@@ -18,6 +18,16 @@ extraction, GitHub and Codeberg record building (`build_repo_record`,
 `days_since_push`, dormancy), `ingest` keeping its previous CSV when a Codeberg
 repo is unreadable, and the promotion of a Codeberg repo to the Selection.
 
+`tests/test_discovery.py` covers `discovery.py` with `requests.get` stubbed
+and the HTTP cache in a temporary directory, so it needs no network and never
+writes `cache_github/`: the sources configuration (and that the committed
+`discovery-sources.toml` monitors the Andrei Besleaga fork), a deleted source
+told from a failed fetch, the token sent only to the GitHub API, URL
+normalization, extraction and deduplication with provenance, the tracked sets,
+every status rule (aliases merged by canonical name, the stale side of a
+`changed`), the report's fields and byte-identical re-runs, and the CLI's exit
+codes and that it writes nothing but `--report`.
+
 `tests/test_vendored_assets.py` pins every vendored third-party file under
 `ocpp/`, `ocpi/`, `oicp/`, `emi3/`, `eichrecht/`, `nemo/` and `oscp/` with the
 SHA-256 manifest `tests/vendored_assets.sha256` (`shasum -a 256` format, so
