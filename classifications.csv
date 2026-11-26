@@ -352,7 +352,6 @@ kkcrafter/VE-curious,2026-10-25T19:43:43Z,Other > Charging management system,"Re
 knudmoeller/berlin-charging-stations,2020-06-15T18:36:40Z,Other > Data models & identifiers,A Ruby script and makefile that downloads charging station data from Berlin's open geospatial data service in GML format and converts it to CSV.,08da914cc126
 Ko1103/ocpi-mcp-server,2025-10-28T09:57:03Z,Other > Developer tools & libraries,An MCP server that exposes OCPI protocol documentation to AI-enabled development tools.,b865dd5782fe
 konicst1/ChargeSploit,2026-08-08T17:21:23Z,iso15118 > Security testing|iso15118 > Simulator,A security testing tool that simulates the ISO 15118-2 and DIN SPEC 70121 V2G charging stack for EVSE and EVCC operation with message inspection and manipulation capabilities.,bfb560fd3795
-kraftvaerk/OCPI,2022-12-08T05:38:50Z,OCPI > Libraries,C# reference framework for OCPI 2.1.1 DTOs and protocol interfaces.,
 kubarskii/OCPP-J-CP-Simulator,2020-04-08T21:24:11Z,OCPP > Simulator,Simple OCPP 1.6 charge point simulator with a basic web UI.,7410a3d725a3
 kwtycoon/kilowatt-tycoon,2026-07-10T11:22:36Z,OCPP > Simulator|OCPI > Simulator|OpenADR > Misc|Other > Simulators,"Rust tycoon game and EV charging network simulator implementing OCPP 1.6J, OCPI 2.3.0, and OpenADR 3.0 for realistic protocol dataset generation.",96e74f0df8e3
 lachand/EV_charger,2026-11-09T09:20:14Z,Other > Home automation,"Home Assistant integration providing local LAN control of Tuya EV chargers over Tuya's proprietary protocol using tinytuya, without cloud dependency.",2e6a17460417
@@ -589,7 +588,6 @@ shiv3/ocpp-cp-simulator,2026-11-18T07:37:29Z,OCPP > Simulator,"An OCPP charge po
 siddharthsabron/ocpp,2024-04-18T04:49:38Z,OCPP > Server,A TypeScript implementation of an OCPP WebSocket server for communicating with EV charging stations.,67af0633920e
 Silicon-Logix/slx-chargeproof,2026-10-20T09:11:37Z,OCPP > Simulator,"Native Windows C++20 application that simulates EV charging systems with electrothermal battery models, OCPP 2.0.1 communication and fault injection for charging diagnostics and validation.",f6a9acfa2c34
 skazemi/awesome-evse,2024-03-13T21:18:25Z,Other > Specifications & documentation,"A curated awesome list indexing EV charging tools, frameworks, libraries and software across multiple protocols and standards.",cfc19170a0ba
-slachiewicz/ocpp-csms-backend,2025-07-25T21:03:20Z,OCPP > Server,Python/FastAPI and Vue3 CSMS for monitoring and controlling EV charging stations over WebSocket with queue-based charge point services and management logic.,
 slachiewicz/ocpp16jto201gateway,2023-12-02T14:25:54Z,OCPP > Misc,OCPP 1.6 JSON to OCPP 2.0.1 gateway for translating charge point communication between protocol versions.,
 slash909uk/ocpp-domoticz-bridge,2026-09-08T23:09:03Z,Other > Home automation,A bridge that enables the domoticz home automation system to control electric vehicle supply equipment (EVSE) via the OCPP protocol.,4a3884bda5a5
 slezoric/ISO15118-car-charging,2017-06-05T16:38:28Z,Other > EVSE firmware,"The main infrastructure files for a car charging station system, project purpose undefined.",f3f2b575c6ac
