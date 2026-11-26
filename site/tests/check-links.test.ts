@@ -45,6 +45,36 @@ describe('checkLinks', () => {
     expect(checkLinks(dir, BASE)).toEqual([]);
   });
 
+  it('flags any href or src whose scheme is not http, https or mailto', () => {
+    const dir = dist({
+      'index.html': page(
+        '<a href="data:text/html,hi">d</a><img src="ftp://example.org/x.png" alt=""><a href="tel:+33100">t</a>',
+      ),
+    });
+    expect(checkLinks(dir, BASE)).toEqual([
+      expect.stringMatching(/^index\.html: data:text\/html,hi .*scheme/),
+      expect.stringMatching(/^index\.html: ftp:\/\/example\.org\/x\.png .*scheme/),
+      expect.stringMatching(/^index\.html: tel:\+33100 .*scheme/),
+    ]);
+  });
+
+  it('flags javascript: in any case, spacing or encoding the browser accepts', () => {
+    const variants = [
+      'javascript:alert(1)',
+      'JavaScript:alert(1)',
+      ' \tjavascript:alert(1)',
+      'java\tscript:alert(1)',
+      'java&#10;script:alert(1)',
+      '&#106;avascript:alert(1)',
+      '&#x6A;avascript&colon;alert(1)',
+    ];
+    const anchors = variants.map((v) => `<a href="${v}">x</a>`).join('');
+    const dir = dist({ 'index.html': page(`${anchors}<a href=javascript:alert(2)>u</a>`) });
+    const errors = checkLinks(dir, BASE);
+    expect(errors).toHaveLength(variants.length + 1);
+    for (const error of errors) expect(error).toMatch(/^index\.html: .* has the scheme javascript:/);
+  });
+
   it('flags a root-relative link that escapes the base path', () => {
     const dir = dist({ 'index.html': page('<a href="/projects/">p</a>') });
     expect(checkLinks(dir, BASE)).toEqual([
