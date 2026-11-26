@@ -2,12 +2,16 @@ name: Weekly discovery report
 
 # Reads the external lists of discovery-sources.toml (forks and other awesome
 # lists), compares what they link with the catalogue, and publishes a review
-# report (docs/discovery.md). It only reports: nothing is committed, no PR or
-# issue is opened, and the same inputs give the same report bytes, so a
-# re-run never adds notifications.
+# report (docs/discovery.md): the job summary, the `discovery-report`
+# artifact, and one rolling issue labelled `discovery-report`. Nothing is
+# committed and no PR is opened. The issue is created once, then its body is
+# edited only when the report changed; it is never commented, closed or
+# reopened. The body holds nothing run-specific, and mentions or issue
+# references in external metadata are neutralised, so the bot pings no one.
 #
-# Auth: the built-in token, read-only. It only reads public data from the
-# GitHub API (the source READMEs and one lookup per linked repository).
+# Auth: the built-in token. It reads public data from the GitHub API (the
+# source READMEs and one lookup per linked repository) and writes only the
+# rolling issue and its label (`issues: write`).
 
 on:
   schedule:
@@ -26,6 +30,9 @@ jobs:
   discover:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write # the rolling issue and its label, nothing else
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -41,10 +48,13 @@ jobs:
       - name: Discover candidates from the external lists
         env:
           GH_TOKEN: ${{ github.token }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/discovery.yml
         run: |
           mise exec -- python discovery.py \
             --sources discovery-sources.toml \
             --report "$RUNNER_TEMP/discovery-report.md" \
+            --issue-body "$RUNNER_TEMP/discovery-issue.md" \
+            --workflow-url "$WORKFLOW_URL" \
             --token "$GH_TOKEN"
 
       - name: Publish the report in the job summary
@@ -62,3 +72,33 @@ jobs:
           name: discovery-report
           path: ${{ runner.temp }}/discovery-report.md
           if-no-files-found: warn
+
+      # One open issue labelled discovery-report holds the latest report. Its
+      # body is edited only when it differs; the issue is never commented,
+      # closed or reopened.
+      - name: Update the rolling issue
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          body="$RUNNER_TEMP/discovery-issue.md"
+          label=discovery-report
+          if [ ! -f "$body" ]; then
+            echo "No issue body was written; the issue is left as it is."
+            exit 0
+          fi
+          if ! gh label list --search "$label" --json name -q '.[].name' | grep -qx "$label"; then
+            gh label create "$label" --description "Rolling discovery report" --color 0e8a16
+          fi
+          number=$(gh issue list --label "$label" --state open --limit 100 \
+            --json number -q 'sort_by(.number) | .[0].number // empty')
+          if [ -z "$number" ]; then
+            gh issue create --title "Discovery report: candidates from external lists" \
+              --label "$label" --body-file "$body"
+          elif [ "$(gh issue view "$number" --json body -q .body)" != "$(cat "$body")" ]; then
+            # $(...) drops trailing newlines on both sides: gh adds one.
+            gh issue edit "$number" --body-file "$body"
+          else
+            echo "Issue #$number already holds this report."
+          fi

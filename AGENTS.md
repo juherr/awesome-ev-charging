@@ -151,8 +151,10 @@ no code change), compares what they link with the catalogue, and writes a
 deterministic review report with one status per candidate: `new`, `changed`,
 `unavailable`, `excluded` or `existing`. **It never writes curated data**:
 acting on the report goes through the usual workflows (`add-project`, ...).
-`.github/workflows/discovery.yml` runs it weekly and publishes the report as
-an artifact. Details: [docs/discovery.md](docs/discovery.md).
+`.github/workflows/discovery.yml` runs it weekly, publishes the report as an
+artifact and keeps one rolling issue labelled `discovery-report`, edited only
+when the report changed, with external mentions and issue references
+neutralised. Details: [docs/discovery.md](docs/discovery.md).
 
 ## Agent configuration
 

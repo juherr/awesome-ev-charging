@@ -405,9 +405,18 @@ def related_names(results, lookups):
 
 # --- Report -------------------------------------------------------------------
 
+# `@` or `#` followed by a letter or digit: a mention or an issue reference on GitHub.
+_PING_RE = re.compile(r"([@#])(?=[^\W_])")
+
+
 def _text(value):
-  """A metadata value as report text: blank when unknown, no raw HTML."""
-  return "" if value is None else " ".join(str(value).split()).replace("<", "&lt;")
+  """A metadata value as report text: blank when unknown, no raw HTML, and no
+  mention or issue reference (a zero-width space after `@` / `#`), so the
+  rolling issue pings no one with text taken from external repositories.
+  """
+  if value is None:
+    return ""
+  return _PING_RE.sub("\\1\u200b", " ".join(str(value).split()).replace("<", "&lt;"))
 
 
 def _code(line):
@@ -471,6 +480,60 @@ def render_report(results, source_names, failures):
   return "\n".join(out).rstrip("\n") + "\n"
 
 
+# --- Rolling issue ------------------------------------------------------------
+
+ISSUE_MARKER = "<!-- discovery-report -->"
+ISSUE_BODY_LIMIT = 65536  # GitHub's maximum issue body length, in characters
+# Kept, in this order, when the whole report does not fit in the issue body.
+ISSUE_SECTIONS = ("Summary", "New", "Changed", "Unavailable")
+
+
+def _report_sections(report):
+  """The report split at its `## ` headings: `(title, text)` pairs, preamble first."""
+  sections = [("", [])]
+  for line in report.splitlines(keepends=True):
+    if line.startswith("## "):
+      sections.append((line[3:].strip(), []))
+    sections[-1][1].append(line)
+  return [(title, "".join(lines)) for title, lines in sections]
+
+
+def issue_body(report, workflow_url, limit=ISSUE_BODY_LIMIT):
+  """The rolling issue's body: marker, workflow link, then the report, within `limit` characters.
+
+  Depends only on its arguments, and `workflow_url` is the same for every run,
+  so an unchanged report gives an unchanged body. When the whole report does
+  not fit, keep its preamble, the counts and the actionable sections
+  (`ISSUE_SECTIONS`), whole while they fit; the first one that does not fit is
+  cut on a line boundary, the rest dropped, and a closing line points at the
+  workflow's artifacts.
+  """
+  head = (f"{ISSUE_MARKER}\n"
+          f"Latest report of the [weekly discovery workflow]({workflow_url}); each run's "
+          "`discovery-report` artifact holds the full report.\n\n")
+  body = head + report
+  if len(body) <= limit:
+    return body
+  note = (f"\n_Truncated to fit an issue: the full report is the `discovery-report` "
+          f"artifact of the latest run of the [workflow]({workflow_url})._\n")
+  budget = limit - len(note)
+  if len(head) > budget:
+    raise ValueError(f"an issue body limit of {limit} cannot hold the marker and the note")
+  sections = dict(_report_sections(report))
+  kept = head
+  for title in ("", *ISSUE_SECTIONS):
+    text = sections.get(title, "")
+    if len(kept) + len(text) <= budget:
+      kept += text
+      continue
+    for line in text.splitlines(keepends=True):
+      if len(kept) + len(line) > budget:
+        break
+      kept += line
+    break
+  return kept.rstrip("\n") + "\n" + note
+
+
 # --- Run and CLI --------------------------------------------------------------
 
 def _source_repos(sources, headers):
@@ -505,7 +568,8 @@ def run(sources, tracked, headers):
 
 
 def main(argv=None):
-  """CLI entry point. Writes only `--report` (plus the disposable HTTP cache).
+  """CLI entry point. Writes only `--report`, `--issue-body` when given, and the
+  disposable HTTP cache.
 
   Exit 0 when at least one source was read, 1 when every source failed (the
   report still lists the failures), 2 on a configuration error.
@@ -514,7 +578,11 @@ def main(argv=None):
   parser.add_argument("--sources", required=True, help="TOML file of [[sources]]")
   parser.add_argument("--report", required=True, help="Markdown report to write")
   parser.add_argument("--token", help="GitHub token")
+  parser.add_argument("--issue-body", help="also write the rolling issue's body here")
+  parser.add_argument("--workflow-url", help="the workflow whose runs' artifacts hold the full report")
   args = parser.parse_args(argv)
+  if bool(args.issue_body) != bool(args.workflow_url):
+    parser.error("--issue-body and --workflow-url go together")
   try:
     sources = load_sources(args.sources)
     tracked = load_tracked()
@@ -525,6 +593,10 @@ def main(argv=None):
   os.makedirs(os.path.dirname(args.report) or ".", exist_ok=True)
   with open(args.report, "w", encoding="utf-8", newline="") as f:
     f.write(report)
+  if args.issue_body:
+    os.makedirs(os.path.dirname(args.issue_body) or ".", exist_ok=True)
+    with open(args.issue_body, "w", encoding="utf-8", newline="") as f:
+      f.write(issue_body(report, args.workflow_url))
   return 0 if read else 1
 
 

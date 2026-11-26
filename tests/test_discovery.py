@@ -581,3 +581,130 @@ def test_cli_exit_codes(repo_copy, config, expected):
     code = discovery.main(["--sources", "bad.toml", "--report", "report.md"])
     assert code == expected
     assert (repo_copy / "report.md").exists() == (expected == 1)
+
+
+def test_cli_writes_the_issue_body_next_to_the_report(repo_copy):
+    before = snapshot(repo_copy)
+    code = discovery.main(["--sources", "discovery-sources.toml", "--report", "out/report.md",
+                           "--issue-body", "out/issue.md", "--workflow-url", WORKFLOW_URL])
+    after = snapshot(repo_copy)
+    assert code == 0
+    assert set(after) - set(before) == {pathlib.Path("out/report.md"), pathlib.Path("out/issue.md")}
+    report = (repo_copy / "out/report.md").read_text(encoding="utf-8")
+    assert (repo_copy / "out/issue.md").read_text(encoding="utf-8") == \
+        discovery.issue_body(report, WORKFLOW_URL)
+
+
+@pytest.mark.parametrize("flags", [["--issue-body", "issue.md"], ["--workflow-url", "https://x"]])
+def test_cli_needs_both_issue_flags(repo_copy, flags):
+    with pytest.raises(SystemExit) as e:
+        discovery.main(["--sources", "discovery-sources.toml", "--report", "report.md", *flags])
+    assert e.value.code == 2
+    assert not (repo_copy / "report.md").exists()
+    assert not (repo_copy / "issue.md").exists()
+
+
+# --- Issue body ---------------------------------------------------------------
+
+WORKFLOW_URL = "https://github.com/juherr/awesome-ev-charging/actions/workflows/discovery.yml"
+
+
+def synthetic_report(**sizes):
+    """A report shaped like `render_report`, with `sizes[section]` filler lines."""
+    def section(title):
+        n = sizes.get(title.lower(), 1)
+        return [f"## {title}", "", *(f"- {title.lower()} item {i}" for i in range(n)), ""]
+    out = ["# Discovery report", "", "Intro.", "", "## Summary", "",
+           "| Status | GitHub repos | Other URLs |", "| --- | --- | --- |", "| new | 1 | 0 |", ""]
+    for title in ("Failed sources", "New", "Changed", "Unavailable", "Excluded", "Existing"):
+        out += section(title)
+    return "\n".join(out).rstrip("\n") + "\n"
+
+
+def test_issue_body_is_the_marker_the_workflow_link_and_the_report(fork_http):
+    report, _ = discovery.run(SOURCES, tracked(), {})
+    body = discovery.issue_body(report, WORKFLOW_URL)
+    first, second, blank, rest = body.split("\n", 3)
+    assert first == "<!-- discovery-report -->"
+    assert f"[weekly discovery workflow]({WORKFLOW_URL})" in second
+    assert "`discovery-report` artifact" in second
+    assert blank == ""
+    assert rest == report  # under the limit: the whole report, untouched
+    assert "Truncated" not in body
+
+
+def test_issue_body_is_deterministic():
+    report = synthetic_report(existing=5000)
+    assert discovery.issue_body(report, WORKFLOW_URL, limit=2000) == \
+        discovery.issue_body(report, WORKFLOW_URL, limit=2000)
+
+
+@pytest.mark.parametrize("limit", [65536, 600])  # whole and truncated
+def test_issue_body_depends_only_on_the_report_and_the_workflow_url(limit):
+    """Nothing run-specific: an unchanged report leaves the issue body unchanged."""
+    report = synthetic_report(new=100)
+    body = discovery.issue_body(report, WORKFLOW_URL, limit=limit)
+    other = "x" * len(WORKFLOW_URL)  # same length: the same lines fit
+    assert body.replace(WORKFLOW_URL, other) == discovery.issue_body(report, other, limit=limit)
+    assert body.count(WORKFLOW_URL) == (1 if limit == 65536 else 2)
+    assert "/actions/runs/" not in body
+
+
+def test_text_neutralises_mentions_and_issue_references():
+    zw = "​"
+    out = discovery._text("@octocat fixes #1 and a/b#2, mail me@x.org")
+    assert out == f"@{zw}octocat fixes #{zw}1 and a/b#{zw}2, mail me@{zw}x.org"
+    for sign_then_alnum in ("@o", "#1", "#2", "@x"):
+        assert sign_then_alnum not in out
+
+
+@pytest.mark.parametrize("value", ["An OCPP proxy.", "C# and @ alone, # 1", "Ünïcode ok"])
+def test_text_leaves_values_without_a_mention_or_reference_unchanged(value):
+    assert discovery._text(value) == value
+
+
+def test_report_neutralises_mentions_in_new_repo_metadata():
+    lines = discovery._new_repo(discovery.Result(
+        "new", "repo", "acme/x", ["fork"], {}, data={"description": "by @octocat, see #12"}))
+    assert "- Description: by @​octocat, see #​12" in lines
+
+
+def test_issue_body_over_the_limit_keeps_the_counts_and_actionable_sections():
+    report = synthetic_report(new=3, changed=2, unavailable=2, excluded=500, existing=500)
+    limit = 1000
+    assert len(discovery.issue_body(report, WORKFLOW_URL, limit=len(report) * 2)) > limit
+    body = discovery.issue_body(report, WORKFLOW_URL, limit=limit)
+    assert len(body) <= limit
+    assert body.startswith("<!-- discovery-report -->\n")
+    assert "| new | 1 | 0 |" in body
+    headings = [l for l in body.splitlines() if l.startswith("## ")]
+    assert headings == ["## Summary", "## New", "## Changed", "## Unavailable"]
+    for title in ("new", "changed", "unavailable"):
+        assert all(f"- {title} item {i}" in body for i in range(2))
+    assert "- new item 2" in body
+    last = body.rstrip("\n").splitlines()[-1]
+    assert "Truncated" in last and WORKFLOW_URL in last and "`discovery-report` artifact" in last
+    assert body.endswith("\n")
+
+
+def test_issue_body_keeps_whole_sections_while_they_fit():
+    report = synthetic_report(new=2, changed=2, unavailable=400)
+    body = discovery.issue_body(report, WORKFLOW_URL, limit=1500)
+    assert len(body) <= 1500
+    assert "- changed item 1" in body  # the sections before it stay whole
+    assert "- unavailable item 0" in body
+    assert "- unavailable item 399" not in body
+    assert "## Excluded" not in body and "## Existing" not in body
+
+
+def test_issue_body_never_exceeds_the_limit_even_for_one_huge_section():
+    report = synthetic_report(new=20000)
+    for limit in (600, 65536):
+        body = discovery.issue_body(report, WORKFLOW_URL, limit=limit)
+        assert len(body) <= limit
+        lines = body.splitlines()
+        assert "## Changed" not in lines
+        kept = [l for l in lines if l.startswith("- new item ")]
+        assert kept and kept == [f"- new item {i}" for i in range(len(kept))]  # whole lines, in order
+        assert "Truncated" in lines[-1]
+    assert len(discovery.issue_body(report, WORKFLOW_URL)) <= 65536
