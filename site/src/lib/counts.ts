@@ -26,8 +26,13 @@ const KNOWN: Protocol[] = [
 
 const NOT_A_PROTOCOL = new Set(['Other']);
 
+/** The display label of a `categories[].main` value; an unknown one is shown as spelled. */
+export function protocolLabel(main: string): string {
+  return KNOWN.find((p) => p.main === main)?.label ?? main;
+}
+
 /** The protocols the projects are filed under: known ones in taxonomy order, then the rest. */
-export function protocolsIn(projects: Project[]): Protocol[] {
+export function protocolsIn(projects: readonly Pick<Project, 'categories'>[]): Protocol[] {
   const present = new Set(
     projects.flatMap((p) => p.categories.map((c) => c.main)).filter((m) => !NOT_A_PROTOCOL.has(m)),
   );

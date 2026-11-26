@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { homeCounts, protocolsIn } from '../src/lib/counts';
+import { homeCounts, protocolLabel, protocolsIn } from '../src/lib/counts';
 import type { CsmsProduct, Project } from '../src/lib/data';
 
 function project(id: string, curation: Project['curation'], mains: string[]): Project {
@@ -58,6 +58,14 @@ describe('protocolsIn', () => {
       expect.objectContaining({ main: 'OCPP' }),
       { main: 'NewProto', label: 'NewProto', name: null },
     ]);
+  });
+});
+
+describe('protocolLabel', () => {
+  it('labels a known main category and passes an unknown one through', () => {
+    expect(protocolLabel('iso15118')).toBe('ISO 15118');
+    expect(protocolLabel('EMIP')).toBe('eMIP');
+    expect(protocolLabel('Other')).toBe('Other');
   });
 });
 
