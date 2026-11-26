@@ -5583,6 +5583,86 @@
       "website": null
     },
     {
+      "api": true,
+      "api_docs": null,
+      "certificates": [],
+      "changelog": null,
+      "company": "GreenFinOps SAS",
+      "company_founded": null,
+      "deployment": "saas",
+      "eichrecht": null,
+      "features_certified": [],
+      "features_documented": [
+        {
+          "feature": "Plug & Charge",
+          "source_urls": [
+            "https://greenfinops.io/solutions/ocpp"
+          ]
+        },
+        {
+          "feature": "OCPI Roaming",
+          "source_urls": [
+            "https://greenfinops.io/solutions/ocpp"
+          ]
+        },
+        {
+          "feature": "Payments",
+          "source_urls": [
+            "https://greenfinops.io/technology"
+          ]
+        },
+        {
+          "feature": "Load Management",
+          "source_urls": [
+            "https://greenfinops.io/solutions/ocpp"
+          ]
+        },
+        {
+          "feature": "Reporting",
+          "source_urls": [
+            "https://greenfinops.io/technology"
+          ]
+        },
+        {
+          "feature": "Remote Commands",
+          "source_urls": [
+            "https://greenfinops.io/solutions/ocpp"
+          ]
+        }
+      ],
+      "first_release": null,
+      "hq_city": "Nice",
+      "hq_country": "France",
+      "id": "gfo-omni",
+      "iso15118": true,
+      "latest_version": null,
+      "latest_version_date": null,
+      "license": null,
+      "name": "GFO Omni",
+      "notes": "Hosted by the vendor on servers in France. OCPI support is stated without a version; ISO 15118 Plug & Charge is stated for compatible OCPP 2.0.1 and 2.1 chargers.",
+      "oca_company_url": null,
+      "ocpi": true,
+      "ocpp_versions": [
+        "1.6",
+        "2.0.1",
+        "2.1"
+      ],
+      "pricing": "Price list",
+      "pricing_url": "https://greenfinops.io/pricing",
+      "repo": null,
+      "repo_url": null,
+      "source_available": null,
+      "sources": [
+        "https://greenfinops.io/",
+        "https://greenfinops.io/legal-notice",
+        "https://greenfinops.io/solutions/ocpp",
+        "https://greenfinops.io/technology",
+        "https://greenfinops.io/pricing"
+      ],
+      "status": "active",
+      "website": "https://greenfinops.io/"
+    },
+    {
       "api": null,
       "api_docs": null,
       "certificates": [],
