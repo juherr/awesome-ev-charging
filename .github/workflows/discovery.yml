@@ -1,0 +1,64 @@
+name: Weekly discovery report
+
+# Reads the external lists of discovery-sources.toml (forks and other awesome
+# lists), compares what they link with the catalogue, and publishes a review
+# report (docs/discovery.md). It only reports: nothing is committed, no PR or
+# issue is opened, and the same inputs give the same report bytes, so a
+# re-run never adds notifications.
+#
+# Auth: the built-in token, read-only. It only reads public data from the
+# GitHub API (the source READMEs and one lookup per linked repository).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays, 06:00 UTC
+  workflow_dispatch:
+
+# One report at a time; a run waits for the one in flight.
+concurrency:
+  group: discovery-report
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up mise (Python 3.11 + venv)
+        uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
+
+      - name: Install Python dependencies
+        run: mise run install
+
+      # Exit 1 when every source failed: the report is still written, listing
+      # the failures, and the steps below publish it before the job ends red.
+      - name: Discover candidates from the external lists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mise exec -- python discovery.py \
+            --sources discovery-sources.toml \
+            --report "$RUNNER_TEMP/discovery-report.md" \
+            --token "$GH_TOKEN"
+
+      - name: Publish the report in the job summary
+        if: ${{ !cancelled() }}
+        run: |
+          report="$RUNNER_TEMP/discovery-report.md"
+          if [ -f "$report" ]; then
+            cat "$report" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload the report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: discovery-report
+          path: ${{ runner.temp }}/discovery-report.md
+          if-no-files-found: warn

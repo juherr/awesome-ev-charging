@@ -1,0 +1,13 @@
+# External lists read by discovery.py (see docs/discovery.md).
+#
+# Add a source by appending a [[sources]] table; no code change is needed.
+# Each table takes a unique `name` and exactly one of:
+#   repo = "owner/name"          a GitHub repository, read through its README
+#   url  = "https://.../x.md"    a raw Markdown file on any host
+#
+# Discovery only writes a review report: nothing found here reaches the
+# catalogue without an explicit review.
+
+[[sources]]
+name = "andreibesleaga/awesome-ev-charging"
+repo = "andreibesleaga/awesome-ev-charging"

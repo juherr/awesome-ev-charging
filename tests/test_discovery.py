@@ -90,6 +90,12 @@ def test_load_sources_rejects_a_missing_file(tmp_path):
         discovery.load_sources(str(tmp_path / "absent.toml"))
 
 
+def test_committed_sources_monitor_the_andrei_besleaga_fork():
+    path = pathlib.Path(__file__).parent.parent / "discovery-sources.toml"
+    sources = discovery.load_sources(str(path))
+    assert "andreibesleaga/awesome-ev-charging" in {s.repo for s in sources}
+
+
 # --- Fetching -----------------------------------------------------------------
 
 REPO = discovery.Source("fork", repo="acme/list")

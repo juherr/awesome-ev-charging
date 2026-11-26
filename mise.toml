@@ -41,3 +41,7 @@ run = [
   'python csms.py fetch',
   'python csms.py render --export-dir data --token "$(gh auth token 2>/dev/null)"',
 ]
+
+[tasks.discover]
+description = "Report candidates from the external lists of discovery-sources.toml"
+run = 'python discovery.py --sources discovery-sources.toml --report discovery-report.md --token "$(gh auth token 2>/dev/null)"'
