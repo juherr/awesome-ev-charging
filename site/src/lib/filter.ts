@@ -143,7 +143,8 @@ export function serialiseState(state: FilterState): string {
 
 // ---------------------------------------------------------------- matching
 
-function words(q: string): string[] {
+/** The lowercased words of a free-text query; the CSMS directory shares it. */
+export function words(q: string): string[] {
   return q.toLowerCase().split(/\s+/).filter(Boolean);
 }
 
