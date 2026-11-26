@@ -297,7 +297,14 @@ def _merge_by_canonical(candidates, lookups):
   return groups
 
 
-def _repo_status(group, tracked, source_repos):
+def _related(name, tracked):
+  """Tracked repos with the same short name as `name` under another owner."""
+  short = name.lower().split("/")[1]
+  return sorted((n for k, n in tracked.names.items()
+                 if k.split("/")[1] == short and k != name.lower()), key=str.lower)
+
+
+def _repo_status(group, tracked, source_repos, lookups, related):
   """`(status, reason, stale, old)` by the ordered rules of the design."""
   aliases = {a.lower() for a in group["aliases"]}
   canonical = group["data"]["full_name"].lower() if group["data"] else None
@@ -318,6 +325,12 @@ def _repo_status(group, tracked, source_repos):
     return ("changed", "", "source", stale) if stale else ("existing", "", "", [])
   if known:
     return "changed", "", "catalogue", sorted((tracked.names[k] for k in known), key=str.lower)
+  # The catalogue may hold an old name the source no longer links: a related
+  # tracked name that resolves to this repository is stale in the catalogue.
+  renamed = [n for n in related if isinstance(lookups.get(n.lower()), dict)
+             and lookups[n.lower()].get("full_name", "").lower() == canonical]
+  if renamed:
+    return "changed", "", "catalogue", renamed
   return "new", "", "", []
 
 
@@ -325,17 +338,17 @@ def classify(repo_candidates, url_candidates, lookups, tracked, source_repos=())
   """Classify candidates against the catalogue, sorted by status then name.
 
   `lookups` maps each repo candidate key to its `/repos/{name}` object,
-  `NOT_FOUND` (404) or None (transient failure).
+  `NOT_FOUND` (404) or None (transient failure). It may also hold the
+  case-folded related tracked names of a candidate (see `related_names`): one
+  that resolves to the candidate makes it `changed` instead of `new`.
   """
   results = []
   for key, group in _merge_by_canonical(repo_candidates, lookups).items():
-    status, reason, stale, old = _repo_status(group, tracked, source_repos)
     aliases = sorted(group["aliases"], key=str.lower)
     data = group["data"]
     name = data["full_name"] if data else aliases[0]
-    short = name.lower().split("/")[1]
-    related = sorted((n for k, n in tracked.names.items()
-                      if k.split("/")[1] == short and k != name.lower()), key=str.lower)
+    related = _related(name, tracked)
+    status, reason, stale, old = _repo_status(group, tracked, source_repos, lookups, related)
     results.append(Result(status, "repo", name, sorted(group["sources"]), group["context"],
                           reason, aliases, stale, old, data,
                           related if status == "new" else []))
@@ -343,6 +356,15 @@ def classify(repo_candidates, url_candidates, lookups, tracked, source_repos=())
     status = "existing" if c.key in tracked.urls else "new"
     results.append(Result(status, "url", c.name, list(c.sources), c.context))
   return sorted(results, key=lambda r: (STATUSES.index(r.status), r.kind, r.name.lower(), r.name))
+
+
+def related_names(results, lookups):
+  """Sorted related tracked names of the `new` repos, not looked up yet.
+
+  Only renames and transfers that keep the short name are caught this way.
+  """
+  return sorted({n for r in results if r.kind == "repo" and r.status == "new"
+                 for n in r.related if n.lower() not in lookups}, key=str.lower)
 
 
 # --- Report -------------------------------------------------------------------
@@ -419,9 +441,14 @@ def run(sources, tracked, headers):
   """Fetch, resolve and classify; return `(report, whether any source was read)`."""
   texts, failures = fetch_sources(sources, headers)
   repos, urls = collect_candidates(texts)
+  source_repos = {s.repo for s in sources if s.repo}
   lookups = {c.key: pipeline.get_repo_data(c.name, headers, missing=NOT_FOUND) for c in repos}
-  results = classify(repos, urls, lookups, tracked,
-                     source_repos={s.repo for s in sources if s.repo})
+  results = classify(repos, urls, lookups, tracked, source_repos)
+  related = related_names(results, lookups)
+  if related:
+    lookups.update({n.lower(): pipeline.get_repo_data(n, headers, missing=NOT_FOUND)
+                    for n in related})
+    results = classify(repos, urls, lookups, tracked, source_repos)
   return render_report(results, [s.name for s in sources], failures), bool(texts)
 
 

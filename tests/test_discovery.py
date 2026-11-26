@@ -6,8 +6,11 @@ points at a temporary directory, so `cache_github/` is never written.
 
 import hashlib
 import json
+import os
 import pathlib
 import shutil
+import subprocess
+import sys
 
 import pytest
 
@@ -329,6 +332,34 @@ def test_a_stale_catalogue_name_is_changed_on_the_catalogue_side():
         "changed", "catalogue", ["old/name"], "new/Name")
 
 
+def test_a_stale_catalogue_name_the_source_does_not_link_is_still_changed():
+    repos, urls = discovery.collect_candidates({"fork": "https://github.com/new/Name"})
+    t = discovery.build_tracked({"old/name": row()}, [])
+    lookups = {"new/name": {"full_name": "new/Name"}, "old/name": {"full_name": "new/Name"}}
+    [result] = discovery.classify(repos, urls, lookups, t)
+    assert (result.status, result.stale, result.old, result.name, result.related) == (
+        "changed", "catalogue", ["old/name"], "new/Name", [])
+
+
+@pytest.mark.parametrize("answer", [None, discovery.NOT_FOUND, {"full_name": "old/name"}])
+def test_a_related_name_that_does_not_resolve_to_the_candidate_leaves_it_new(answer):
+    repos, urls = discovery.collect_candidates({"fork": "https://github.com/new/Name"})
+    t = discovery.build_tracked({"old/name": row()}, [])
+    lookups = {"new/name": {"full_name": "new/Name"}, "old/name": answer}
+    [result] = discovery.classify(repos, urls, lookups, t)
+    assert (result.status, result.related) == ("new", ["old/name"])
+
+
+def test_run_looks_up_the_related_names_of_a_new_candidate(http):
+    http.answers["https://example.org/list.md"] = FakeResponse(200, "https://github.com/new/Name")
+    for name in ("new/Name", "old/name"):
+        http.answers[f"https://api.github.com/repos/{name}"] = FakeResponse(
+            200, json.dumps({"full_name": "new/Name"}))
+    t = discovery.build_tracked({"old/name": row()}, [])
+    report, _ = discovery.run([discovery.Source("other", url="https://example.org/list.md")], t, {})
+    assert "- old/name -> new/Name, stale in the catalogue (sources: other)" in report
+
+
 def test_a_new_candidate_carries_metadata_context_and_related_projects(results):
     new = results["acme/ocpp-proxy"]
     assert new.data == NEW_REPO
@@ -339,19 +370,27 @@ def test_a_new_candidate_carries_metadata_context_and_related_projects(results):
 
 # --- Report -------------------------------------------------------------------
 
-@pytest.fixture
-def fork_http(http):
-    """Answer the README, the other list and every repo lookup of the fixture."""
-    http.answers["https://api.github.com/repos/andreibesleaga/awesome-ev-charging/readme"] = \
-        FakeResponse(200, LIST)
-    http.answers["https://example.org/list.md"] = FakeResponse(200, OTHER_LIST)
+def fork_answers():
+    """The README, the other list and every repo lookup of the fixture, by URL."""
+    answers = {
+        "https://api.github.com/repos/andreibesleaga/awesome-ev-charging/readme":
+            FakeResponse(200, LIST),
+        "https://example.org/list.md": FakeResponse(200, OTHER_LIST),
+    }
     repos, _ = discovery.collect_candidates({"fork": LIST, "other": OTHER_LIST})
     for c in repos:  # the stub is case-sensitive, GitHub is not: answer as linked
         data = LOOKUPS.get(c.key, discovery.NOT_FOUND)
         if data is discovery.NOT_FOUND:
             continue
-        http.answers[f"https://api.github.com/repos/{c.name}"] = (
+        answers[f"https://api.github.com/repos/{c.name}"] = (
             FakeResponse(500) if data is None else FakeResponse(200, json.dumps(data)))
+    return answers
+
+
+@pytest.fixture
+def fork_http(http):
+    """Answer the README, the other list and every repo lookup of the fixture."""
+    http.answers.update(fork_answers())
     return http
 
 
@@ -380,6 +419,33 @@ def test_report_lists_each_status_with_its_fields(fork_http):
 
 def test_report_is_byte_identical_across_runs(fork_http):
     assert discovery.run(SOURCES, tracked(), {}) == discovery.run(SOURCES, tracked(), {})
+
+
+# Renders the fixture report in a fresh interpreter, HTTP stubbed; run with
+# the scratch directory as cwd so the HTTP cache never lands in the repo.
+RENDER_IN_SUBPROCESS = """\
+import sys
+sys.path[:0] = [sys.argv[1], sys.argv[1] + "/tests"]
+import discovery, pipeline, test_discovery as t
+pipeline.CACHE_DIR = "."
+answers = t.fork_answers()
+pipeline.requests.get = lambda url, headers=None, **kw: answers.get(url, t.FakeResponse(404))
+open("report.md", "w", encoding="utf-8", newline="").write(discovery.run(t.SOURCES, t.tracked(), {})[0])
+"""
+
+
+def test_report_does_not_depend_on_the_hash_seed(tmp_path):
+    root = str(pathlib.Path(__file__).parent.parent)
+    reports = []
+    for seed in ("1", "7"):  # these two seeds order {"fork", "other"} differently
+        cwd = tmp_path / seed
+        cwd.mkdir()
+        subprocess.run([sys.executable, "-c", RENDER_IN_SUBPROCESS, root], cwd=cwd,
+                              env={**os.environ, "PYTHONHASHSEED": seed},
+                              capture_output=True, check=True)
+        reports.append((cwd / "report.md").read_bytes())
+    assert reports[0].startswith(b"# Discovery report")
+    assert reports[0] == reports[1]
 
 
 def test_failed_and_deleted_sources_are_reported_and_the_others_processed(http):

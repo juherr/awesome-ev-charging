@@ -67,7 +67,8 @@ fetched without any authentication header, whatever its host.
 A source that cannot be read is listed under "Failed sources" and the run goes
 on with the others:
 
-- `not found` — the repository or its README is gone, or the URL answers 404;
+- `not found` — the repository or its README is gone, or the URL answers 404
+  or 200 with an empty body;
 - `fetch failed` — rate limit, server error or network failure.
 
 A failed source never reads as a list that links nothing.
@@ -115,7 +116,13 @@ sources. The first matching rule gives the status:
 4. **changed** — the catalogue holds it under another name. Either the current
    name is tracked and the source links an old name (stale in the `source`),
    or an alias is tracked under a name the repository no longer has (stale in
-   the `catalogue`).
+   the `catalogue`). The catalogue can also be stale when the source links
+   only the current name: a repository that would be `new` has its related
+   tracked names (same short name, another owner) looked up too, and one that
+   resolves to it makes it `changed`, stale in the `catalogue`. This only
+   catches a rename or transfer that keeps the short name; a related name
+   whose lookup fails leaves the repository `new`, with that name listed as
+   related.
 5. **new** — anything else.
 
 Other URLs are `existing` when their normalized form is in the catalogue,
