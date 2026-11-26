@@ -17,6 +17,7 @@ report).
 
 import argparse
 import os
+import pathlib
 import re
 import sys
 import tomllib
@@ -278,14 +279,11 @@ def build_tracked(classifications, texts, additional=(), codeberg=()):
 
 def load_tracked(root="."):
   """Read the catalogue datasets of the repository at `root`."""
-  texts = []
   for name in (pipeline.CLASSIFICATIONS_PATH, *CATALOGUE_FILES):
     path = os.path.join(root, name)
     if not os.path.exists(path):
       raise ConfigError(f"{path}: catalogue file not found (run from the repo root)")
-    if name != pipeline.CLASSIFICATIONS_PATH:
-      with open(path, encoding="utf-8") as f:
-        texts.append(f.read())
+  texts = [pathlib.Path(root, name).read_text(encoding="utf-8") for name in CATALOGUE_FILES]
   classifications = pipeline.load_classifications(os.path.join(root, pipeline.CLASSIFICATIONS_PATH))
   return build_tracked(classifications, texts, pipeline.ADDITIONAL_REPOS, pipeline.CODEBERG_REPOS)
 

@@ -336,6 +336,19 @@ def test_build_tracked_gathers_every_catalogue_dataset():
             "https://codeberg.org/tandemdrive/ocpi-tariffs"} <= t.urls
 
 
+@pytest.mark.parametrize("missing", [pipeline.CLASSIFICATIONS_PATH, *discovery.CATALOGUE_FILES])
+def test_load_tracked_names_a_missing_catalogue_file(tmp_path, missing):
+    repo = pathlib.Path(discovery.__file__).parent
+    header = (repo / pipeline.CLASSIFICATIONS_PATH).read_text(encoding="utf-8").splitlines()[0]
+    (tmp_path / pipeline.CLASSIFICATIONS_PATH).write_text(header + "\n", encoding="utf-8")
+    for name in discovery.CATALOGUE_FILES:
+        (tmp_path / name).write_text("# Catalogue\n", encoding="utf-8")
+    (tmp_path / missing).unlink()
+    with pytest.raises(discovery.ConfigError) as error:
+        discovery.load_tracked(tmp_path)
+    assert str(tmp_path / missing) in str(error.value)
+
+
 @pytest.mark.parametrize("name, status, reason", [
     ("road-labs/ocmf-js", "existing", ""),
     ("tandemdrive/ocpi-tariffs", "existing", ""),
