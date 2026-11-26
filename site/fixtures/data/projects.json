@@ -1,0 +1,885 @@
+{
+  "projects": [
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Misc"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OCPP proxy between charging stations and several CSMS",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": null,
+      "full_name": "chargebridge/ocpp-gateway",
+      "host": "other",
+      "id": "chargebridge/ocpp-gateway",
+      "language": "Go",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.6"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Misc"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": null,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://gitlab.com/chargebridge/ocpp-gateway"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Server"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "Modular OCPP 2.0.1 CSMS",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 80,
+      "full_name": "citrineos/citrineos-core",
+      "host": "github",
+      "id": "citrineos/citrineos-core",
+      "language": "TypeScript",
+      "license": "Apache License 2.0",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "2.0.1"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Server"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 210,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/citrineos/citrineos-core"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "EMIP",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "eMIP client library",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 2,
+      "full_name": "emip-dev/emip-client",
+      "host": "github",
+      "id": "emip-dev/emip-client",
+      "language": "Java",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "EMIP",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/emip-dev/emip-client"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Misc"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "Notes on OCPP message flows",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": null,
+      "forks": 2,
+      "full_name": "emptyrepo/ocpp-notes",
+      "host": "github",
+      "id": "emptyrepo/ocpp-notes",
+      "language": null,
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Misc"
+      },
+      "pushed_at": null,
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": null,
+      "url": "https://github.com/emptyrepo/ocpp-notes"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "Other",
+          "sub": "Energy management"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "Solar surplus charging with OCPP support",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 700,
+      "full_name": "evcc-io/evcc",
+      "host": "github",
+      "id": "evcc-io/evcc",
+      "language": "Go",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.6"
+      ],
+      "primary_category": {
+        "main": "Other",
+        "sub": "Energy management"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 4000,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/evcc-io/evcc"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPI",
+          "sub": "Server"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OCPI server for CPOs and eMSPs",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 6,
+      "full_name": "extrawest/ocpi-server",
+      "host": "github",
+      "id": "extrawest/ocpi-server",
+      "language": "Kotlin",
+      "license": "MIT License",
+      "ocpi_versions": [
+        "2.1.1",
+        "2.2.1"
+      ],
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "OCPI",
+        "sub": "Server"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 35,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/extrawest/ocpi-server"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Server"
+        },
+        {
+          "main": "Other",
+          "sub": "Home automation"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "Home Assistant integration acting as an OCPP server",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 2,
+      "full_name": "homecharge/ha-ocpp",
+      "host": "github",
+      "id": "homecharge/ha-ocpp",
+      "language": "Python",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.6",
+        "2.0.1"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Server"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/homecharge/ha-ocpp"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OICP",
+          "sub": "Misc"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OICP protocol documentation and schemas",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 2,
+      "full_name": "intercharge-dev/oicp-docs",
+      "host": "github",
+      "id": "intercharge-dev/oicp-docs",
+      "language": null,
+      "license": null,
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "OICP",
+        "sub": "Misc"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/intercharge-dev/oicp-docs"
+    },
+    {
+      "archived": true,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "dormant",
+      "deprecated": true,
+      "description": "Deprecated OCPP 1.5 SOAP client",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": true,
+      "forks": 2,
+      "full_name": "legacy-org/ocpp15-client",
+      "host": "github",
+      "id": "legacy-org/ocpp15-client",
+      "language": "C#",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.5"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/legacy-org/ocpp15-client"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OCPP client for microcontrollers",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 150,
+      "full_name": "matth-x/MicroOcpp",
+      "host": "github",
+      "id": "matth-x/microocpp",
+      "language": "C++",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.6",
+        "2.0.1"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 400,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/matth-x/MicroOcpp"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "Python implementation of OCPP 1.6, 2.0.1 and 2.1",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 330,
+      "full_name": "mobilityhouse/ocpp",
+      "host": "github",
+      "id": "mobilityhouse/ocpp",
+      "language": "Python",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.6",
+        "2.0.1",
+        "2.1"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 900,
+      "topics": [
+        "ocpp",
+        "python"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/mobilityhouse/ocpp"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPI",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OCPI client library for Node.js",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 3,
+      "full_name": "ocpi-tools/ocpi-node",
+      "host": "github",
+      "id": "ocpi-tools/ocpi-node",
+      "language": "TypeScript",
+      "license": "MIT License",
+      "ocpi_versions": [
+        "2.2.1"
+      ],
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "OCPI",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 12,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/ocpi-tools/ocpi-node"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Simulator"
+        }
+      ],
+      "curation": "dormant",
+      "deprecated": null,
+      "description": "Charge point simulator for OCPP 1.6",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": true,
+      "forks": 2,
+      "full_name": "old-org/ocpp-sim",
+      "host": "github",
+      "id": "old-org/ocpp-sim",
+      "language": "JavaScript",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.6"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Simulator"
+      },
+      "pushed_at": "2021-03-04T10:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2021-03-05T00:00:00Z",
+      "url": "https://github.com/old-org/ocpp-sim"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OpenADR",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OpenADR 2.0b VEN library",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 2,
+      "full_name": "openadr-lab/openleadr-ven",
+      "host": "github",
+      "id": "openadr-lab/openleadr-ven",
+      "language": "Python",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "OpenADR",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/openadr-lab/openleadr-ven"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OSCP",
+          "sub": null
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OSCP 2.0 message schemas",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 2,
+      "full_name": "oscp-tools/oscp-schemas",
+      "host": "github",
+      "id": "oscp-tools/oscp-schemas",
+      "language": null,
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "OSCP",
+        "sub": null
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/oscp-tools/oscp-schemas"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "Eichrecht",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "Transparency software for Eichrecht meter values",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 2,
+      "full_name": "SafeEVSE/chargy-desktop-app",
+      "host": "github",
+      "id": "safeevse/chargy-desktop-app",
+      "language": "TypeScript",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "Eichrecht",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/SafeEVSE/chargy-desktop-app"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "Other",
+          "sub": "Mobile app"
+        }
+      ],
+      "curation": "to_refine",
+      "deprecated": null,
+      "description": "Mobile app to start and stop charging sessions",
+      "discovered_via": [
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 0,
+      "full_name": "someone-else/ev-charger-app",
+      "host": "github",
+      "id": "someone-else/ev-charger-app",
+      "language": null,
+      "license": null,
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "Other",
+        "sub": "Mobile app"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 1,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/someone-else/ev-charger-app"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Server"
+        }
+      ],
+      "curation": "to_refine",
+      "deprecated": null,
+      "description": "Small OCPP 1.6 CSMS written in Go",
+      "discovered_via": [
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 0,
+      "full_name": "someone/ocpp-csms-go",
+      "host": "github",
+      "id": "someone/ocpp-csms-go",
+      "language": "Go",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.6",
+        "2.0.1"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Server"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 4,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/someone/ocpp-csms-go"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Server"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "Open-source OCPP central system (CSMS) in Java",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 420,
+      "full_name": "steve-community/steve",
+      "host": "github",
+      "id": "steve-community/steve",
+      "language": "Java",
+      "license": "GNU General Public License v3.0",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "1.2",
+        "1.5",
+        "1.6"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Server"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 1050,
+      "topics": [
+        "csms",
+        "java",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/steve-community/steve"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "iso15118",
+          "sub": "Plug&Charge"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "ISO 15118 EVCC and SECC implementation",
+      "discovered_via": [
+        "starred-list",
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 90,
+      "full_name": "SwitchEV/iso15118",
+      "host": "github",
+      "id": "switchev/iso15118",
+      "language": "Python",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "iso15118",
+        "sub": "Plug&Charge"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 200,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/SwitchEV/iso15118"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPI",
+          "sub": "Libraries"
+        }
+      ],
+      "curation": "selection",
+      "deprecated": null,
+      "description": "OCPI tariff calculation library",
+      "discovered_via": [
+        "codeberg"
+      ],
+      "dormant": false,
+      "forks": null,
+      "full_name": "tandemdrive/ocpi-tariffs",
+      "host": "codeberg",
+      "id": "tandemdrive/ocpi-tariffs",
+      "language": "Rust",
+      "license": null,
+      "ocpi_versions": [
+        "2.1.1",
+        "2.2.1"
+      ],
+      "ocpp_versions": null,
+      "primary_category": {
+        "main": "OCPI",
+        "sub": "Libraries"
+      },
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": null,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://codeberg.org/tandemdrive/ocpi-tariffs"
+    },
+    {
+      "archived": false,
+      "categories": [
+        {
+          "main": "OCPP",
+          "sub": "Server"
+        }
+      ],
+      "curation": "to_refine",
+      "deprecated": null,
+      "description": "Experimental OCPP 2.0 server",
+      "discovered_via": [
+        "topic"
+      ],
+      "dormant": true,
+      "forks": 2,
+      "full_name": "tinkerer/ocpp-archive",
+      "host": "github",
+      "id": "tinkerer/ocpp-archive",
+      "language": "Python",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": [
+        "2.0"
+      ],
+      "primary_category": {
+        "main": "OCPP",
+        "sub": "Server"
+      },
+      "pushed_at": "2021-03-04T10:00:00Z",
+      "stars": 2,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2021-03-05T00:00:00Z",
+      "url": "https://github.com/tinkerer/ocpp-archive"
+    },
+    {
+      "archived": false,
+      "categories": [],
+      "curation": "to_refine",
+      "deprecated": null,
+      "description": "Assorted charging scripts",
+      "discovered_via": [
+        "topic"
+      ],
+      "dormant": false,
+      "forks": 2,
+      "full_name": "unsorted/charging-scripts",
+      "host": "github",
+      "id": "unsorted/charging-scripts",
+      "language": "Shell",
+      "license": "MIT License",
+      "ocpi_versions": null,
+      "ocpp_versions": null,
+      "primary_category": null,
+      "pushed_at": "2026-01-01T00:00:00Z",
+      "stars": 10,
+      "topics": [
+        "ev-charging",
+        "ocpp"
+      ],
+      "updated_at": "2026-01-02T00:00:00Z",
+      "url": "https://github.com/unsorted/charging-scripts"
+    }
+  ],
+  "schema_version": "1.0"
+}
