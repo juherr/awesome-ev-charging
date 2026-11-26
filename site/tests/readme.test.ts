@@ -124,6 +124,17 @@ describe('renderReadmeSection', () => {
     );
   });
 
+  it('renders a link or image with a non-http(s) URL as plain text', () => {
+    const md = `## Specifications
+
+A [x](javascript:alert(1)) and [y](JavaScript:alert(2) "t") and [z](data:text/html,hi) and ![pic](javascript:alert(3)) and [ok](https://example.org/ok).
+`;
+    const { html } = renderReadmeSection(md, 'Specifications');
+    expect(html).not.toMatch(/javascript:|data:/i);
+    expect(html).toContain('A x and y and z and pic and');
+    expect(html).toContain('<a href="https://example.org/ok">ok</a>');
+  });
+
   it('fails on a missing section', () => {
     expect(() => renderReadmeSection(README, 'Nope')).toThrow(/Nope/);
   });

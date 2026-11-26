@@ -6,6 +6,7 @@ import {
   discoveredViaText,
   formatCount,
   formatDate,
+  sourceHref,
   sourceLabel,
   versionsSummary,
 } from '../src/lib/format';
@@ -60,6 +61,14 @@ describe('sourceLabel', () => {
     expect(sourceLabel('codeberg')).toBe('View source on Codeberg');
     expect(sourceLabel('other')).toBe('View source');
     expect(sourceLabel(null)).toBe('View source');
+  });
+});
+
+describe('sourceHref', () => {
+  it('links the upstream repository only over http(s)', () => {
+    expect(sourceHref({ url: 'https://github.com/a/b' })).toBe('https://github.com/a/b');
+    expect(sourceHref({ url: 'javascript:alert(1)' })).toBeNull();
+    expect(sourceHref({ url: null })).toBeNull();
   });
 });
 

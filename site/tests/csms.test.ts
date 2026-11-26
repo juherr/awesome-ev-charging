@@ -6,6 +6,7 @@ import {
   csmsSearchText,
   deploymentLabel,
   featureLabel,
+  featureLinks,
   matchesCsms,
   ocpiCell,
   ocppCell,
@@ -58,6 +59,33 @@ describe('productHref', () => {
     expect(productHref({ website: 'https://a.example', repo_url: 'https://github.com/a/b' })).toBe('https://a.example');
     expect(productHref({ website: null, repo_url: 'https://github.com/a/b' })).toBe('https://github.com/a/b');
     expect(productHref({ website: null, repo_url: null })).toBeNull();
+  });
+
+  it('never links a non-http(s) URL, falling back to the repository', () => {
+    expect(productHref({ website: 'javascript:alert(1)', repo_url: null })).toBeNull();
+    expect(productHref({ website: null, repo_url: 'data:text/html,x' })).toBeNull();
+    expect(productHref({ website: ' JavaScript:alert(1)', repo_url: 'https://github.com/a/b' })).toBe(
+      'https://github.com/a/b',
+    );
+  });
+});
+
+describe('data links', () => {
+  it('keeps only the http(s) sources of a documented feature', () => {
+    expect(featureLinks({ feature: 'Tariffs', source_urls: ['javascript:alert(1)', 'https://a', 'vbscript:x'] })).toEqual([
+      'https://a',
+    ]);
+  });
+
+  it('drops a non-http(s) OCPI source and API docs, keeping the Yes they attest', () => {
+    expect(
+      ocpiCell({ ocpi: null, features_documented: [{ feature: 'OCPI Roaming', source_urls: ['javascript:alert(1)'] }] }),
+    ).toEqual({ label: 'Yes', links: [] });
+    expect(apiCell({ api: null, api_docs: 'javascript:alert(1)' })).toEqual({ label: 'Yes', href: null });
+  });
+
+  it('does not link a non-http(s) source entry', () => {
+    expect(sourceRef('javascript:alert(1)')).toEqual({ label: 'javascript:alert(1)', href: null });
   });
 });
 

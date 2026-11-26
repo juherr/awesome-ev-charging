@@ -4,6 +4,7 @@
  */
 import type { Host, Project } from './data';
 import { HOST_LABELS } from './filter';
+import { safeHref } from './safe-href';
 import { REPO_URL } from './site';
 
 export const UNKNOWN_MARK = '—';
@@ -36,6 +37,11 @@ export function cardMeta(p: Pick<Project, 'ocpp_versions' | 'ocpi_versions' | 'l
 
 export function hostLabel(host: Host | null): string {
   return HOST_LABELS[host ?? 'unknown'];
+}
+
+/** The link to the canonical upstream repository, null unless it is http(s). */
+export function sourceHref(p: Pick<Project, 'url'>): string | null {
+  return safeHref(p.url);
 }
 
 /** The label of the link to the canonical upstream repository. */

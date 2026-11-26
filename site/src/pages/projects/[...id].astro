@@ -11,6 +11,7 @@ import {
   formatCount,
   formatDate,
   hostLabel,
+  sourceHref,
   sourceLabel,
 } from '../../lib/format';
 import { projectPath, url } from '../../lib/url';
@@ -33,6 +34,8 @@ const directory = (protocol: string, category: string | null = null) =>
     states: ['selection', 'dormant', 'to_refine'],
   })}`;
 
+// A URL that is not http(s) is treated as unknown: no button links to it.
+const upstream = sourceHref(p);
 const primary = p.primary_category ?? p.categories[0] ?? null;
 const list = (values: string[] | null) => (values?.length ? values.join(', ') : UNKNOWN_MARK);
 const flag = (value: boolean | null) => (value === null ? 'Unknown' : value ? 'Yes' : 'No');
@@ -102,9 +105,9 @@ const description =
           <h1 class="mono">{p.full_name}</h1>
           <p class="lede">{p.description ?? 'Description unknown.'}</p>
           {
-            p.url ? (
+            upstream ? (
               <p class="actions">
-                <a class="button button-primary" href={p.url}>
+                <a class="button button-primary" href={upstream}>
                   {sourceLabel(p.host)}
                 </a>
               </p>

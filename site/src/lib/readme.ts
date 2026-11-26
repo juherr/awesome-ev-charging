@@ -10,6 +10,7 @@
  */
 import GithubSlugger from 'github-slugger';
 import { Lexer, Parser, Renderer, type Token, type Tokens } from 'marked';
+import { safeHref } from './safe-href';
 import { REPO_URL } from './site';
 
 export const README_URL = `${REPO_URL}/blob/main/README.md`;
@@ -26,6 +27,17 @@ export function rewriteHref(href: string, sectionIds: ReadonlySet<string>, { ima
   }
   const path = href.replace(/^(?:\.\/|\/)+/, '');
   return (image ? RAW_URL : BLOB_URL) + path;
+}
+
+/** A rewritten href that may be rendered: a page anchor, or an http(s) URL. */
+function linkable(href: string): boolean {
+  return href.startsWith('#') || safeHref(href) !== null;
+}
+
+const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => HTML_ESCAPES[c]);
 }
 
 export interface SectionHeading {
@@ -103,6 +115,14 @@ export function renderReadmeSection(markdown: string, name: string): RenderedSec
     return `<h${depth} id="${id}">${this.parser.parseInline(inline)}</h${depth}>\n`;
   };
   renderer.table = (token: Tokens.Table) => `<div class="table-scroll">${defaultTable(token)}</div>\n`;
+  // A link or image whose URL is not http(s) (nor an anchor into the page)
+  // renders as its text: marked keeps `javascript:` and `data:` URLs as given.
+  const defaultLink = renderer.link.bind(renderer);
+  const defaultImage = renderer.image.bind(renderer);
+  renderer.link = function (token: Tokens.Link) {
+    return linkable(token.href) ? defaultLink(token) : this.parser.parseInline(token.tokens);
+  };
+  renderer.image = (token: Tokens.Image) => (linkable(token.href) ? defaultImage(token) : escapeHtml(token.text));
 
   const html = new Parser({ gfm: true, renderer }).parse(section);
   return { html, githubUrl: `${README_URL}#${ids.get(tokens[start])}`, headings };

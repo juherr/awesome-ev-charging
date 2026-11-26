@@ -6,9 +6,10 @@
  * and API are only ever "Yes" or unknown. Certified features (proven by an OCA
  * certificate) and documented features (stated by the vendor) stay two lists.
  */
-import type { CsmsCertificate, CsmsProduct } from './data';
+import type { CsmsCertificate, CsmsDocumentedFeature, CsmsProduct } from './data';
 import { words } from './filter';
 import { UNKNOWN_MARK } from './format';
+import { safeHref } from './safe-href';
 
 /** `FEATURE_VOCAB` of csms.py: canonical name → short label, in display order. */
 export const FEATURE_LABELS: Readonly<Record<string, string>> = {
@@ -74,22 +75,32 @@ export function sortedCertificates(certs: readonly CsmsCertificate[]): CsmsCerti
   );
 }
 
-/** The product name links to the vendor's site, or to the repository. */
+/** The product name links to the vendor's site, or to the repository (http(s) only). */
 export function productHref(p: Pick<CsmsProduct, 'website' | 'repo_url'>): string | null {
-  return p.website ?? p.repo_url ?? null;
+  return safeHref(p.website) ?? safeHref(p.repo_url);
 }
 
-/** OCPI is stated on the product or documented as a feature, whose sources it links. */
+/** The sources of a documented feature that may be linked (http(s) only). */
+export function featureLinks(f: CsmsDocumentedFeature): string[] {
+  return f.source_urls.map(safeHref).filter((u): u is string => u !== null);
+}
+
+/**
+ * OCPI is stated on the product or documented as a feature, whose sources it
+ * links. A documented feature still attests the Yes when none of its sources
+ * may be linked.
+ */
 export function ocpiCell(
   p: Pick<CsmsProduct, 'ocpi' | 'features_documented'>,
 ): { label: string; links: string[] } | null {
-  const links = p.features_documented.find((f) => f.feature === OCPI_FEATURE)?.source_urls ?? [];
-  return p.ocpi || links.length ? { label: YES, links } : null;
+  const feature = p.features_documented.find((f) => f.feature === OCPI_FEATURE);
+  const documented = Boolean(feature?.source_urls.length);
+  return p.ocpi || documented ? { label: YES, links: feature ? featureLinks(feature) : [] } : null;
 }
 
 /** `api` says an API exists, `api_docs` that its documentation is public. */
 export function apiCell(p: Pick<CsmsProduct, 'api' | 'api_docs'>): { label: string; href: string | null } | null {
-  return p.api || p.api_docs ? { label: YES, href: p.api_docs } : null;
+  return p.api || p.api_docs ? { label: YES, href: safeHref(p.api_docs) } : null;
 }
 
 const DEPLOYMENTS: Record<string, string> = {
@@ -111,7 +122,8 @@ export function statusLabel(status: string | null): string {
  * research, never a URL on its own (docs/public-data.md).
  */
 export function sourceRef(source: string): { label: string; href: string | null } {
-  if (/^https?:\/\//i.test(source)) return { label: new URL(source).hostname.replace(/^www\./, ''), href: source };
+  const href = safeHref(source);
+  if (href) return { label: new URL(href).hostname.replace(/^www\./, ''), href };
   const contributor = /^contributor:(.+)$/.exec(source);
   if (contributor) return { label: `Contributor ${contributor[1]}`, href: `https://github.com/${contributor[1]}` };
   return { label: source, href: null };

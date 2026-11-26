@@ -7,6 +7,7 @@ import {
   csmsSearchText,
   deploymentLabel,
   featureLabel,
+  featureLinks,
   ocpiCell,
   ocppCell,
   productHref,
@@ -15,6 +16,7 @@ import {
   statusLabel,
 } from '../../lib/csms';
 import { UNKNOWN_MARK } from '../../lib/format';
+import { safeHref } from '../../lib/safe-href';
 import { CONTRIBUTING_URL, REPO_URL } from '../../lib/site';
 import { url } from '../../lib/url';
 
@@ -41,8 +43,8 @@ function facts(p: CsmsProduct): { label: string; value: string; href?: string | 
     { label: 'First release', value: p.first_release },
     { label: 'Latest version', value: latest },
     { label: 'Licence', value: p.license },
-    { label: 'Pricing', value: p.pricing ?? (p.pricing_url ? 'Published' : null), href: p.pricing_url },
-    { label: 'Changelog', value: p.changelog ? 'Published' : null, href: p.changelog },
+    { label: 'Pricing', value: p.pricing ?? (p.pricing_url ? 'Published' : null), href: safeHref(p.pricing_url) },
+    { label: 'Changelog', value: p.changelog ? 'Published' : null, href: safeHref(p.changelog) },
     { label: 'ISO 15118', value: p.iso15118 ? 'Yes' : null },
     { label: 'Eichrecht', value: p.eichrecht ? 'Yes' : null },
   ];
@@ -122,6 +124,8 @@ function facts(p: CsmsProduct): { label: string; value: string; href?: string | 
               const ocpi = ocpiCell(p);
               const api = apiCell(p);
               const certs = sortedCertificates(p.certificates);
+              const companyHref = safeHref(p.oca_company_url);
+              const repoHref = safeHref(p.repo_url);
               return (
                 <tr
                   data-text={csmsSearchText(p)}
@@ -134,19 +138,19 @@ function facts(p: CsmsProduct): { label: string; value: string; href?: string | 
                       Details
                     </a>
                   </th>
-                  <td>{p.company ? (p.oca_company_url ? <a href={p.oca_company_url}>{p.company}</a> : p.company) : UNKNOWN_MARK}</td>
+                  <td>{p.company ? (companyHref ? <a href={companyHref}>{p.company}</a> : p.company) : UNKNOWN_MARK}</td>
                   <td class="mono">{ocppCell(p)}</td>
                   <td>
                     {certs.length
                       ? certs.map((c, i) => (
                           <>
                             {i > 0 && ' · '}
-                            {c.url ? <a href={c.url}>{certificateLabel(c)}</a> : certificateLabel(c)}
+                            {safeHref(c.url) ? <a href={safeHref(c.url)}>{certificateLabel(c)}</a> : certificateLabel(c)}
                           </>
                         ))
                       : UNKNOWN_MARK}
                   </td>
-                  <td>{p.source_available ? (p.repo_url ? <a href={p.repo_url}>Yes</a> : 'Yes') : UNKNOWN_MARK}</td>
+                  <td>{p.source_available ? (repoHref ? <a href={repoHref}>Yes</a> : 'Yes') : UNKNOWN_MARK}</td>
                   <td>
                     {ocpi
                       ? ocpi.links.length
@@ -202,7 +206,7 @@ function facts(p: CsmsProduct): { label: string; value: string; href?: string | 
                 <ul class="certs">
                   {certs.map((c) => (
                     <li>
-                      {c.url ? <a href={c.url}>{certificateLabel(c)}</a> : certificateLabel(c)}
+                      {safeHref(c.url) ? <a href={safeHref(c.url)}>{certificateLabel(c)}</a> : certificateLabel(c)}
                       <span class="mono cert-meta">
                         {' '}
                         {c.number} · {c.date ?? UNKNOWN_MARK}
@@ -229,17 +233,20 @@ function facts(p: CsmsProduct): { label: string; value: string; href?: string | 
                   <h4>Documented by the vendor</h4>
                   {p.features_documented.length ? (
                     <ul class="features">
-                      {p.features_documented.map((f) => (
-                        <li>
-                          {f.source_urls.length ? <a href={f.source_urls[0]}>{featureLabel(f.feature)}</a> : featureLabel(f.feature)}
-                          {f.source_urls.slice(1).map((s, i) => (
-                            <>
-                              {' '}
-                              <a href={s} aria-label={`${featureLabel(f.feature)}, source ${i + 2}`}>[{i + 2}]</a>
-                            </>
-                          ))}
-                        </li>
-                      ))}
+                      {p.features_documented.map((f) => {
+                        const links = featureLinks(f);
+                        return (
+                          <li>
+                            {links.length ? <a href={links[0]}>{featureLabel(f.feature)}</a> : featureLabel(f.feature)}
+                            {links.slice(1).map((s, i) => (
+                              <>
+                                {' '}
+                                <a href={s} aria-label={`${featureLabel(f.feature)}, source ${i + 2}`}>[{i + 2}]</a>
+                              </>
+                            ))}
+                          </li>
+                        );
+                      })}
                     </ul>
                   ) : (
                     <p class="none">No vendor-documented feature curated yet.</p>
