@@ -57,6 +57,10 @@ python pipeline.py render --readme README.md   # Stage 3 -> injects the curated
 git show HEAD:classifications.csv | python pipeline.py check-classifications --base -
 #   CI guard, see "Classification guard" in docs/pipeline-architecture.md. Optional:
 #   --report report.md [--base-projects base.json [--projects data/projects.json]]
+
+mise run discover     # external lists -> discovery-report.md (git-ignored)
+python discovery.py --sources discovery-sources.toml --report <path> [--token T]
+#   Read-only review report, see "discovery.py" below. Run from the repo root.
 ```
 
 `--token` is optional; without it GitHub's unauthenticated rate limits apply.
@@ -69,6 +73,8 @@ file below; what each covers in detail is in
 - `tests/test_csms.py` — `csms.py` and the committed CSVs, no network.
 - `tests/test_pipeline.py` — `pipeline.py`'s classification layer, backend and
   README fetch stubbed, no network and no LLM CLI.
+- `tests/test_discovery.py` — `discovery.py` and the committed
+  `discovery-sources.toml`, HTTP stubbed, no network.
 - `tests/test_vendored_assets.py` — pins every vendored file with
   `tests/vendored_assets.sha256`; after a deliberate change, update the
   inventory and run `python tests/vendored_manifest.py --write`, never
@@ -135,6 +141,18 @@ Certification and source availability are derived, never typed; certified and
 vendor-documented features are never merged; `Source available` is never `N`.
 Only merge two registry products when the certificates clearly describe one
 platform. Details: [docs/csms-architecture.md](docs/csms-architecture.md#fetch).
+
+## discovery.py — external-list discovery
+
+A **separate script**, like `csms.py`: it imports `pipeline` for the HTTP
+cache, the README fetch and the README scan. It reads the lists configured in
+`discovery-sources.toml` (forks and other awesome lists; a new source needs
+no code change), compares what they link with the catalogue, and writes a
+deterministic review report with one status per candidate: `new`, `changed`,
+`unavailable`, `excluded` or `existing`. **It never writes curated data**:
+acting on the report goes through the usual workflows (`add-project`, ...).
+`.github/workflows/discovery.yml` runs it weekly and publishes the report as
+an artifact. Details: [docs/discovery.md](docs/discovery.md).
 
 ## Agent configuration
 
