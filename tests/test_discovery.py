@@ -4,6 +4,11 @@ No test reaches the network: `requests.get` is stubbed and the HTTP cache
 points at a temporary directory, so `cache_github/` is never written.
 """
 
+import hashlib
+import json
+import pathlib
+import shutil
+
 import pytest
 
 import discovery
@@ -186,3 +191,242 @@ def test_collect_candidates_dedupes_across_sources_with_provenance():
 def test_collect_candidates_is_deterministic():
     texts = {"other": OTHER, "fork": FORK}
     assert discovery.collect_candidates(texts) == discovery.collect_candidates(dict(reversed(texts.items())))
+
+
+# --- Tracked sets, resolution and statuses ------------------------------------
+# Modelled on the andreibesleaga fork: names and classifications as read in
+# classifications.csv at the base commit, deprecated rows included.
+
+def row(description="A library."):
+    return {"description": description}
+
+
+CLASSIFIED = {
+    "road-labs/ocmf-js": row(),
+    "matth-x/MicroOcpp": row(),
+    "argonne-vci/node-red-contrib-ocpp": row(),
+    "andreibesleaga/ocm-sdk": row("A deprecated TypeScript SDK."),
+    "other/ocpp-proxy": row(),
+}
+CATALOGUE_README = """\
+- [Dead](https://github.com/dead/tracked) gone since.
+- [EVRoaming](https://evroaming.org/) and [ref][r].
+
+[r]: https://Docs.Example.org/spec#intro
+"""
+LIST = """\
+# Fork
+- [ocmf-js](https://github.com/road-labs/ocmf-js)
+- [Tariffs](https://github.com/TandemDrive/ocpi-tariffs)
+- [ArduinoOcpp](https://github.com/matth-x/arduinoocpp)
+- [Node-RED](https://github.com/argonne-national-laboratory/node-red-contrib-ocpp)
+- [OpenADR 3](https://github.com/oadr3-org/openadr3-openapi)
+- [ocm-sdk](https://github.com/andreibesleaga/ocm-sdk)
+- [Zephyr](https://github.com/zephyrproject-rtos/zephyr)
+- [Upstream](https://github.com/juherr/awesome-ev-charging)
+- [Dead](https://github.com/dead/tracked)
+- [Flaky](https://github.com/flaky/tracked) and [flaky too](https://github.com/flaky/untracked)
+- [OCPP proxy](https://github.com/acme/ocpp-proxy) - routes `OCPP` frames.
+- [EVRoaming](https://evroaming.org) and [new doc](https://new.example.org/doc/?utm_medium=x)
+"""
+OTHER_LIST = """\
+* [Node-RED VCI](https://github.com/argonne-vci/node-red-contrib-ocpp)
+* [ts-rpc](https://github.com/rohittiwari-dev/ocpp-ts-rpc)
+* [Fork](https://github.com/andreibesleaga/awesome-ev-charging)
+"""
+SOURCES = [discovery.Source("fork", repo="andreibesleaga/awesome-ev-charging"),
+           discovery.Source("other", url="https://example.org/list.md")]
+NEW_REPO = {"full_name": "acme/ocpp-proxy", "html_url": "https://github.com/acme/ocpp-proxy",
+            "description": "An OCPP <proxy>.", "archived": False,
+            "pushed_at": "2026-05-01T10:00:00Z", "license": None}
+# What GET /repos/{name} answers; absent names 404, None fails transiently.
+LOOKUPS = {
+    "road-labs/ocmf-js": {"full_name": "road-labs/ocmf-js"},
+    "tandemdrive/ocpi-tariffs": {"full_name": "tandemdrive/ocpi-tariffs"},
+    "matth-x/arduinoocpp": {"full_name": "matth-x/MicroOcpp"},
+    "argonne-national-laboratory/node-red-contrib-ocpp":
+        {"full_name": "argonne-vci/node-red-contrib-ocpp"},
+    "argonne-vci/node-red-contrib-ocpp": {"full_name": "argonne-vci/node-red-contrib-ocpp"},
+    "andreibesleaga/ocm-sdk": {"full_name": "andreibesleaga/ocm-sdk"},
+    "zephyrproject-rtos/zephyr": {"full_name": "zephyrproject-rtos/zephyr"},
+    "juherr/awesome-ev-charging": {"full_name": "juherr/awesome-ev-charging"},
+    "andreibesleaga/awesome-ev-charging": {"full_name": "andreibesleaga/awesome-ev-charging"},
+    "flaky/tracked": None,
+    "flaky/untracked": None,
+    "acme/ocpp-proxy": NEW_REPO,
+}
+
+
+def tracked():
+    return discovery.build_tracked(CLASSIFIED, [CATALOGUE_README],
+                                   additional={"flaky/tracked"},
+                                   codeberg={"tandemdrive/ocpi-tariffs"})
+
+
+def lookups_for(candidates):
+    return {c.key: LOOKUPS.get(c.key, discovery.NOT_FOUND) for c in candidates}
+
+
+@pytest.fixture(scope="module")
+def results():
+    repos, urls = discovery.collect_candidates({"fork": LIST, "other": OTHER_LIST})
+    found = discovery.classify(repos, urls, lookups_for(repos), tracked(),
+                               source_repos={"andreibesleaga/awesome-ev-charging"})
+    return {r.name: r for r in found}
+
+
+def test_build_tracked_gathers_every_catalogue_dataset():
+    t = tracked()
+    assert {"road-labs/ocmf-js", "matth-x/microocpp", "dead/tracked", "flaky/tracked",
+            "tandemdrive/ocpi-tariffs"} <= t.repos
+    assert {"https://evroaming.org", "https://docs.example.org/spec",
+            "https://codeberg.org/tandemdrive/ocpi-tariffs"} <= t.urls
+
+
+@pytest.mark.parametrize("name, status, reason", [
+    ("road-labs/ocmf-js", "existing", ""),
+    ("tandemdrive/ocpi-tariffs", "existing", ""),
+    ("matth-x/MicroOcpp", "changed", "source"),
+    ("argonne-vci/node-red-contrib-ocpp", "changed", "source"),
+    ("oadr3-org/openadr3-openapi", "unavailable", "not found"),
+    ("rohittiwari-dev/ocpp-ts-rpc", "unavailable", "not found"),
+    ("dead/tracked", "unavailable", "not found (tracked)"),
+    ("flaky/untracked", "unavailable", "lookup failed"),
+    ("flaky/tracked", "existing", ""),
+    ("andreibesleaga/ocm-sdk", "excluded", "deprecated"),
+    ("zephyrproject-rtos/zephyr", "excluded", "EXCLUDED_REPOS"),
+    ("juherr/awesome-ev-charging", "excluded", "EXCLUDED_REPOS"),
+    ("andreibesleaga/awesome-ev-charging", "excluded", "discovery source"),
+    ("acme/ocpp-proxy", "new", ""),
+    ("https://evroaming.org", "existing", ""),
+    ("https://new.example.org/doc", "new", ""),
+])
+def test_classify_status(results, name, status, reason):
+    result = results[name]
+    assert (result.status, result.reason or result.stale) == (status, reason)
+
+
+def test_aliases_resolving_to_one_repo_merge_into_one_candidate(results):
+    merged = results["argonne-vci/node-red-contrib-ocpp"]
+    assert merged.aliases == ["argonne-national-laboratory/node-red-contrib-ocpp",
+                              "argonne-vci/node-red-contrib-ocpp"]
+    assert merged.sources == ["fork", "other"]
+    assert merged.old == ["argonne-national-laboratory/node-red-contrib-ocpp"]
+    assert "argonne-national-laboratory/node-red-contrib-ocpp" not in results
+
+
+def test_a_stale_catalogue_name_is_changed_on_the_catalogue_side():
+    repos, urls = discovery.collect_candidates({"fork": "https://github.com/old/name"})
+    t = discovery.build_tracked({"old/name": row()}, [])
+    [result] = discovery.classify(repos, urls, {"old/name": {"full_name": "new/Name"}}, t)
+    assert (result.status, result.stale, result.old, result.name) == (
+        "changed", "catalogue", ["old/name"], "new/Name")
+
+
+def test_a_new_candidate_carries_metadata_context_and_related_projects(results):
+    new = results["acme/ocpp-proxy"]
+    assert new.data == NEW_REPO
+    assert new.related == ["other/ocpp-proxy"]
+    assert new.context == {
+        "fork": "- [OCPP proxy](https://github.com/acme/ocpp-proxy) - routes `OCPP` frames."}
+
+
+# --- Report -------------------------------------------------------------------
+
+@pytest.fixture
+def fork_http(http):
+    """Answer the README, the other list and every repo lookup of the fixture."""
+    http.answers["https://api.github.com/repos/andreibesleaga/awesome-ev-charging/readme"] = \
+        FakeResponse(200, LIST)
+    http.answers["https://example.org/list.md"] = FakeResponse(200, OTHER_LIST)
+    repos, _ = discovery.collect_candidates({"fork": LIST, "other": OTHER_LIST})
+    for c in repos:  # the stub is case-sensitive, GitHub is not: answer as linked
+        data = LOOKUPS.get(c.key, discovery.NOT_FOUND)
+        if data is discovery.NOT_FOUND:
+            continue
+        http.answers[f"https://api.github.com/repos/{c.name}"] = (
+            FakeResponse(500) if data is None else FakeResponse(200, json.dumps(data)))
+    return http
+
+
+def test_report_lists_each_status_with_its_fields(fork_http):
+    report, read = discovery.run(SOURCES, tracked(), {})
+    assert read
+    for line in [
+        "# Discovery report", "## Summary", "| new | 1 | 1 |", "| existing | 3 | 1 |",
+        "| fork | 2 | 2 | 3 | 3 | 4 |", "| other | 0 | 1 | 1 | 1 | 0 |",
+        "## Failed sources\n\nNone.",
+        "#### [acme/ocpp-proxy](https://github.com/acme/ocpp-proxy)",
+        "- Description: An OCPP &lt;proxy>.", "- Archived: no",
+        "- Last push: 2026-05-01T10:00:00Z", "- Licence:\n", "- Related tracked projects: other/ocpp-proxy",
+        "- Context (fork): ``[OCPP proxy](https://github.com/acme/ocpp-proxy) - routes `OCPP` frames.``",
+        "- <https://new.example.org/doc> (sources: fork)",
+        "- matth-x/arduinoocpp -> matth-x/MicroOcpp, stale in the source (sources: fork)",
+        "- dead/tracked: not found (tracked) (sources: fork)",
+        "- andreibesleaga/ocm-sdk: deprecated (sources: fork)",
+        "Already tracked: 3 GitHub repositories, 1 other URLs.",
+    ]:
+        assert line in report
+    headings = [l for l in report.splitlines() if l.startswith("## ")]
+    assert headings == ["## Summary", "## Failed sources", "## New", "## Changed",
+                        "## Unavailable", "## Excluded", "## Existing"]
+
+
+def test_report_is_byte_identical_across_runs(fork_http):
+    assert discovery.run(SOURCES, tracked(), {}) == discovery.run(SOURCES, tracked(), {})
+
+
+def test_failed_and_deleted_sources_are_reported_and_the_others_processed(http):
+    http.answers["https://example.org/list.md"] = FakeResponse(200, OTHER_LIST)
+    http.answers["https://api.github.com/repos/gone/list/readme"] = FakeResponse(500)
+    sources = [*SOURCES, discovery.Source("flaky", repo="gone/list")]
+    report, read = discovery.run(sources, tracked(), {})
+    assert read
+    assert "- `flaky`: fetch failed\n- `fork`: not found" in report
+    assert "rohittiwari-dev/ocpp-ts-rpc: not found (sources: other)" in report
+
+
+# --- CLI ----------------------------------------------------------------------
+
+TRACKED_FILES = ("classifications.csv", "README.md", "legacy-projects.md", "csms.md")
+
+
+def snapshot(root):
+    return {p.relative_to(root): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in root.rglob("*") if p.is_file()}
+
+
+@pytest.fixture
+def repo_copy(fork_http, tmp_path, monkeypatch):
+    root = tmp_path / "repo"
+    root.mkdir()
+    for name in TRACKED_FILES:
+        shutil.copy(pathlib.Path(__file__).parent.parent / name, root / name)
+    (root / "discovery-sources.toml").write_text(
+        '[[sources]]\nname = "fork"\nrepo = "andreibesleaga/awesome-ev-charging"\n'
+        '[[sources]]\nname = "other"\nurl = "https://example.org/list.md"\n', encoding="utf-8")
+    monkeypatch.chdir(root)
+    return root
+
+
+def test_cli_writes_nothing_but_the_report(repo_copy):
+    before = snapshot(repo_copy)
+    code = discovery.main(["--sources", "discovery-sources.toml", "--report", "out/report.md",
+                           "--token", "T"])
+    after = snapshot(repo_copy)
+    assert code == 0
+    assert set(after) - set(before) == {pathlib.Path("out/report.md")}
+    assert {k: after[k] for k in before} == before
+    report = (repo_copy / "out/report.md").read_text(encoding="utf-8")
+    assert "road-labs/ocmf-js" not in report.split("## Existing")[0]  # tracked, never new
+
+
+@pytest.mark.parametrize("config, expected", [
+    ('[[sources]]\nname = "gone"\nrepo = "gone/list"\n', 1),  # every source failed
+    ("[[sources]]\n", 2),                                     # config error
+])
+def test_cli_exit_codes(repo_copy, config, expected):
+    (repo_copy / "bad.toml").write_text(config, encoding="utf-8")
+    code = discovery.main(["--sources", "bad.toml", "--report", "report.md"])
+    assert code == expected
+    assert (repo_copy / "report.md").exists() == (expected == 1)

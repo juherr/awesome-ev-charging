@@ -7,11 +7,18 @@ never writes curated data: discovery stays separate from curation.
 Deliberately a separate script from pipeline.py, like csms.py. It imports
 pipeline only to reuse the HTTP cache, the README fetch and the README scan.
 
-The functions that extract, normalize and dedupe take data in and return data
-out; only `fetch_source` / `fetch_sources` do I/O.
+The functions that extract, normalize, classify and render take data in and
+return data out; only a thin layer does I/O: `fetch_source` / `fetch_sources`,
+`load_tracked` (the catalogue files), `run` (repo lookups) and `main` (the
+report).
+
+    python discovery.py --sources discovery-sources.toml --report report.md [--token T]
 """
 
+import argparse
+import os
 import re
+import sys
 import tomllib
 from dataclasses import dataclass, field
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -193,3 +200,254 @@ def collect_candidates(texts):
     for url, line in url_links.items():
       _merge(urls, source, url, url, line)
   return ([repos[k] for k in sorted(repos)], [urls[k] for k in sorted(urls)])
+
+
+# --- Catalogue: what is already tracked ---------------------------------------
+
+CATALOGUE_FILES = (pipeline.README_PATH, "legacy-projects.md", "csms.md")
+# A 404 on a repo lookup, told apart from a transient failure (None).
+NOT_FOUND = object()
+
+
+@dataclass(frozen=True)
+class Tracked:
+  """The catalogue as discovery compares against it.
+
+  `names` maps each tracked repo, case-folded, to its catalogue spelling;
+  `rows` holds the classification rows by folded name; `urls` the normalized
+  URLs the catalogue files link.
+  """
+  names: dict
+  rows: dict
+  urls: frozenset
+
+  @property
+  def repos(self):
+    return set(self.names)
+
+
+def build_tracked(classifications, texts, additional=(), codeberg=()):
+  """Tracked sets from a classifications cache and the catalogue Markdown texts."""
+  folded = pipeline._fold_case(classifications)
+  names = {key: full_name for key, (full_name, _) in folded.items()}
+  linked = [n for text in texts for n in pipeline.repo_names_from_text(text)]
+  for name in [*linked, *sorted(additional), *sorted(codeberg)]:
+    names.setdefault(name.lower(), name)
+  urls = {normalize_url(u) for text in texts for u in _URL_RE.findall(text)}
+  urls |= {normalize_url(pipeline.CODEBERG_WEB + name) for name in codeberg}
+  return Tracked(names, {k: row for k, (_, row) in folded.items()}, frozenset(urls))
+
+
+def load_tracked(root="."):
+  """Read the catalogue datasets of the repository at `root`."""
+  texts = []
+  for name in (pipeline.CLASSIFICATIONS_PATH, *CATALOGUE_FILES):
+    path = os.path.join(root, name)
+    if not os.path.exists(path):
+      raise ConfigError(f"{path}: catalogue file not found (run from the repo root)")
+    if name != pipeline.CLASSIFICATIONS_PATH:
+      with open(path, encoding="utf-8") as f:
+        texts.append(f.read())
+  classifications = pipeline.load_classifications(os.path.join(root, pipeline.CLASSIFICATIONS_PATH))
+  return build_tracked(classifications, texts, pipeline.ADDITIONAL_REPOS, pipeline.CODEBERG_REPOS)
+
+
+# --- Resolution and statuses --------------------------------------------------
+
+STATUSES = ("new", "changed", "unavailable", "excluded", "existing")
+
+
+@dataclass
+class Result:
+  """One classified candidate; `kind` is `repo` or `url`.
+
+  For a repo, `aliases` are the names the sources link, `data` the
+  `/repos/{name}` object, `old` the stale names of a `changed` one and
+  `stale` the side holding them (`source` / `catalogue`).
+  """
+  status: str
+  kind: str
+  name: str
+  sources: list
+  context: dict
+  reason: str = ""
+  aliases: list = field(default_factory=list)
+  stale: str = ""
+  old: list = field(default_factory=list)
+  data: dict | None = None
+  related: list = field(default_factory=list)
+
+
+def _merge_by_canonical(candidates, lookups):
+  """Group repo candidates by the canonical name their lookup resolved to."""
+  groups = {}
+  for c in candidates:
+    data = lookups.get(c.key)
+    resolved = isinstance(data, dict) and data.get("full_name")
+    group = groups.setdefault(data["full_name"].lower() if resolved else c.key,
+                              {"aliases": set(), "sources": set(), "context": {},
+                               "data": None, "missing": True})
+    group["aliases"].add(c.name)
+    group["sources"].update(c.sources)
+    for source in sorted(c.context):
+      group["context"].setdefault(source, c.context[source])
+    if resolved:
+      group["data"] = data
+    group["missing"] = group["missing"] and data is NOT_FOUND
+  return groups
+
+
+def _repo_status(group, tracked, source_repos):
+  """`(status, reason, stale, old)` by the ordered rules of the design."""
+  aliases = {a.lower() for a in group["aliases"]}
+  canonical = group["data"]["full_name"].lower() if group["data"] else None
+  names = aliases | ({canonical} if canonical else set())
+  if names & {r.lower() for r in pipeline.EXCLUDED_REPOS}:
+    return "excluded", "EXCLUDED_REPOS", "", []
+  if names & {r.lower() for r in source_repos}:
+    return "excluded", "discovery source", "", []
+  if any(pipeline._is_deprecated(tracked.rows[n]) for n in sorted(names & set(tracked.rows))):
+    return "excluded", "deprecated", "", []
+  known = aliases & tracked.repos
+  if canonical is None:
+    if group["missing"]:
+      return "unavailable", "not found (tracked)" if known else "not found", "", []
+    return ("existing", "", "", []) if known else ("unavailable", "lookup failed", "", [])
+  if canonical in tracked.repos:
+    stale = sorted((a for a in group["aliases"] if a.lower() != canonical), key=str.lower)
+    return ("changed", "", "source", stale) if stale else ("existing", "", "", [])
+  if known:
+    return "changed", "", "catalogue", sorted((tracked.names[k] for k in known), key=str.lower)
+  return "new", "", "", []
+
+
+def classify(repo_candidates, url_candidates, lookups, tracked, source_repos=()):
+  """Classify candidates against the catalogue, sorted by status then name.
+
+  `lookups` maps each repo candidate key to its `/repos/{name}` object,
+  `NOT_FOUND` (404) or None (transient failure).
+  """
+  results = []
+  for key, group in _merge_by_canonical(repo_candidates, lookups).items():
+    status, reason, stale, old = _repo_status(group, tracked, source_repos)
+    aliases = sorted(group["aliases"], key=str.lower)
+    data = group["data"]
+    name = data["full_name"] if data else aliases[0]
+    short = name.lower().split("/")[1]
+    related = sorted((n for k, n in tracked.names.items()
+                      if k.split("/")[1] == short and k != name.lower()), key=str.lower)
+    results.append(Result(status, "repo", name, sorted(group["sources"]), group["context"],
+                          reason, aliases, stale, old, data,
+                          related if status == "new" else []))
+  for c in url_candidates:
+    status = "existing" if c.key in tracked.urls else "new"
+    results.append(Result(status, "url", c.name, list(c.sources), c.context))
+  return sorted(results, key=lambda r: (STATUSES.index(r.status), r.kind, r.name.lower(), r.name))
+
+
+# --- Report -------------------------------------------------------------------
+
+def _text(value):
+  """A metadata value as report text: blank when unknown, no raw HTML."""
+  return "" if value is None else " ".join(str(value).split()).replace("<", "&lt;")
+
+
+def _code(line):
+  """A source line as a code span, its list marker dropped, link syntax kept."""
+  line = re.sub(r"^(?:[-*+]|\d+\.)\s+", "", line)
+  ticks = "`" * (max((len(m) for m in re.findall(r"`+", line)), default=0) + 1)
+  pad = " " if line.startswith("`") or line.endswith("`") else ""
+  return f"{ticks}{pad}{line}{pad}{ticks}"
+
+
+def _field(label, value):
+  return f"- {label}: {_text(value)}".rstrip()
+
+
+def _new_repo(r):
+  data = r.data or {}
+  archived = data.get("archived")
+  lines = [f"#### [{r.name}]({data.get('html_url') or 'https://github.com/' + r.name})", "",
+           _field("Sources", ", ".join(r.sources)),
+           _field("Description", data.get("description")),
+           _field("Archived", None if archived is None else ("yes" if archived else "no")),
+           _field("Last push", data.get("pushed_at")),
+           _field("Licence", (data.get("license") or {}).get("spdx_id")),
+           _field("Related tracked projects", ", ".join(r.related))]
+  lines += [f"- Context ({s}): {_code(r.context[s])}" for s in sorted(r.context)]
+  return lines + [""]
+
+
+def _section(title, lines):
+  return [f"## {title}", "", *(lines or ["None."]), ""]
+
+
+def render_report(results, source_names, failures):
+  """The Markdown review report: deterministic, so identical inputs give identical bytes."""
+  by = {s: [r for r in results if r.status == s] for s in STATUSES}
+  out = ["# Discovery report", "",
+         "Candidates linked by external lists, compared with the catalogue.",
+         "Nothing here is added to the catalogue without a review.", "",
+         "## Summary", "", "| Status | GitHub repos | Other URLs |", "| --- | --- | --- |"]
+  out += [f"| {s} | {sum(r.kind == 'repo' for r in by[s])} | {sum(r.kind == 'url' for r in by[s])} |"
+          for s in STATUSES]
+  out += ["", f"| Source | {' | '.join(STATUSES)} |", "| --- |" + " --- |" * len(STATUSES)]
+  out += [f"| {n} | " + " | ".join(str(sum(n in r.sources for r in by[s])) for s in STATUSES) + " |"
+          for n in sorted(source_names) if n not in failures]
+  out.append("")
+  out += _section("Failed sources", [f"- `{n}`: {failures[n]}" for n in sorted(failures)])
+  out += ["## New", "", "### GitHub repositories", ""]
+  out += [line for r in by["new"] if r.kind == "repo" for line in _new_repo(r)] or ["None.", ""]
+  out += ["### Other URLs", ""]
+  urls = [f"- <{r.name}> (sources: {', '.join(r.sources)})" for r in by["new"] if r.kind == "url"]
+  out += [*(urls or ["None."]), ""]
+  out += _section("Changed", [
+      f"- {', '.join(r.old)} -> {r.name}, stale in the {r.stale} (sources: {', '.join(r.sources)})"
+      for r in by["changed"]])
+  for status in ("unavailable", "excluded"):
+    out += _section(status.capitalize(), [
+        f"- {r.name}: {r.reason} (sources: {', '.join(r.sources)})" for r in by[status]])
+  repos = sum(r.kind == "repo" for r in by["existing"])
+  out += _section("Existing", [
+      f"Already tracked: {repos} GitHub repositories, {len(by['existing']) - repos} other URLs."])
+  return "\n".join(out).rstrip("\n") + "\n"
+
+
+# --- Run and CLI --------------------------------------------------------------
+
+def run(sources, tracked, headers):
+  """Fetch, resolve and classify; return `(report, whether any source was read)`."""
+  texts, failures = fetch_sources(sources, headers)
+  repos, urls = collect_candidates(texts)
+  lookups = {c.key: pipeline.get_repo_data(c.name, headers, missing=NOT_FOUND) for c in repos}
+  results = classify(repos, urls, lookups, tracked,
+                     source_repos={s.repo for s in sources if s.repo})
+  return render_report(results, [s.name for s in sources], failures), bool(texts)
+
+
+def main(argv=None):
+  """CLI entry point. Writes only `--report` (plus the disposable HTTP cache).
+
+  Exit 0 when at least one source was read, 1 when every source failed (the
+  report still lists the failures), 2 on a configuration error.
+  """
+  parser = argparse.ArgumentParser(description="Discover candidates from external lists.")
+  parser.add_argument("--sources", required=True, help="TOML file of [[sources]]")
+  parser.add_argument("--report", required=True, help="Markdown report to write")
+  parser.add_argument("--token", help="GitHub token")
+  args = parser.parse_args(argv)
+  try:
+    sources = load_sources(args.sources)
+    tracked = load_tracked()
+  except ConfigError as e:
+    print(f"error: {e}", file=sys.stderr)
+    return 2
+  report, read = run(sources, tracked, pipeline.auth_headers(args.token))
+  os.makedirs(os.path.dirname(args.report) or ".", exist_ok=True)
+  with open(args.report, "w", encoding="utf-8", newline="") as f:
+    f.write(report)
+  return 0 if read else 1
+
+
+if __name__ == "__main__":
+  sys.exit(main())
