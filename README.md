@@ -5,6 +5,7 @@ A carefully curated list of specifications, tools, and resources for electric ve
 ## Contents
 
 <!-- BEGIN GENERATED TOC -->
+- [Start by use case](#start-by-use-case)
 - [Specifications](#specifications)
   - [OCPP (Open Charge Point Protocol)](#ocpp-open-charge-point-protocol)
   - [OSCP (Open Smart Charging Protocol)](#oscp-open-smart-charging-protocol)
@@ -55,6 +56,20 @@ flowchart LR
 ```
 
 For a comparison of the roaming protocols, see [EV roaming protocol differences](https://www.emobilitysimplified.com/2020/08/ev-roaming-protocol-differences-OCPI-OICP-OCHP-eMIP.html).
+
+## Start by use case
+
+Each use case points to existing parts of this list; section names refer to the contents above.
+
+**Implementing an OCPP charge point or CSMS:** the OCPP specifications and whitepapers, the generated OCPP [servers](#server), [simulators](#simulator) and [libraries](#libraries), the simulator roles and certification notes under Testing & Conformance, and the [CSMS directory](csms.md#the-directory).
+
+**Developing OCPI roaming integrations:** the OCPI specifications with their [modules](#modules) and [roaming hubs](#roaming), the generated OCPI [servers](#server-1) and [libraries](#libraries-1), and the EVRoaming Test Tool under Certification and interoperability.
+
+**Implementing smart charging and demand response:** the OpenADR, OSCP and OCPP smart charging comparison under Demand response and capacity exchange, the generated OpenADR [VEN and VTN implementations](#ven--vtn), and Energy management and simulation.
+
+**Validating signed metering data:** the chain from OCMF through OCPP signed meter values to OCPI CDRs under Eichrecht, the [German metrology laws](#germany), the [OCMF specification](#misc-3) in the generated Eichrecht category, and the metering boundaries under Security, metering and data models.
+
+**Building ISO 15118 / Plug & Charge solutions:** the ISO 15118 editions under Technical Standards, the V2G and Plug & Charge caveats under ISO 15118 & V2G, the generated [Plug&Charge](#plugcharge), [EXI codecs](#exi-codecs) and [security testing](#security-testing) groups, and historical stacks in [legacy-projects.md](legacy-projects.md#iso15118).
 
 ## Specifications
 
@@ -345,6 +360,7 @@ These are published standards or industry specifications, not blanket regulatory
 - [ISO 15118-20:2022 — Second-generation network and application requirements](https://www.iso.org/standard/77845.html) - Published communication standard including bidirectional power-transfer message sequences; its publisher also lists a 2026 amendment.
 - [DIN/TS 70121:2024-11 — Digital communication for CCS DC charging](https://www.dinmedia.de/en/pre-standard/din-ts-70121/379319307) - Published pre-standard replacing DIN SPEC 70121:2014-12; existing implementations may still target the older specification.
 - [US Access Board EV charging design recommendations](https://www.access-board.gov/tad/ev/) - Technical assistance distinguishing existing accessibility requirements from additional recommended design practices; recommendations are not themselves a new binding accessibility standard.
+- [PAS 1899:2022 — Electric vehicles, accessible charging](https://www.bsigroup.com/en-GB/insights-and-media/insights/brochures/pas-1899-electric-vehicles-accessible-charging-specification/) - BSI specification for accessible electric vehicle charge points in the UK; access to the document goes through a request form.
 
 IEC 61851, IEC 62196, SAE J3400, CHAdeMO and ChaoJi are hardware, connector and charging-system standards for the link between vehicle and charger, not backend application protocols. Backend and roaming specifications remain in the existing Specifications section: OCPP connects chargers and management systems; OCPI and OICP connect roaming actors. Smart charging, grid integration and demand-response specifications are introduced in the guide below. Electrical metering references are under Eichrecht; cybersecurity requirements and certificate exchange are separate from proof of certification.
 
