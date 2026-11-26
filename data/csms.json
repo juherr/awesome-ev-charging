@@ -14087,6 +14087,74 @@
     {
       "api": null,
       "api_docs": null,
+      "certificates": [],
+      "changelog": null,
+      "company": null,
+      "company_founded": null,
+      "deployment": "saas",
+      "eichrecht": null,
+      "features_certified": [],
+      "features_documented": [
+        {
+          "feature": "Tariffs",
+          "source_urls": [
+            "https://voltmint.com/features/pricing"
+          ]
+        },
+        {
+          "feature": "Payments",
+          "source_urls": [
+            "https://voltmint.com/features/payments"
+          ]
+        },
+        {
+          "feature": "Reporting",
+          "source_urls": [
+            "https://voltmint.com/platform"
+          ]
+        },
+        {
+          "feature": "Remote Commands",
+          "source_urls": [
+            "https://voltmint.com/features/integrations"
+          ]
+        }
+      ],
+      "first_release": null,
+      "hq_city": null,
+      "hq_country": "Canada",
+      "id": "voltmint",
+      "iso15118": null,
+      "latest_version": null,
+      "latest_version_date": null,
+      "license": null,
+      "name": "Voltmint",
+      "notes": "OCPP 1.6-J is marked live; OCPI 2.2 is listed as a planned roadmap item and the REST API and webhooks as in development. The vendor's privacy and terms pages are marked as drafts and name the operating entity only as a placeholder to confirm, so the company is left empty. Data is stated to be hosted in Canada (Montreal and Toronto).",
+      "oca_company_url": null,
+      "ocpi": null,
+      "ocpp_versions": [
+        "1.6"
+      ],
+      "pricing": "On request",
+      "pricing_url": "https://voltmint.com/pricing",
+      "repo": null,
+      "repo_url": null,
+      "source_available": null,
+      "sources": [
+        "https://voltmint.com/",
+        "https://voltmint.com/features/ocpp",
+        "https://voltmint.com/features/integrations",
+        "https://voltmint.com/pricing",
+        "https://voltmint.com/about",
+        "https://voltmint.com/legal/terms",
+        "https://voltmint.com/legal/privacy"
+      ],
+      "status": null,
+      "website": "https://voltmint.com/"
+    },
+    {
+      "api": null,
+      "api_docs": null,
       "certificates": [
         {
           "date": "2026-04-13",

@@ -319,6 +319,7 @@ when that documentation is public and unlinked when it sits behind a login.
 | [Virta](https://www.virta.global/) | Liikennevirta Oy (Virta) | — | — | — | — | — | saas | active |
 | Volt Up | LG Uplus | 1.6 | [1.6 Full (1.0)](https://openchargealliance.org/wp-content/uploads/2023/12/Certificate_OCA.0016.0411.CSMS_LG-Uplus.pdf) · [1.6 Security (1.0)](https://openchargealliance.org/wp-content/uploads/2023/12/Certificate_OCA.0016.0412.CSMS_LG-Uplus.pdf) | — | — | — | — | — |
 | [VoltBras](https://voltbras.com/) | Voltbras Eletropostos Agenciamento LTDA | — | — | — | — | — | saas | active |
+| [Voltmint](https://voltmint.com/) | — | 1.6 | — | — | — | — | saas | — |
 | Voltra Console - CSMS | [Voltra Energy Inc.](https://openchargealliance.org/participants/voltra-energy/) | 1.6 | [1.6 Core + S + C (v2.0)](https://openchargealliance.org/wp-content/uploads/2026/04/Certificate_OCA.0016.1219.CSMS_Voltra.pdf) | — | — | — | — | — |
 | Voltrelli CSMS | [Smart Business & Technologies Solutions SRL](https://openchargealliance.org/participants/smart-business-technologies-solutions-srl/) | 1.6 | [1.6 Core + S + C (1.6J)](https://openchargealliance.org/wp-content/uploads/2026/01/Certificate_OCA.0016.1186.CSMS_SB-TS.pdf) | — | — | — | — | — |
 | VoltUp CSMS | LG Uplus VoltUp Corp. | 1.6 | [1.6 Full + Security (2.0.0)](https://openchargealliance.org/wp-content/uploads/2024/11/Certificate_OCA.0016.0911.CSMS_LG_Uplus_VoltUp_corp.pdf) | — | — | — | — | — |

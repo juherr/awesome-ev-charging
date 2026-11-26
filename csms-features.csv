@@ -57,3 +57,7 @@ steve,Core,https://github.com/steve-community/steve,"""Electric charge points us
 steve,Advanced Security,https://github.com/steve-community/steve,"""A complete implementation of OCPP 1.6 Security Whitepaper Edition 3"", security profiles 0-3"
 steve,Firmware Management,https://github.com/steve-community/steve,"""Signed Firmware Updates: Cryptographically signed firmware updates with certificate validation"""
 steve,Token Management,https://github.com/steve-community/steve,"Administration of ""charge points, user data, and RFID cards for user authentication"""
+voltmint,Remote Commands,https://voltmint.com/features/integrations,"OCPP 1.6-J interface, marked live, sends RemoteStopTransaction commands to chargers"
+voltmint,Tariffs,https://voltmint.com/features/pricing,"Per-site tariffs combining a kWh rate, an hourly dwell or idle fee and a flat session fee"
+voltmint,Payments,https://voltmint.com/features/payments,"QR web checkout by card and Apple Pay, with a pre-authorization hold captured at session end"
+voltmint,Reporting,https://voltmint.com/platform,"Export of historical session records, energy totals and revenue summaries"
