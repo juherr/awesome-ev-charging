@@ -18,7 +18,9 @@
     "@astrojs/sitemap": "^3.7.6",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
-    "astro": "^7.4.13"
+    "astro": "^7.4.13",
+    "github-slugger": "^2.0.0",
+    "marked": "^18.3.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",

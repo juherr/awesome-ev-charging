@@ -1,0 +1,216 @@
+---
+// An editorial page: one `## ` section of the repository README, rendered at
+// build time by src/lib/readme.ts. The README stays the source; this is a copy.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { renderReadmeSection } from '../lib/readme';
+
+interface Props {
+  /** The README heading, without its `## `. */
+  section: string;
+  title: string;
+  lede: string;
+}
+
+const { section, title, lede } = Astro.props;
+// The build runs from site/; the README sits at the repository root.
+const readme = readFileSync(join(process.cwd(), '..', 'README.md'), 'utf-8');
+const { html, githubUrl, headings } = renderReadmeSection(readme, section);
+const toc = headings.filter((h) => h.depth === 2);
+---
+
+<div class="container page">
+  <header class="intro">
+    <h1>{title}</h1>
+    <p class="lede">{lede}</p>
+    <p class="notice">
+      Maintained in the README; this page is a rendered copy. <a href={githubUrl}>Read or edit the section on GitHub</a>.
+    </p>
+  </header>
+
+  <div class="layout">
+    {
+      toc.length > 0 && (
+        <nav class="toc" aria-labelledby="toc-title">
+          <h2 id="toc-title" class="toc-title">On this page</h2>
+          <ul>
+            {toc.map((h) => (
+              <li>
+                <a href={`#${h.id}`}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+    <article class="prose" set:html={html} />
+  </div>
+</div>
+
+<style>
+  .page {
+    padding-top: 40px;
+    padding-bottom: 56px;
+  }
+
+  .intro {
+    max-width: 760px;
+    padding-bottom: 24px;
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .lede {
+    margin: 0 0 16px;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--color-body-soft);
+  }
+
+  .notice {
+    margin: 0;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--color-body-soft);
+    background: var(--color-accent-soft);
+    border-radius: var(--radius-sm);
+  }
+
+  .layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .toc {
+    flex: 1 1 200px;
+    max-width: 240px;
+    position: sticky;
+    top: 16px;
+  }
+
+  .toc-title {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+  }
+
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .toc a {
+    display: flex;
+    align-items: center;
+    min-height: var(--target-min);
+    font-size: 15px;
+    text-decoration: none;
+  }
+
+  .toc a:hover {
+    text-decoration: underline;
+  }
+
+  .prose {
+    flex: 999 1 560px;
+    min-width: 0;
+    max-width: 820px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-body);
+    overflow-wrap: anywhere;
+  }
+
+  .prose :global(h2) {
+    margin: 40px 0 12px;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-ink);
+    scroll-margin-top: 16px;
+  }
+
+  .prose :global(h2:first-child) {
+    margin-top: 0;
+  }
+
+  .prose :global(h3),
+  .prose :global(h4) {
+    margin: 28px 0 8px;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--color-ink);
+    scroll-margin-top: 16px;
+  }
+
+  .prose :global(h4) {
+    font-size: 17px;
+  }
+
+  .prose :global(ul) {
+    padding-left: 22px;
+  }
+
+  .prose :global(li) {
+    margin: 4px 0;
+  }
+
+  .prose :global(blockquote) {
+    margin: 16px 0;
+    padding: 4px 16px;
+    border-left: 3px solid var(--color-line-strong);
+    color: var(--color-body-soft);
+  }
+
+  .prose :global(code) {
+    font-size: 0.92em;
+    padding: 1px 4px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+  }
+
+  .prose :global(.table-scroll) {
+    overflow-x: auto;
+    margin: 16px 0;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+  }
+
+  .prose :global(table) {
+    border-collapse: collapse;
+    min-width: 100%;
+    font-size: 15px;
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-line);
+    white-space: nowrap;
+  }
+
+  .prose :global(th) {
+    font-weight: 600;
+    background: var(--color-ground);
+  }
+
+  @media (max-width: 760px) {
+    .toc {
+      position: static;
+      max-width: none;
+    }
+  }
+</style>
