@@ -123,6 +123,9 @@ export function renderReadmeSection(markdown: string, name: string): RenderedSec
     return linkable(token.href) ? defaultLink(token) : this.parser.parseInline(token.tokens);
   };
   renderer.image = (token: Tokens.Image) => (linkable(token.href) ? defaultImage(token) : escapeHtml(token.text));
+  // Raw HTML, block or inline, renders as text: marked passes it through
+  // untouched, attributes and all, and the rendered sections carry none.
+  renderer.html = ({ text }: Tokens.HTML | Tokens.Tag) => escapeHtml(text);
 
   const html = new Parser({ gfm: true, renderer }).parse(section);
   return { html, githubUrl: `${README_URL}#${ids.get(tokens[start])}`, headings };

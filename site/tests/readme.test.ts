@@ -135,6 +135,19 @@ A [x](javascript:alert(1)) and [y](JavaScript:alert(2) "t") and [z](data:text/ht
     expect(html).toContain('<a href="https://example.org/ok">ok</a>');
   });
 
+  it('renders raw HTML, block and inline, as text', () => {
+    const md = `## Specifications
+
+<div onclick="alert(1)"><a href="javascript:alert(2)">x</a></div>
+
+Inline <img src=x onerror="alert(3)"> and <A HREF="javascript:alert(4)">y</A> here.
+`;
+    const { html } = renderReadmeSection(md, 'Specifications');
+    expect(html).not.toMatch(/<(?:div|a|img)\b/i);
+    expect(html).toContain('&lt;div onclick=&quot;alert(1)&quot;&gt;');
+    expect(html).toContain('Inline &lt;img src=x onerror=&quot;alert(3)&quot;&gt; and');
+  });
+
   it('fails on a missing section', () => {
     expect(() => renderReadmeSection(README, 'Nope')).toThrow(/Nope/);
   });
@@ -145,6 +158,8 @@ A [x](javascript:alert(1)) and [y](JavaScript:alert(2) "t") and [z](data:text/ht
       const { html } = renderReadmeSection(real, name);
       const links = [...html.matchAll(/\s(?:href|src)="([^"]*)"/g)].map((m) => m[1]);
       expect(links.length).toBeGreaterThan(10);
+      // Raw HTML renders as text; the real sections carry none, so none shows.
+      expect(html).not.toContain('&lt;');
       for (const link of links) expect(link).toMatch(/^(?:https?:|mailto:|#)/);
     }
   });
