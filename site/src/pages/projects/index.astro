@@ -1,9 +1,580 @@
 ---
-// Stub: replaced by slice b of the site (issue #91).
 import Base from '../../layouts/Base.astro';
-import StubPage from '../../components/StubPage.astro';
+import { getData } from '../../lib/data';
+import {
+  CURATIONS,
+  CURATION_HELP,
+  CURATION_LABELS,
+  DEFAULT_STATE,
+  SORTS,
+  applyFilters,
+  categoryOptions,
+  hostOptions,
+  languageOptions,
+  protocolOptions,
+  sortProjects,
+  versionOptions,
+  type FilterProject,
+} from '../../lib/filter';
+import { cardMeta } from '../../lib/format';
+import { CONTRIBUTING_URL, REPO_URL } from '../../lib/site';
+import { projectPath, url } from '../../lib/url';
+
+const { projects } = getData();
+
+// The page ships the default state (Selection only, most stars first), so it
+// reads correctly without JavaScript; the client script re-applies the
+// filters from the URL. Hidden cards follow the visible ones, sorted the same.
+const visible = applyFilters(projects, DEFAULT_STATE);
+const visibleIds = new Set(visible.map((p) => p.id));
+const rest = sortProjects(
+  projects.filter((p) => !visibleIds.has(p.id)),
+  DEFAULT_STATE.sort,
+);
+const ordered = [...visible, ...rest];
+
+const filterData: FilterProject[] = projects.map((p) => ({
+  id: p.id,
+  full_name: p.full_name,
+  description: p.description,
+  topics: p.topics,
+  categories: p.categories,
+  ocpp_versions: p.ocpp_versions,
+  ocpi_versions: p.ocpi_versions,
+  language: p.language,
+  host: p.host,
+  curation: p.curation,
+  stars: p.stars,
+}));
+// Inline JSON: escape `<` so no value can close the script element.
+const json = JSON.stringify(filterData).replace(/</g, '\\u003c');
+
+const protocols = protocolOptions(projects);
+const categories = categoryOptions(projects, DEFAULT_STATE.protocol);
+const versions = versionOptions(projects, DEFAULT_STATE.protocol);
+const languages = languageOptions(projects);
+const hosts = hostOptions(projects);
+const total = projects.length;
+const countText = (n: number) => `${n} of ${total} ${total === 1 ? 'project' : 'projects'}`;
+const legacyUrl = `${REPO_URL}/blob/main/legacy-projects.md`;
 ---
 
-<Base title="Developer Tools" current="projects" description="Open-source EV charging developer tools: OCPP and OCPI servers, simulators, libraries and test suites.">
-  <StubPage title="Developer Tools" fallbackHref="https://github.com/juherr/awesome-ev-charging#tools-and-resources" fallbackLabel="Tools and Resources in the README" />
+<Base
+  title="Developer Tools"
+  current="projects"
+  description="Open-source EV charging developer tools: OCPP and OCPI servers, simulators, libraries and test suites, filterable by protocol, version, language and curation state."
+>
+  <div class="container page">
+    <header class="intro">
+      <h1>Developer Tools</h1>
+      <p>
+        Open-source servers, simulators, libraries and test tools for EV charging protocols. Stars and activity
+        describe a repository, not its compliance or quality.
+      </p>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="Filters">
+        <noscript>
+          <div class="noscript">
+            <p>
+              Filtering needs JavaScript. This page shows the Selection, most stars first. Dormant and To refine entries
+              are listed in <a href={legacyUrl}>legacy-projects.md</a>.
+            </p>
+          </div>
+        </noscript>
+
+        <form id="filters" class="filters" hidden>
+          <div class="field">
+            <label for="f-q">Search</label>
+            <input id="f-q" name="q" type="search" placeholder="Name, description or topic" autocomplete="off" />
+          </div>
+
+          <div class="phone-bar">
+            <button
+              id="filters-toggle"
+              class="filters-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="filter-panel"
+            >
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>
+              <span id="filters-toggle-label">Filters</span>
+            </button>
+          </div>
+
+          <div id="filter-panel" class="filter-panel">
+            <div class="field">
+              <label for="f-protocol">Protocol</label>
+              <select id="f-protocol" name="protocol">
+                <option value="">All protocols</option>
+                {protocols.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="f-category">Category</label>
+              <select id="f-category" name="category" aria-describedby="f-category-help">
+                <option value="">All categories</option>
+                {categories.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+              <span id="f-category-help" class="help">Categories of the chosen protocol.</span>
+            </div>
+
+            <div class="field">
+              <label for="f-version">Protocol version</label>
+              <select id="f-version" name="version" aria-describedby="f-version-help">
+                <option value="">Any version</option>
+                {versions.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+              <span id="f-version-help" class="help">
+                Versions the project itself documents. Entries with no known version are hidden when one is picked.
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="f-language">Language</label>
+              <select id="f-language" name="language">
+                <option value="">All languages</option>
+                {languages.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="f-host">Host</label>
+              <select id="f-host" name="host">
+                <option value="">All hosts</option>
+                {hosts.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+
+            <fieldset class="states">
+              <legend>Curation state</legend>
+              {
+                CURATIONS.map((c) => (
+                  <label class="check">
+                    <input type="checkbox" name="state" value={c} checked={DEFAULT_STATE.states.includes(c)} />
+                    <span>
+                      <span class="check-label">{CURATION_LABELS[c]}</span>
+                      <span class="help">{CURATION_HELP[c]}</span>
+                    </span>
+                  </label>
+                ))
+              }
+            </fieldset>
+
+            <button id="filters-reset" class="link-button" type="button">Reset filters</button>
+          </div>
+        </form>
+      </aside>
+
+      <section class="results" aria-label="Results">
+        <div class="results-bar">
+          <p id="results-count" class="count" aria-live="polite">{countText(visible.length)}</p>
+          <div class="sort" id="sort-wrap" hidden>
+            <label for="f-sort">Sort by</label>
+            <select id="f-sort" name="sort" form="filters">
+              {SORTS.map((o) => <option value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <ul id="active-filters" class="chips" aria-label="Active filters" hidden></ul>
+
+        <div id="results-empty" class="empty" hidden={visible.length > 0}>
+          <h2>No project matches these filters</h2>
+          <p>
+            Try another protocol, or include Dormant and To refine entries. If a project is missing from the catalogue,
+            <a href={CONTRIBUTING_URL}>propose it on GitHub</a>.
+          </p>
+          <a class="button button-secondary" href={url('projects/')}>Reset filters</a>
+        </div>
+
+        <ul id="results" class="cards">
+          {
+            ordered.map((p) => (
+              <li class="card" data-id={p.id} hidden={!visibleIds.has(p.id)}>
+                <div class="card-head">
+                  <a class="card-name mono" href={projectPath(p.id)}>
+                    {p.full_name}
+                  </a>
+                  <span class={`badge badge-${p.curation}`}>{CURATION_LABELS[p.curation]}</span>
+                </div>
+                <p class="card-desc">{p.description ?? 'Description unknown.'}</p>
+                <p class="card-meta mono">{cardMeta(p)}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <script type="application/json" id="projects-data" is:inline set:html={json} />
 </Base>
+
+<script>
+  import { initProjectsDirectory } from '../../scripts/projects';
+
+  initProjectsDirectory();
+</script>
+
+<style>
+  .page {
+    padding-top: 40px;
+    padding-bottom: 56px;
+  }
+
+  .intro {
+    max-width: 760px;
+    padding-bottom: 32px;
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .intro p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--color-body-soft);
+  }
+
+  .layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  .sidebar {
+    flex: 1 1 240px;
+    max-width: 300px;
+  }
+
+  .results {
+    flex: 999 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .filters,
+  .filter-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin: 0;
+  }
+
+  .filters[hidden] {
+    display: none;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label,
+  legend {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  input[type='search'],
+  select {
+    font: inherit;
+    font-size: 16px;
+    min-height: var(--target-min);
+    padding: 0 10px;
+    border: 1px solid #8b968f;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  input[type='search'] {
+    padding: 11px 12px;
+  }
+
+  select:disabled {
+    color: var(--color-muted);
+    background: var(--color-ground);
+  }
+
+  .help {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+
+  .states {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .states legend {
+    padding: 0 0 4px;
+  }
+
+  .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: var(--target-min);
+    padding: 8px 0;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+  }
+
+  .check input {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--color-accent);
+  }
+
+  .check > span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .check-label {
+    font-weight: 500;
+  }
+
+  .link-button {
+    font: inherit;
+    font-size: 15px;
+    min-height: var(--target-min);
+    border: 0;
+    background: none;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-align: left;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .link-button:hover {
+    color: var(--color-accent-hover);
+  }
+
+  .phone-bar {
+    display: none;
+  }
+
+  .filters-toggle {
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    min-height: var(--target-min);
+    padding: 0 14px;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .noscript {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    font-size: 14px;
+    color: var(--color-body-soft);
+  }
+
+  .noscript p {
+    margin: 0;
+  }
+
+  .results-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+  }
+
+  .count {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .sort {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sort[hidden] {
+    display: none;
+  }
+
+  .sort select {
+    font-size: 15px;
+  }
+
+  .chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chips[hidden] {
+    display: none;
+  }
+
+  .chips :global(button) {
+    font: inherit;
+    font-size: 14px;
+    min-height: var(--target-min);
+    padding: 0 12px;
+    border: 0;
+    border-radius: 22px;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-hover);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .empty {
+    background: var(--color-surface);
+    border: 1px dashed #8b968f;
+    border-radius: var(--radius-md);
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .empty[hidden] {
+    display: none;
+  }
+
+  .empty h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .empty p {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: var(--color-body-soft);
+  }
+
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card[hidden] {
+    display: none;
+  }
+
+  .card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+
+  .card-name {
+    font-size: 16px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .card-desc {
+    margin: 0;
+    font-size: 15px;
+    color: var(--color-body);
+  }
+
+  .card-meta {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 799px) {
+    .page {
+      padding-top: 20px;
+    }
+
+    .intro {
+      padding-bottom: 16px;
+    }
+
+    .layout {
+      gap: 16px;
+    }
+
+    .sidebar {
+      max-width: none;
+      flex-basis: 100%;
+    }
+
+    .filters {
+      gap: 16px;
+    }
+
+    .phone-bar {
+      display: flex;
+    }
+
+    .filter-panel:not(.is-open) {
+      display: none;
+    }
+
+    .filter-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .card {
+      padding: 14px 16px;
+    }
+  }
+</style>
