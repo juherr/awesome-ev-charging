@@ -1,0 +1,634 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getData, type CsmsProduct } from '../../lib/data';
+import {
+  apiCell,
+  certificateLabel,
+  csmsSearchText,
+  deploymentLabel,
+  featureLabel,
+  featureLinks,
+  ocpiCell,
+  ocppCell,
+  productHref,
+  sortedCertificates,
+  sourceRef,
+  statusLabel,
+} from '../../lib/csms';
+import { UNKNOWN_MARK } from '../../lib/format';
+import { safeHref } from '../../lib/safe-href';
+import { CONTRIBUTING_URL, REPO_URL } from '../../lib/site';
+import { url } from '../../lib/url';
+
+const { csms } = getData();
+
+// csms.md's order: display name, then company, so homonyms keep their place.
+const products: CsmsProduct[] = [...csms].sort(
+  (a, b) =>
+    a.name.toLowerCase().localeCompare(b.name.toLowerCase(), 'en') ||
+    (a.company ?? '').toLowerCase().localeCompare((b.company ?? '').toLowerCase(), 'en'),
+);
+const total = products.length;
+const certifiedCount = products.filter((p) => p.certificates.length > 0).length;
+const methodologyUrl = `${REPO_URL}/blob/main/docs/csms-methodology.md`;
+const csmsMdUrl = `${REPO_URL}/blob/main/csms.md`;
+
+/** Curated facts worth a line in the details, known ones only. */
+function facts(p: CsmsProduct): { label: string; value: string; href?: string | null }[] {
+  const hq = [p.hq_city, p.hq_country].filter(Boolean).join(', ');
+  const latest = p.latest_version ? [p.latest_version, p.latest_version_date && `(${p.latest_version_date})`].filter(Boolean).join(' ') : null;
+  const all = [
+    { label: 'Headquarters', value: hq || null },
+    { label: 'Company founded', value: p.company_founded },
+    { label: 'First release', value: p.first_release },
+    { label: 'Latest version', value: latest },
+    { label: 'Licence', value: p.license },
+    { label: 'Pricing', value: p.pricing ?? (p.pricing_url ? 'Published' : null), href: safeHref(p.pricing_url) },
+    { label: 'Changelog', value: p.changelog ? 'Published' : null, href: safeHref(p.changelog) },
+    { label: 'ISO 15118', value: p.iso15118 ? 'Yes' : null },
+    { label: 'Eichrecht', value: p.eichrecht ? 'Yes' : null },
+  ];
+  return all.filter((f): f is { label: string; value: string; href?: string | null } => f.value !== null);
+}
+---
+
+<Base
+  title="CSMS Directory"
+  current="csms"
+  description="Charging station management systems built on OCPP, with OCA certificates and vendor-documented features kept apart."
+>
+  <div class="container page">
+    <header class="intro">
+      <h1>CSMS Directory</h1>
+      <p>
+        Charging station management systems built on OCPP: {total} products, {certifiedCount} of them with an OCA
+        certificate. Certification comes from the Open Charge Alliance registry; everything else is curated with a cited
+        source. This is a discovery list, not a comparison or a compatibility matrix.
+      </p>
+    </header>
+
+    <section class="legend" aria-labelledby="legend-title">
+      <h2 id="legend-title" class="visually-hidden">How to read this directory</h2>
+      <ul>
+        <li><strong class="mono">{UNKNOWN_MARK}</strong> means unknown, never “no”.</li>
+        <li>
+          <strong>Yes</strong> means a cited source attests it; when the source is public, the Yes links to it. Source
+          available is only ever Yes or unknown.
+        </li>
+        <li>
+          <strong>Certified by the OCA</strong>: proven by a certificate in the Open Charge Alliance registry.{' '}
+          <strong>Documented by the vendor</strong>: stated in the vendor’s own documentation, with a source — not a
+          certification. The two are listed apart in each product’s details.
+        </li>
+      </ul>
+      <p class="legend-more">
+        How the data is gathered: <a href={methodologyUrl}>methodology</a>. The same directory as Markdown:
+        <a href={csmsMdUrl}>csms.md</a>.
+      </p>
+    </section>
+
+    <form id="csms-filters" class="filters" role="search" aria-label="Filter products" hidden>
+      <div class="field">
+        <label for="c-q">Search products and companies</label>
+        <input id="c-q" name="q" type="search" autocomplete="off" />
+      </div>
+      <label class="check"><input id="c-certified" type="checkbox" name="certified" /> OCA certificate</label>
+      <label class="check"><input id="c-source" type="checkbox" name="source" /> Source available</label>
+      <button id="csms-reset" class="link-button" type="button">Reset</button>
+    </form>
+
+    <p id="csms-count" class="count" aria-live="polite">{total} of {total} products</p>
+
+    <div class="table-scroll" tabindex="0" role="region" aria-labelledby="csms-caption">
+      <table id="csms-table">
+        <caption id="csms-caption">
+          CSMS products, by name. Certificates link to the PDF published by the Open Charge Alliance.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Company</th>
+            <th scope="col">OCPP</th>
+            <th scope="col">OCA certificates</th>
+            <th scope="col">Source available</th>
+            <th scope="col">OCPI</th>
+            <th scope="col">API</th>
+            <th scope="col">Deployment</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            products.map((p) => {
+              const href = productHref(p);
+              const ocpi = ocpiCell(p);
+              const api = apiCell(p);
+              const certs = sortedCertificates(p.certificates);
+              const companyHref = safeHref(p.oca_company_url);
+              const repoHref = safeHref(p.repo_url);
+              return (
+                <tr
+                  data-text={csmsSearchText(p)}
+                  data-certified={p.certificates.length ? '1' : '0'}
+                  data-source={p.source_available ? '1' : '0'}
+                >
+                  <th scope="row">
+                    {href ? <a href={href}>{p.name}</a> : p.name}
+                    <a class="details-link" href={`#${p.id}`} aria-label={`Details of ${p.name}`}>
+                      Details
+                    </a>
+                  </th>
+                  <td>{p.company ? (companyHref ? <a href={companyHref}>{p.company}</a> : p.company) : UNKNOWN_MARK}</td>
+                  <td class="mono">{ocppCell(p)}</td>
+                  <td>
+                    {certs.length
+                      ? certs.map((c, i) => (
+                          <>
+                            {i > 0 && ' · '}
+                            {safeHref(c.url) ? <a href={safeHref(c.url)}>{certificateLabel(c)}</a> : certificateLabel(c)}
+                          </>
+                        ))
+                      : UNKNOWN_MARK}
+                  </td>
+                  <td>{p.source_available ? (repoHref ? <a href={repoHref}>Yes</a> : 'Yes') : UNKNOWN_MARK}</td>
+                  <td>
+                    {ocpi
+                      ? ocpi.links.length
+                        ? ocpi.links.map((link, i) => (
+                            <>
+                              {i > 0 && ' '}
+                              <a href={link}>{i === 0 ? ocpi.label : `[${i + 1}]`}</a>
+                            </>
+                          ))
+                        : ocpi.label
+                      : UNKNOWN_MARK}
+                  </td>
+                  <td>{api ? (api.href ? <a href={api.href}>{api.label}</a> : api.label) : UNKNOWN_MARK}</td>
+                  <td>{deploymentLabel(p.deployment)}</td>
+                  <td>{statusLabel(p.status)}</td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div id="csms-empty" class="empty" hidden>
+      <h2>No product matches these filters</h2>
+      <p>
+        Clear the search or a filter. If a CSMS is missing, <a href={CONTRIBUTING_URL}>propose it on GitHub</a>.
+      </p>
+      <a class="button button-secondary" href={url('csms/')}>Reset filters</a>
+    </div>
+
+    <section class="details" aria-labelledby="details-title">
+      <h2 id="details-title">Product details</h2>
+      <p class="details-intro">
+        One entry per product, in the table’s order. Features proven by an OCA certificate and features the vendor
+        documents are two kinds of evidence, kept in separate lists; a feature may appear in both. Fields not shown are
+        unknown.
+      </p>
+
+      {
+        products.map((p) => {
+          const href = productHref(p);
+          const certs = sortedCertificates(p.certificates);
+          const known = facts(p);
+          return (
+            <article class="product" id={p.id} aria-labelledby={`${p.id}-name`}>
+              <h3 id={`${p.id}-name`}>{href ? <a href={href}>{p.name}</a> : p.name}</h3>
+              <p class="product-meta">
+                {[p.company ?? `Company ${UNKNOWN_MARK}`, `Deployment ${deploymentLabel(p.deployment)}`, `Status ${statusLabel(p.status)}`].join(' · ')}
+              </p>
+
+              {certs.length > 0 && (
+                <ul class="certs">
+                  {certs.map((c) => (
+                    <li>
+                      {safeHref(c.url) ? <a href={safeHref(c.url)}>{certificateLabel(c)}</a> : certificateLabel(c)}
+                      <span class="mono cert-meta">
+                        {' '}
+                        {c.number} · {c.date ?? UNKNOWN_MARK}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div class="evidence">
+                <div class="evidence-box certified">
+                  <h4>Certified by the OCA</h4>
+                  {p.features_certified.length ? (
+                    <ul class="features">
+                      {p.features_certified.map((f) => (
+                        <li>{featureLabel(f)}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p class="none">{certs.length ? 'No feature derived from its certificates.' : 'No OCA certificate on record.'}</p>
+                  )}
+                </div>
+                <div class="evidence-box documented">
+                  <h4>Documented by the vendor</h4>
+                  {p.features_documented.length ? (
+                    <ul class="features">
+                      {p.features_documented.map((f) => {
+                        const links = featureLinks(f);
+                        return (
+                          <li>
+                            {links.length ? <a href={links[0]}>{featureLabel(f.feature)}</a> : featureLabel(f.feature)}
+                            {links.slice(1).map((s, i) => (
+                              <>
+                                {' '}
+                                <a href={s} aria-label={`${featureLabel(f.feature)}, source ${i + 2}`}>[{i + 2}]</a>
+                              </>
+                            ))}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p class="none">No vendor-documented feature curated yet.</p>
+                  )}
+                </div>
+              </div>
+
+              {known.length > 0 && (
+                <dl class="facts">
+                  {known.map((f) => (
+                    <div>
+                      <dt>{f.label}</dt>
+                      <dd>{f.href ? <a href={f.href}>{f.value}</a> : f.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              {p.notes && <p class="notes">{p.notes}</p>}
+
+              {p.sources.length > 0 && (
+                <p class="sources">
+                  Sources:{' '}
+                  {p.sources.map((s, i) => {
+                    const ref = sourceRef(s);
+                    return (
+                      <>
+                        {i > 0 && ', '}
+                        {ref.href ? <a href={ref.href}>{ref.label}</a> : ref.label}
+                      </>
+                    );
+                  })}
+                </p>
+              )}
+
+              <a class="back" href="#csms-table">Back to the table</a>
+            </article>
+          );
+        })
+      }
+    </section>
+  </div>
+</Base>
+
+<script>
+  import { initCsmsDirectory } from '../../scripts/csms';
+
+  initCsmsDirectory();
+</script>
+
+<style>
+  .page {
+    padding-top: 40px;
+    padding-bottom: 56px;
+  }
+
+  .intro {
+    max-width: 760px;
+    padding-bottom: 24px;
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .intro p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--color-body-soft);
+  }
+
+  .legend {
+    max-width: 860px;
+    margin-bottom: 24px;
+    padding: 14px 18px;
+    background: var(--color-accent-soft);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-body);
+  }
+
+  .legend ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .legend li + li {
+    margin-top: 4px;
+  }
+
+  .legend-more {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--color-body-soft);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: flex-end;
+    margin: 0 0 12px;
+  }
+
+  .filters[hidden] {
+    display: none;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 260px;
+    max-width: 380px;
+  }
+
+  .field label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  input[type='search'] {
+    font: inherit;
+    font-size: 16px;
+    min-height: var(--target-min);
+    padding: 11px 12px;
+    border: 1px solid #8b968f;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--target-min);
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .check input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-accent);
+  }
+
+  .link-button {
+    min-height: var(--target-min);
+    padding: 0 4px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--color-accent);
+    text-decoration: underline;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .count {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+  }
+
+  table {
+    border-collapse: collapse;
+    min-width: 100%;
+    font-size: 14px;
+  }
+
+  caption {
+    caption-side: top;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  th,
+  td {
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid var(--color-line);
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--color-ground);
+  }
+
+  tbody th {
+    font-weight: 500;
+    min-width: 180px;
+  }
+
+  tbody td:nth-child(4) {
+    min-width: 200px;
+  }
+
+  tbody td:nth-child(3),
+  tbody td:nth-child(n + 5) {
+    white-space: nowrap;
+  }
+
+  tr[hidden] {
+    display: none;
+  }
+
+  .details-link {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+
+  .empty {
+    margin: 16px 0;
+    padding: 24px;
+    border: 1px dashed var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+  }
+
+  .empty[hidden] {
+    display: none;
+  }
+
+  .empty h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+
+  .details {
+    margin-top: 48px;
+  }
+
+  .details > h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .details-intro {
+    max-width: 760px;
+    margin: 0 0 24px;
+    color: var(--color-body-soft);
+  }
+
+  .product {
+    margin: 0 0 16px;
+    padding: 20px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    scroll-margin-top: 16px;
+  }
+
+  .product:target {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-soft);
+  }
+
+  .product h3 {
+    margin: 0 0 4px;
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .product-meta {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+
+  .certs {
+    margin: 0 0 12px;
+    padding-left: 20px;
+    font-size: 14px;
+  }
+
+  .cert-meta {
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+
+  .evidence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .evidence-box {
+    flex: 1 1 260px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .certified {
+    background: var(--color-accent-soft);
+  }
+
+  .documented {
+    border: 1px dashed var(--color-line-strong);
+  }
+
+  .evidence-box h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+  }
+
+  .features li {
+    padding: 2px 8px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+  }
+
+  .none {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 12px 0 0;
+    font-size: 14px;
+  }
+
+  .facts dt {
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+
+  .facts dd {
+    margin: 0;
+  }
+
+  .notes,
+  .sources {
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: var(--color-body-soft);
+    overflow-wrap: anywhere;
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    margin-top: 4px;
+    font-size: 14px;
+  }
+</style>

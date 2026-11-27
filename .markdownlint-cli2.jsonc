@@ -7,10 +7,13 @@
 
   "ignores": [
     // Local, untracked trees: agent scratch (and its nested worktrees),
-    // the virtualenv, npm installs, the GitHub API cache and pytest's cache.
+    // the virtualenv, npm installs (site/ has its own), the site's build
+    // output, the GitHub API cache and pytest's cache.
     ".context/**",
     ".venv/**",
-    "node_modules/**",
+    "**/node_modules/**",
+    "site/dist/**",
+    "site/.astro/**",
     "cache_github/**",
     ".pytest_cache/**",
 

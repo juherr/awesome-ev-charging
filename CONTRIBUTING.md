@@ -131,6 +131,11 @@ A GitHub token is optional; the mise tasks wire one in via `gh auth token` when
 the `gh` CLI is authenticated. Without a token, GitHub's unauthenticated rate
 limits apply.
 
+The static site under `site/` is a reading view of the same data, built from
+`data/*.json` and `README.md`: fix a fact in the CSVs or the README, never in
+the site. To work on the site itself (`mise run site-install`, then
+`mise run site-check`), see [docs/site.md](docs/site.md).
+
 ### ⚠️ The one thing to remember
 
 `render` reads **`repos.enriched.csv`**, *not* `classifications.csv`. So after

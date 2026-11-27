@@ -6,6 +6,9 @@ python = "3.11.16"
 # on. Declaring it here is what makes them work on a bare runner — CI had only
 # ever passed because a developer's machine happened to have uv on PATH.
 uv = "0.12.8"
+# The static site under site/ (Astro). Pinned to an exact 22.x LTS so local
+# builds and CI resolve the same runtime.
+node = "22.23.5"
 
 [env]
 # Auto-create and activate a project virtualenv — no manual `source .venv/bin/activate`.
@@ -45,3 +48,54 @@ run = [
 [tasks.discover]
 description = "Report candidates from the external lists of discovery-sources.toml"
 run = 'python discovery.py --sources discovery-sources.toml --report discovery-report.md --token "$(gh auth token 2>/dev/null)"'
+
+# --- Static site (site/) -----------------------------------------------------
+# The site reads the JSON export from AEC_DATA_DIR (default ../data, relative to
+# site/). data/projects.json is not published yet (issue #98), so the checks
+# build against the committed fixture in site/fixtures/data/.
+
+[tasks.site-install]
+description = "Install the site's npm dependencies (from site/package-lock.json)"
+dir = "site"
+run = "npm ci"
+
+[tasks.site-fixture]
+description = "Regenerate site/fixtures/data/ from site/fixtures/repos.enriched.csv"
+run = [
+  'mkdir -p site/fixtures/data',
+  # The CSMS payload and its manifest entry come from data/ as committed; render
+  # then adds the projects entry, rendered by the real exporter.
+  'cp data/csms.json data/manifest.json site/fixtures/data/',
+  'python pipeline.py render --in site/fixtures/repos.enriched.csv --out /dev/null --export-dir site/fixtures/data',
+]
+
+[tasks.site-dev]
+description = "Run the site's dev server (AEC_DATA_DIR selects the data directory)"
+dir = "site"
+run = "npx astro dev"
+
+[tasks.site-build]
+description = "Build the static site into site/dist (AEC_DATA_DIR selects the data directory)"
+dir = "site"
+run = "npx astro build"
+
+[tasks.site-check]
+description = "Type-check, unit-test, build against the fixture and check internal links"
+dir = "site"
+run = [
+  "npx astro check",
+  "npx vitest run",
+  "AEC_DATA_DIR=fixtures/data npx astro build",
+  "node scripts/check-links.mjs dist",
+]
+
+# The same build and link check against the live export (AEC_DATA_DIR, default
+# ../data), so a data refresh PR cannot break the site unnoticed. It fails while
+# data/projects.json is missing; the site workflow only runs it once it exists.
+[tasks.site-check-data]
+description = "Build against data/ (AEC_DATA_DIR, default ../data) and check internal links"
+dir = "site"
+run = [
+  "npx astro build",
+  "node scripts/check-links.mjs dist",
+]

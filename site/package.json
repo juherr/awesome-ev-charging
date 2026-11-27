@@ -1,0 +1,32 @@
+{
+  "name": "awesome-ev-charging-site",
+  "private": true,
+  "type": "module",
+  "description": "Static reading interface over the awesome-ev-charging public JSON export.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run",
+    "check-links": "node scripts/check-links.mjs dist"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.6",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "astro": "^7.4.13",
+    "github-slugger": "^2.0.0",
+    "marked": "^18.3.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^22.20.7",
+    "ajv": "^8.20.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.2"
+  }
+}

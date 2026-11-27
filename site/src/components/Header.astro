@@ -1,0 +1,111 @@
+---
+import { url } from '../lib/url';
+import { NAV, REPO_URL, SITE_NAME, type NavKey } from '../lib/site';
+
+interface Props {
+  current?: NavKey;
+}
+
+const { current } = Astro.props;
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href={url('')}>
+      <svg aria-hidden="true" width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="20" height="20" rx="5"></rect>
+        <path d="M14 7l-4 7h6l-4 6"></path>
+      </svg>
+      {SITE_NAME}
+    </a>
+    <nav aria-label="Primary">
+      <ul>
+        {
+          NAV.map((item) => (
+            <li>
+              <a href={url(item.path)} aria-current={item.key === current ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li><a class="github" href={REPO_URL}>GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 32px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--target-min);
+    color: var(--color-ink);
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .brand svg {
+    color: var(--color-accent);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 15px;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    color: var(--color-ink);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  nav a:hover {
+    color: var(--color-accent);
+  }
+
+  nav a[aria-current='page'] {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  nav a.github {
+    padding: 0 14px;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  nav a.github:hover {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-hover);
+  }
+</style>

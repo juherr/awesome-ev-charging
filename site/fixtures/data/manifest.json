@@ -1,0 +1,23 @@
+{
+  "payloads": {
+    "csms": {
+      "file": "csms.json",
+      "inputs": {
+        "csms-certificates.csv": "87080e32e9a52a85be404c1a2852a56b4d23648d922d4609630bf4dc1e348c3a",
+        "csms-features.csv": "360104130e2ad998e0c41a20dee46a906467d22423967c38ef2649ffa3746d33",
+        "csms.csv": "9182511ff9fcfa6c9f5e5757c460240fe812a1b0c9c5190d7c4d105fd573f40c"
+      },
+      "records": 287,
+      "sha256": "54a084ef1b03e04da359c8f4e65fbb8ca917a290a73003146b4cf21665f59ff7"
+    },
+    "projects": {
+      "file": "projects.json",
+      "inputs": {
+        "site/fixtures/repos.enriched.csv": "5c3d1f4097247327c4256da06db4ef4b041b3c2c4fa03c831fa67d9991cea3ff"
+      },
+      "records": 23,
+      "sha256": "b4354d66ef928af9771ad1cc829237907bfe39647e7126b949d00af8f84241bf"
+    }
+  },
+  "schema_version": "1.0"
+}

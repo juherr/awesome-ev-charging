@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+
+# The root .gitignore ignores every repos.enriched.csv (a pipeline artifact);
+# this one is the committed fixture the site's test data is rendered from.
+!fixtures/repos.enriched.csv

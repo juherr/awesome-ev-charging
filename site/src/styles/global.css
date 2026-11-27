@@ -1,0 +1,191 @@
+/* Design tokens and base styles, shared by every page. Light theme only. */
+:root {
+  --color-ground: #f6f7f4;
+  --color-surface: #ffffff;
+  --color-ink: #14211c;
+  --color-body: #2b3a34;
+  --color-body-soft: #3c4a44;
+  --color-muted: #55635d;
+  --color-line: #d9ded8;
+  --color-line-strong: #b9c2bb;
+  --color-accent: #0a6650;
+  --color-accent-hover: #06483a;
+  --color-accent-soft: #e3f1ec;
+  --color-inverse-text: #c9d3cd;
+
+  /* Curation badges */
+  --badge-selection-bg: var(--color-accent);
+  --badge-selection-text: #ffffff;
+  --badge-dormant-bg: #fbf1dc;
+  --badge-dormant-text: #7a4f00;
+  --badge-dormant-border: #7a4f00;
+  --badge-refine-border: #8a958f;
+  --badge-refine-text: var(--color-muted);
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --page-width: 1160px;
+  --gutter: 24px;
+  --target-min: 44px;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+code,
+kbd,
+.mono {
+  font-family: var(--font-mono);
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+.container {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+@media (max-width: 600px) {
+  :root {
+    --gutter: 16px;
+  }
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--gutter);
+  top: -100px;
+  z-index: 10;
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.button-primary {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+.button-primary:hover {
+  background: var(--color-accent-hover);
+  color: #ffffff;
+}
+
+.button-secondary {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-ink);
+}
+
+.button-secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+/* Curation badges: Selection, Dormant, To refine */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge-selection {
+  background: var(--badge-selection-bg);
+  color: var(--badge-selection-text);
+}
+
+.badge-dormant {
+  background: var(--badge-dormant-bg);
+  color: var(--badge-dormant-text);
+  border-color: var(--badge-dormant-border);
+}
+
+.badge-to_refine {
+  background: transparent;
+  color: var(--badge-refine-text);
+  border: 1px dashed var(--badge-refine-border);
+}

@@ -1,0 +1,55 @@
+---
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_NAME, type NavKey } from '../lib/site';
+import { url } from '../lib/url';
+
+interface Props {
+  /** The page's own title; the site name is appended (the home page passes none). */
+  title?: string;
+  /** One or two sentences for search results and link previews. */
+  description: string;
+  /** The navigation entry to mark as the current page. */
+  current?: NavKey;
+  /** `website` for section pages, `article` for a single record. */
+  ogType?: 'website' | 'article';
+}
+
+const { title, description, current, ogType = 'website' } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href={url('sitemap-index.xml')} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title ?? SITE_NAME} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="generator" content={Astro.generator} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header current={current} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
