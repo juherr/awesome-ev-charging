@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { checkLinks } from '../scripts/check-links.mjs';
 
@@ -80,6 +80,33 @@ describe('checkLinks', () => {
     expect(checkLinks(dir, BASE)).toEqual([
       expect.stringMatching(/index\.html.*\/projects\/.*base/),
     ]);
+  });
+
+  it('flags a link whose dot segments resolve outside the base path', () => {
+    const dir = dist({
+      'index.html': page(
+        '<a href="/awesome-ev-charging/../dist/">a</a><a href="/awesome-ev-charging/%2e%2e/dist/">b</a>',
+      ),
+      'dist/index.html': page(''),
+    });
+    expect(checkLinks(dir, BASE)).toEqual([
+      expect.stringMatching(/^index\.html: \/awesome-ev-charging\/\.\.\/dist\/ .*base/),
+      expect.stringMatching(/^index\.html: \/awesome-ev-charging\/%2e%2e\/dist\/ .*base/),
+    ]);
+  });
+
+  it('accepts a link whose dot segments stay under the base path', () => {
+    const dir = dist({
+      'index.html': page('<a href="/awesome-ev-charging/a/../csms/">c</a>'),
+      'csms/index.html': page(''),
+    });
+    expect(checkLinks(dir, BASE)).toEqual([]);
+  });
+
+  it('flags a link whose encoded slashes resolve outside the build', () => {
+    const outside = basename(dist({ 'secret.html': page('') }));
+    const dir = dist({ 'index.html': page(`<a href="/awesome-ev-charging/..%2f${outside}%2fsecret.html">s</a>`) });
+    expect(checkLinks(dir, BASE)).toEqual([expect.stringMatching(/^index\.html: .*outside the build/)]);
   });
 
   it('flags a document-relative link, which breaks when the page moves', () => {

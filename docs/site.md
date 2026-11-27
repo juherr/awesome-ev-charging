@@ -87,6 +87,9 @@ deployed under the base path.
 `href` and `src` in `dist/` and fails on a document-relative link, a link
 outside the base path, or a link to a file the build did not produce (a page
 link without its trailing slash included). `site-check` runs it.
+It also fails on an absolute URL whose scheme is not `http:`, `https:` or
+`mailto:`, and on a path that leaves the base path or `dist/` once its `..`
+segments (encoded ones included) are resolved.
 
 ## The fixture and its drift test
 

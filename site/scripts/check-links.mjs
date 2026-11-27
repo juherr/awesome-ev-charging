@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // Post-build check of the internal links in dist/: every href/src that is not
-// external must be root-relative, sit under the base path, and resolve to a
-// built file (a page link needs its trailing slash, `trailingSlash: 'always'`).
+// external must be root-relative, sit under the base path once its dot
+// segments are resolved, and resolve to a built file inside dist/ (a page link
+// needs its trailing slash, `trailingSlash: 'always'`).
 // A link written without url() (src/lib/url.ts) fails here. An absolute URL
 // must use http:, https: or mailto:, so a `javascript:` or `data:` URL that
 // slipped past safeHref (src/lib/safe-href.ts) fails here too.
 //
 //   node scripts/check-links.mjs [dist] [base]
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { isAbsolute, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ATTRIBUTE = /\s(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
@@ -52,9 +53,17 @@ function problem(link, distDir, base) {
   }
   if (link === '' || link.startsWith('#') || link.startsWith('//')) return null;
   if (!link.startsWith('/')) return 'is document-relative; build it with url()';
-  if (!link.startsWith(base)) return `is outside the base path ${base}; build it with url()`;
-  const path = decodeURIComponent(link.slice(base.length).split(/[?#]/)[0]);
+  // The path the browser requests: dot segments (`..`, `%2e%2e`) resolved,
+  // query and fragment dropped. The base is checked on that, not on the raw
+  // link, so `/base/../x/` cannot pass for a link under the base.
+  const { pathname } = new URL(link, 'http://site.invalid');
+  if (!pathname.startsWith(base)) return `is outside the base path ${base}; build it with url()`;
+  const path = decodeURIComponent(pathname.slice(base.length));
   const target = path === '' || path.endsWith('/') ? join(distDir, path, 'index.html') : join(distDir, path);
+  // An encoded slash (`..%2f`) is no dot segment to the URL parser, but
+  // decodes to one on disk.
+  const fromDist = relative(distDir, target);
+  if (fromDist.split(sep)[0] === '..' || isAbsolute(fromDist)) return 'resolves outside the build';
   return existsSync(target) && statSync(target).isFile() ? null : 'is not found in the build';
 }
 
