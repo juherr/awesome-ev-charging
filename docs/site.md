@@ -1,7 +1,7 @@
 # The static site
 
 `site/` holds a fully static [Astro](https://astro.build/) site published at
-<https://juherr.github.io/awesome-ev-charging/>. It is an additional
+<https://juherr.dev/awesome-ev-charging/>. It is an additional
 **reading view** over data this repository already publishes: `README.md` and
 the canonical CSVs stay authoritative, and the site never adds a fact they do
 not hold. No server, no database, no network access and no GitHub API call at
@@ -75,8 +75,13 @@ The path is relative to `site/`, where both tasks run.
 ## Base path and internal links
 
 The site is a GitHub Pages project site, so `site/astro.config.mjs` sets
-`site: 'https://juherr.github.io'`, `base: '/awesome-ev-charging'` and
-`trailingSlash: 'always'`.
+`site: 'https://juherr.dev'`, `base: '/awesome-ev-charging'` and
+`trailingSlash: 'always'`. The domain is `juherr.dev`, not
+`juherr.github.io`: the owner's user site has that custom domain, so GitHub
+serves every project site under it, and `juherr.github.io` answers with a 301
+redirect. `site` must name the domain that answers, or the canonical links,
+the sitemap and the Open Graph URLs all point at a redirect. If the user
+site's domain changes, change `site` with it.
 
 **Every internal link goes through `url()`** (`site/src/lib/url.ts`), which
 prefixes `import.meta.env.BASE_URL`; `projectPath(id)` builds a project page
@@ -124,9 +129,10 @@ real deploy follows the merge of the refresh PR opened by the scheduled run of
 and deployment → Source: **GitHub Actions**. The `github-pages` environment
 is created on the first deploy.
 
-## Custom domain
+## A domain of its own
 
-Moving to a custom domain changes the URL scheme, not the code:
+Giving this repository its own domain (rather than inheriting the user
+site's, as above) changes the URL scheme, not the code:
 
 - `site` in `astro.config.mjs` becomes the domain, and `base` becomes `/`
   (or is removed). `url()` follows `BASE_URL`, so no link changes; the link

@@ -1,7 +1,7 @@
 name: pages
 
 # Builds the static site under site/ from the committed export in data/ and
-# deploys it to GitHub Pages (https://juherr.github.io/awesome-ev-charging/).
+# deploys it to GitHub Pages (https://juherr.dev/awesome-ev-charging/).
 # See docs/site.md.
 #
 # Deploy gate: the site cannot build without data/projects.json, which the

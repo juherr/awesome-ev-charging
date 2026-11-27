@@ -19,12 +19,16 @@ const validateData = {
   },
 };
 
-// GitHub Pages project site: https://juherr.github.io/awesome-ev-charging/.
+// GitHub Pages project site: https://juherr.dev/awesome-ev-charging/. The
+// owner's user site has the custom domain juherr.dev, so GitHub serves every
+// project site under it and juherr.github.io only redirects there. `site`
+// names the domain that answers, so canonical, sitemap and Open Graph URLs
+// do not point at a redirect (see docs/site.md).
 // Every internal link goes through `url()` (src/lib/url.ts), which prefixes
 // `import.meta.env.BASE_URL`, so changing `base` here is the only edit a
-// custom domain needs.
+// domain of its own needs.
 export default defineConfig({
-  site: 'https://juherr.github.io',
+  site: 'https://juherr.dev',
   base: '/awesome-ev-charging',
   trailingSlash: 'always',
   integrations: [validateData, sitemap()],
