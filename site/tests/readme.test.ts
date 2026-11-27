@@ -148,6 +148,26 @@ Inline <img src=x onerror="alert(3)"> and <A HREF="javascript:alert(4)">y</A> he
     expect(html).toContain('Inline &lt;img src=x onerror=&quot;alert(3)&quot;&gt; and');
   });
 
+  it('gives nested headings their own GitHub ids without shifting the top-level ones', () => {
+    const md = `## Specifications
+
+> ### Quoted
+
+- ### Listed
+
+### Top
+
+### Quoted
+`;
+    const { html, headings } = renderReadmeSection(md, 'Specifications');
+    expect(html).toContain('<h2 id="quoted">Quoted</h2>');
+    expect(html).toContain('<h2 id="listed">Listed</h2>');
+    expect(html).toContain('<h2 id="top">Top</h2>');
+    // GitHub slugs every heading in document order, nested ones included.
+    expect(html).toContain('<h2 id="quoted-1">Quoted</h2>');
+    expect(headings.map((h) => h.id)).toEqual(['top', 'quoted-1']);
+  });
+
   it('fails on a missing section', () => {
     expect(() => renderReadmeSection(README, 'Nope')).toThrow(/Nope/);
   });

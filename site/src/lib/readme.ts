@@ -82,11 +82,14 @@ function eachToken(tokens: Token[], visit: (t: Token) => void): void {
 export function renderReadmeSection(markdown: string, name: string): RenderedSection {
   const tokens = new Lexer({ gfm: true }).lex(markdown);
 
-  // One slugger over every heading of the README, in order, as GitHub does,
-  // so a repeated heading gets the same `-1` suffix here as there.
+  // One slugger over every heading of the README, in document order and nested
+  // ones (in a quote or a list) included, as GitHub does, so a repeated heading
+  // gets the same `-1` suffix here as there.
   const slugger = new GithubSlugger();
   const ids = new Map<Token, string>();
-  for (const t of tokens) if (t.type === 'heading') ids.set(t, slugger.slug(plainText((t as Tokens.Heading).tokens)));
+  eachToken(tokens, (t) => {
+    if (t.type === 'heading') ids.set(t, slugger.slug(plainText((t as Tokens.Heading).tokens)));
+  });
 
   const start = tokens.findIndex((t) => t.type === 'heading' && (t as Tokens.Heading).depth === 2 && plainText((t as Tokens.Heading).tokens) === name);
   if (start === -1) throw new Error(`README.md has no "## ${name}" section`);
@@ -109,10 +112,11 @@ export function renderReadmeSection(markdown: string, name: string): RenderedSec
 
   const renderer = new Renderer();
   const defaultTable = renderer.table.bind(renderer);
-  let headingIndex = 0;
-  renderer.heading = function ({ tokens: inline }: Tokens.Heading) {
-    const { depth, id } = headings[headingIndex++];
-    return `<h${depth} id="${id}">${this.parser.parseInline(inline)}</h${depth}>\n`;
+  // Keyed by the token, not by position: marked also renders the headings
+  // nested in a quote or a list, which `headings` leaves out.
+  renderer.heading = function (token: Tokens.Heading) {
+    const depth = token.depth - 1;
+    return `<h${depth} id="${ids.get(token)}">${this.parser.parseInline(token.tokens)}</h${depth}>\n`;
   };
   renderer.table = (token: Tokens.Table) => `<div class="table-scroll">${defaultTable(token)}</div>\n`;
   // A link or image whose URL is not http(s) (nor an anchor into the page)
