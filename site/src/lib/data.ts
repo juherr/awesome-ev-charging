@@ -6,6 +6,7 @@
  * `null`, an empty list or a missing entry means unknown, never "no": the
  * types below keep that distinction, and the pages must too.
  */
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
@@ -188,6 +189,58 @@ function validate(json: unknown, label: string, path: string, schemaDir: string,
   throw new DataError(`${label} at ${path} does not match ${schemaFile}:\n${problems}`);
 }
 
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Check the manifest's structure and that each entry describes the payload
+ * actually loaded. There is no manifest schema in `data/schema/`, so the
+ * structure is checked here, against what the exporter writes
+ * (`pipeline.write_manifest`): `sha256` is the SHA-256 of the payload file's
+ * raw bytes, and `records` the length of its record list.
+ */
+function checkManifest(
+  manifest: any,
+  manifestPath: string,
+  payloads: Record<'projects' | 'csms', { file: string; path: string; records: number }>,
+): void {
+  const fail = (message: string): never => {
+    throw new DataError(`manifest.json at ${manifestPath}: ${message}`);
+  };
+  if (!isObject(manifest.payloads)) fail('payloads must be an object keyed by payload name.');
+  for (const [key, payload] of Object.entries(payloads)) {
+    const entry = manifest.payloads[key];
+    const field = `payloads.${key}`;
+    if (entry === undefined) {
+      fail(`no ${field} entry; re-render the export so the manifest describes ${payload.file}.`);
+    }
+    if (!isObject(entry)) fail(`${field} must be an object.`);
+    if (entry.file !== payload.file) fail(`${field}.file must be "${payload.file}".`);
+    if (typeof entry.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(entry.sha256)) {
+      fail(`${field}.sha256 must be a lowercase hex SHA-256.`);
+    }
+    if (!Number.isInteger(entry.records) || entry.records < 0) {
+      fail(`${field}.records must be a non-negative integer.`);
+    }
+    if (!isObject(entry.inputs) || !Object.values(entry.inputs).every((v) => typeof v === 'string')) {
+      fail(`${field}.inputs must map each input path to its checksum.`);
+    }
+    const actual = createHash('sha256').update(readFileSync(payload.path)).digest('hex');
+    if (actual !== entry.sha256) {
+      throw new DataError(
+        `${payload.file} at ${payload.path} has SHA-256 ${actual}, which does not match ` +
+          `${entry.sha256} in manifest.json; the payload and the manifest are out of step.`,
+      );
+    }
+    if (payload.records !== entry.records) {
+      throw new DataError(
+        `${payload.file} at ${payload.path} holds ${payload.records} records, but ` +
+          `manifest.json says ${entry.records}.`,
+      );
+    }
+  }
+}
+
 function payloadPath(dataDir: string, file: string, label: string, hint = ''): string {
   const path = join(dataDir, file);
   if (!existsSync(path)) {
@@ -218,6 +271,10 @@ export function loadData({ dataDir, schemaDir }: LoadOptions): SiteData {
   checkMajor(manifest, 'manifest.json', manifestPath);
   validate(projects, 'projects.json', projectsPath, schemaDir, 'projects.schema.json');
   validate(csms, 'csms.json', csmsPath, schemaDir, 'csms.schema.json');
+  checkManifest(manifest, manifestPath, {
+    projects: { file: 'projects.json', path: projectsPath, records: projects.projects.length },
+    csms: { file: 'csms.json', path: csmsPath, records: csms.products.length },
+  });
 
   return {
     dataDir,

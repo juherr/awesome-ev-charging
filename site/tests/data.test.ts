@@ -113,6 +113,47 @@ describe('loadData', () => {
     expect(() => load(dir)).toThrow(/csms\.json.*\/products\/0\/source_available/s);
   });
 
+  it('refuses a manifest whose payloads is not an object', () => {
+    const dir = copyFixture();
+    edit(dir, 'manifest.json', (j) => (j.payloads = []));
+    expect(() => load(dir)).toThrow(DataError);
+    expect(() => load(dir)).toThrow(/manifest\.json.*payloads must be an object/s);
+  });
+
+  it('refuses a manifest entry with a malformed field', () => {
+    const dir = copyFixture();
+    edit(dir, 'manifest.json', (j) => (j.payloads.csms.records = '287'));
+    expect(() => load(dir)).toThrow(/manifest\.json.*payloads\.csms\.records/s);
+  });
+
+  it('refuses a manifest without the projects entry', () => {
+    const dir = copyFixture();
+    edit(dir, 'manifest.json', (j) => delete j.payloads.projects);
+    expect(() => load(dir)).toThrow(DataError);
+    expect(() => load(dir)).toThrow(/manifest\.json.*no payloads\.projects entry/s);
+  });
+
+  it('refuses a manifest checksum that does not match the loaded bytes', () => {
+    const dir = copyFixture();
+    edit(dir, 'manifest.json', (j) => (j.payloads.csms.sha256 = '0'.repeat(64)));
+    expect(() => load(dir)).toThrow(DataError);
+    expect(() => load(dir)).toThrow(/csms\.json.*SHA-256.*does not match.*manifest/s);
+  });
+
+  it('refuses a payload edited after its manifest entry was written', () => {
+    const dir = copyFixture();
+    // Still schema-valid, but no longer the bytes the manifest describes.
+    edit(dir, 'projects.json', () => {});
+    expect(() => load(dir)).toThrow(/projects\.json.*SHA-256.*does not match/s);
+  });
+
+  it('refuses a manifest record count that does not match the payload', () => {
+    const dir = copyFixture();
+    edit(dir, 'manifest.json', (j) => (j.payloads.projects.records += 1));
+    expect(() => load(dir)).toThrow(DataError);
+    expect(() => load(dir)).toThrow(/projects\.json.*23 records.*manifest.*24/s);
+  });
+
   it('rejects a file that is not JSON', () => {
     const dir = copyFixture();
     writeFileSync(join(dir, 'projects.json'), '{"schema_version": ');
