@@ -2,9 +2,15 @@ name: site
 
 # Checks the static site under site/: astro check, the vitest suite, a build
 # against the committed fixture (site/fixtures/data/) and the internal link
-# checker, all through `mise run site-check`. The build never reads data/
-# here: data/projects.json is not published yet (issue #98), and a check that
-# depends on the live export would go red the day a refresh changes it.
+# checker, all through `mise run site-check`. That build never reads data/:
+# a check of the site's code must not go red the day a refresh changes the
+# live export.
+#
+# A second build then reads data/ itself (`mise run site-check-data`: build,
+# then the link checker on that build's dist/), so the monthly refresh PR,
+# which touches data/**, cannot break the deployed site unnoticed. It runs
+# only when data/projects.json exists, the same test as pages.yml's gate:
+# the file is not published yet (issue #98).
 #
 # A workflow of its own rather than a job in tests.yml: tests.yml runs on
 # every pull request on purpose (its link test can break on any renamed
@@ -57,3 +63,13 @@ jobs:
 
       - name: Check, test, build against the fixture, check links
         run: mise run site-check
+
+      # Rebuilds site/dist from data/ after the fixture build has been link
+      # checked, so each link check reads its own build's output.
+      - name: Build against data/, check links
+        run: |
+          if [ -f data/projects.json ]; then
+            mise run site-check-data
+          else
+            echo "::notice::data/projects.json is not published yet (issue #98): skipping the build against data/."
+          fi

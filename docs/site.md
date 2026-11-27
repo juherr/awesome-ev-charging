@@ -108,6 +108,8 @@ run `mise run site-fixture` and commit the result.
 - `.github/workflows/site.yml` runs `mise run site-install` and
   `mise run site-check` on pull requests and pushes to `main` that touch
   `site/`, `data/`, `README.md`, `pipeline.py`, `mise.toml` or the workflow.
+  Once `data/projects.json` exists, it also runs `mise run site-check-data`:
+  a build from `data/` and the link check on that build.
 - `.github/workflows/pages.yml` builds from `data/` and deploys on pushes to
   `main` that touch `site/`, `data/`, `README.md`, `mise.toml` or the
   workflow, and on demand (`workflow_dispatch`).

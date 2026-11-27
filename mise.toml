@@ -88,3 +88,14 @@ run = [
   "AEC_DATA_DIR=fixtures/data npx astro build",
   "node scripts/check-links.mjs dist",
 ]
+
+# The same build and link check against the live export (AEC_DATA_DIR, default
+# ../data), so a data refresh PR cannot break the site unnoticed. It fails while
+# data/projects.json is missing; the site workflow only runs it once it exists.
+[tasks.site-check-data]
+description = "Build against data/ (AEC_DATA_DIR, default ../data) and check internal links"
+dir = "site"
+run = [
+  "npx astro build",
+  "node scripts/check-links.mjs dist",
+]
