@@ -164,4 +164,13 @@ describe('filter', () => {
     expect(serialiseCsmsState(DEFAULT_CSMS_STATE)).toBe('');
     expect(parseCsmsState('?source=1&certified=0&q=%20')).toEqual({ q: '', certified: false, source: true });
   });
+
+  it('reads an entry with no query, as Back may restore, as the defaults', () => {
+    expect(parseCsmsState('')).toEqual(DEFAULT_CSMS_STATE);
+    expect(parseCsmsState('?')).toEqual(DEFAULT_CSMS_STATE);
+  });
+
+  it('ignores parameters it does not own', () => {
+    expect(parseCsmsState('?utm_source=x&certified=1&page=2')).toEqual({ ...DEFAULT_CSMS_STATE, certified: true });
+  });
 });

@@ -2,7 +2,8 @@
  * Client side of the CSMS directory. The table is fully rendered at build
  * time; this script reads the URL, applies src/lib/csms.ts to each row's data
  * attributes, toggles their `hidden` attribute and writes the state back with
- * `history.replaceState`. The product details below the table stay listed.
+ * `history.replaceState`, and re-reads it on `popstate`. The product details
+ * below the table stay listed.
  */
 import { DEFAULT_CSMS_STATE, matchesCsms, parseCsmsState, serialiseCsmsState, type CsmsFilterRow, type CsmsFilterState } from '../lib/csms';
 
@@ -51,11 +52,19 @@ export function initCsmsDirectory(): void {
     history.replaceState(history.state, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
   }
 
-  const initial = parseCsmsState(location.search);
-  q.value = initial.q;
-  certified.checked = initial.certified;
-  source.checked = initial.source;
+  /** Set the controls from the URL and render it, without touching history. */
+  function restore(): void {
+    const state = parseCsmsState(location.search);
+    q.value = state.q;
+    certified.checked = state.certified;
+    source.checked = state.source;
+    render(state);
+  }
 
+  // A product's details link is a page anchor, so it adds a history entry
+  // that keeps the query of its time; the filters rewrite the current entry
+  // only. Back then returns to an older query: show what that URL says.
+  window.addEventListener('popstate', restore);
   form.addEventListener('input', apply);
   form.addEventListener('change', apply);
   form.addEventListener('submit', (event) => event.preventDefault());
@@ -67,5 +76,5 @@ export function initCsmsDirectory(): void {
   });
 
   form.hidden = false;
-  render(initial);
+  restore();
 }
