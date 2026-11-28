@@ -97,6 +97,27 @@ Confirm the repo is present:
 grep "<owner>/<repo>" repos.csv
 ```
 
+**Count what `enrich` would pay for before running it.** Between two monthly
+refreshes, `ingest` also picks up repos nobody asked for, and repos already in
+`classifications.csv` may have a stale classifier signature (their
+description, topics or README head changed). Each one is a billed classifier
+call, and the extra rows would land in this PR. On 2026-11-26 (#125), adding
+one repo surfaced 38 new candidates and 31 drifted signatures: 32 paid calls
+instead of 1. When more than the requested repo would be classified:
+
+- Paid pass: write a copy of `repos.csv` holding only the header and the
+  requested repo, and run `enrich --in <that copy>`. Only that row is
+  classified and added to `classifications.csv`.
+- Free pass: write a second copy keeping the header, the rows already in
+  `classifications.csv` and the requested repo. Run
+  `enrich --in <second copy> --restamp --cache <throwaway copy of classifications.csv>`,
+  so the drifted rows are re-stamped without an LLM call (a cached row with
+  empty categories is still asked) and `render` gets a complete
+  `repos.enriched.csv`. The real `classifications.csv` keeps only
+  the new row; check with `git diff --stat classifications.csv` (+1 line).
+- Leave the new candidates and the drift to the monthly `refresh-metadata`
+  run, and say so in the PR body.
+
 ### 3. Enrich → classifies the new repo
 
 ```bash
